@@ -3,7 +3,6 @@ package agent.behavior.simple_behavior;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import agent.AgentAction;
 import agent.AgentCommunication;
@@ -30,7 +29,7 @@ public class SimpleBehavior extends Behavior {
     public void act(AgentState agentState, AgentAction agentAction) {
         List<Coordinate> relMoves = this.getPossibleRelMoves();
 
-        if (agentState.hasCarry()) {
+        if (!agentState.hasCarry()) {
             // The agent is not carrying a packet
 
             for (Coordinate move : relMoves) {
@@ -45,12 +44,18 @@ public class SimpleBehavior extends Behavior {
                         int absX = agentState.getX() + x;
                         int absY = agentState.getY() + y;
 
-                   if (cellPerception.containsPacket()) {
-                        agentAction.step(absX, absY);
+                    if (cellPerception.containsPacket()) {
+                        int cellX = cellPerception.getX();
+                        int cellY = cellPerception.getY();
+                        System.out.println("cellperception on cell " + cellX + " " + cellY);
+                        System.out.println("The agent is looking to move to " + absX + " " + absY);
                         agentAction.pickPacket(absX, absY);
+                        break;
                     }
                     else {
+                        System.out.println("The agent is looking to move to " + absX + " " + absY);
                         agentAction.step(absX, absY);
+                        break;
                     }
                 }
             }
@@ -71,7 +76,6 @@ public class SimpleBehavior extends Behavior {
                     int absY = agentState.getY() + y;
 
                     if (cellPerception.containsDestination(packet.getColor())) {
-                        agentAction.step(absX, absY);
                         agentAction.putPacket(absX, absY);
                     }
                     else {
