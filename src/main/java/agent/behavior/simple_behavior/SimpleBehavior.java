@@ -37,7 +37,7 @@ public class SimpleBehavior extends Behavior {
      */
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        List<Coordinate> possibleRelMoves = this.getPossibleRelMoves(agentState);
+        List<Coordinate> possibleRelMoves = this.getPossibleWalkableRelMoves(agentState);
 
         if (!agentState.hasCarry()) {
             // The agent is not carrying a packet
@@ -56,7 +56,6 @@ public class SimpleBehavior extends Behavior {
                         if (cellPerception.containsPacket()) {
                             int packetXCoordinate = perception.getOffsetX() + w;
                             int packetYCoordinate = perception.getOffsetY() + h;
-                            System.out.println(String.format("The packet is on coordinate %d,%d", packetXCoordinate, packetYCoordinate));
 
                             // measure distance from current cell to packet cell, then go over all possible moves and see if the distance decreases. If it does, take that move
                             int currentDistance = Perception.distance(agentState.getX(), agentState.getY(), packetXCoordinate, packetYCoordinate);
@@ -65,12 +64,26 @@ public class SimpleBehavior extends Behavior {
                             for (Coordinate move : possibleRelMoves) {
                                 int nextX = agentState.getX() + move.getX();
                                 int nextY = agentState.getY() + move.getY();
-
-                                if (Perception.distance(nextX, nextY, packetXCoordinate, packetYCoordinate) < currentDistance) {
+                                int nextDistance = Perception.distance(nextX, nextY, packetXCoordinate, packetYCoordinate);
+                                System.out.println(String.format("The move to be considered is to coordinate (%d,%d) which has a distance %d from the packet", nextX, nextY, nextDistance));
+                                
+                                if (currentDistance == 1) {
+                                    for (Coordinate possibleRelMoveToPacket : this.relMoves) {
+                                        // The agent is next to the packet and should pick it up
+                                        System.out.println("the agent is next to the packet");
+                                        if (perception.getCellPerceptionOnRelPos(possibleRelMoveToPacket.getX(), possibleRelMoveToPacket.getY()).containsPacket()) {
+                                            System.out.println("the agent should now pick up the packet");
+                                            agentAction.pickPacket(agentState.getX() + possibleRelMoveToPacket.getX(), agentState.getY() + possibleRelMoveToPacket.getY());
+                                            return;
+                                        }
+                                    }
+                                    
+                                }
+                                else if (nextDistance < currentDistance) {
                                     // look for steps that decrease the distance
                                     agentAction.step(nextX, nextY);
                                     return;
-                                } else if (Perception.distance(nextX, nextY, packetXCoordinate, packetYCoordinate) == currentDistance) {
+                                } else if (nextDistance == currentDistance) {
                                     // look for steps that equal the current distance as current distance
                                     equalValueSteps.add(new Coordinate(nextX, nextY));
                                 }
@@ -173,10 +186,10 @@ public class SimpleBehavior extends Behavior {
      * @param agentState
      * @return Return a list of type {@code Coordinate} where the last element of this list is always the move to go to the previous location of the agent.
      */
-    private List<Coordinate> getPossibleRelMoves(AgentState agentState) {
+    private List<Coordinate> getPossibleWalkableRelMoves(AgentState agentState) {
 
         List<Coordinate> possibleRelMoves = new ArrayList<>();
-        Coordinate relMoveToLastCoordinate = null;
+        Coordinate relMoveToPreviousCoordinate = null;
 
         for (Coordinate relMove : this.relMoves) {
 
@@ -185,25 +198,27 @@ public class SimpleBehavior extends Behavior {
             int y = relMove.getY();
 
             CellPerception cellPerception = perception.getCellPerceptionOnRelPos(x, y);
-            Coordinate cellPerceptionCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
+            
+            if (cellPerception != null) {
+                Coordinate cellPerceptionCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
 
-            CellPerception previousCellPerception = agentState.getPerceptionLastCell();
-            Coordinate previousCellPerceptionCoordinate = previousCellPerception == null ? null : new Coordinate(previousCellPerception.getX(), previousCellPerception.getY());
-
-            if (previousCellPerceptionCoordinate != null && cellPerceptionCoordinate.equals(previousCellPerceptionCoordinate)) {
-                relMoveToLastCoordinate = cellPerceptionCoordinate;
+                CellPerception previousCellPerception = agentState.getPerceptionLastCell();
+                Coordinate previousCellPerceptionCoordinate = previousCellPerception == null ? null : new Coordinate(previousCellPerception.getX(), previousCellPerception.getY());
+                if (previousCellPerceptionCoordinate != null && cellPerceptionCoordinate.equals(previousCellPerceptionCoordinate)) {
+                    relMoveToPreviousCoordinate = relMove;
+                }
+                if (cellPerception != null && cellPerception.isWalkable() && (previousCellPerceptionCoordinate == null || !cellPerceptionCoordinate.equals(previousCellPerceptionCoordinate))) {
+                    possibleRelMoves.add(relMove);
+                }
             }
-            if (cellPerception != null && cellPerception.isWalkable() && (previousCellPerceptionCoordinate == null || !cellPerceptionCoordinate.equals(previousCellPerceptionCoordinate))) {
-                possibleRelMoves.add(relMove);
-            }
+            
 
             Collections.shuffle(possibleRelMoves);
-
-            // add the move to the previous candidate as last move so it will only be used as a desperate solution.
-            if (previousCellPerceptionCoordinate != null) {
-                possibleRelMoves.add(relMoveToLastCoordinate);
-            }
         }
+        // add the move to the previous candidate as last move so it will only be used as a desperate solution.
+            if (relMoveToPreviousCoordinate != null) {
+                possibleRelMoves.add(relMoveToPreviousCoordinate);
+            }
         return possibleRelMoves;
     }
 }
