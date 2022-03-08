@@ -11,18 +11,22 @@ import environment.Representation;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
 
+import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+enum REP_TYPES {
+    TYPE_PACKET,
+    TYPE_DESTINATION
+}
+
 public class SimpleSearch extends Behavior {
 
-    Representation[][] knownCells = new Representation[12][12];
-    Queue<PacketRep> packetQueue = new LinkedList<>();
-    List<DestinationRep> destinations = new ArrayList<>();
-
-    PacketRep currentPacket;
+    //REP_TYPES[][] knownCells = new REP_TYPES[50][50]; // Width and height should not be explicitly defined.
+    HashMap<Coordinate, Color> packetCells = new HashMap<>();
+    HashMap<Color, Coordinate> destinationCells = new HashMap<>();
+    Color packetColor;
     Coordinate moveCoordinate;
-    boolean holdingPacket = false;
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
@@ -36,48 +40,44 @@ public class SimpleSearch extends Behavior {
         var perception = agentState.getPerception();
         handlePerception(perception);
 
-        // Calculate new destination
+        // ----------------- Calculate new movement coordinate -----------------------
         if (moveCoordinate == null) {
             // If not carrying a packet -> set destination to new packet.
-            if (!agentState.hasCarry() && !packetQueue.isEmpty()) {
-                PacketRep packet = packetQueue.poll();
-                currentPacket = packet;
-                moveCoordinate = new Coordinate(packet.getX(), packet.getY());
+            if (!agentState.hasCarry()) {
+                moveCoordinate = findNewPacket();
             }
             // If carrying packet but no destination -> Find destination for packet.
-            else if (agentState.hasCarry()){
-                DestinationRep destination = findDestination();
-                if (destination != null){
-                    moveCoordinate = new Coordinate(destination.getX(), destination.getY());
-                }
+            else if (packetColor != null){
+                moveCoordinate = findDestination();
             }
-
         }
 
-        // -------------------- DO ACTION -----------------------
+        // -------------------- Determine action -----------------------
         if (moveCoordinate != null && targetReached(agentState)) {
-            // Pickup / drop packet to destination
+            // Agent has reached its move coordinate.
             if (!agentState.hasCarry()) {
-                // At packet
+                // Agent does not carry packet -> pick up packet.
+                System.out.println("Pick up packet");
+                packetColor = packetCells.get(moveCoordinate);
                 agentAction.pickPacket(moveCoordinate.getX(), moveCoordinate.getY());
-            } else
+            } else if (agentState.hasCarry())
             {
-                // At destination
+                // Agent does carry packet -> drop packet.
+                System.out.println("Put down packet at destinations");
+                packetColor = null;
                 agentAction.putPacket(moveCoordinate.getX(), moveCoordinate.getY());
             }
             moveCoordinate = null;
         } else
         {
-
-            if (moveCoordinate == null){
-                // Perform random move action
+            // Agent not close to a move coordinate.
+            if (moveCoordinate == null) {
+                // No movement coordinate -> Perform random action.
                 randomMove(agentState, agentAction, perception);
-                System.out.println("Random null Move");
             }
             else
             {
-                // Calc calculate movement with dijkstra
-                // Calc movement and move (Temporary)
+                // Agent has a move coordinate to move against -> move towards it.
                 calcMovement(agentState, agentAction, perception);
             }
         }
@@ -86,11 +86,14 @@ public class SimpleSearch extends Behavior {
     private void randomMove(AgentState agentState, AgentAction agentAction, Perception perception) {
         List<Coordinate> relMoves = this.getPossibleRelMoves();
         for (Coordinate move : relMoves) {
-            if (perception.getCellPerceptionOnRelPos(move.getX(), move.getY()) != null
-                    && perception.getCellPerceptionOnRelPos(move.getX(), move.getY()).isWalkable()) {
+            if (perception.getCellPerceptionOnRelPos(move.getX(), move.getY()) != null && Objects.requireNonNull(perception.getCellPerceptionOnRelPos(move.getX(), move.getY()))
+                    .isWalkable()) {
                 agentAction.step(agentState.getX() + move.getX(), agentState.getY() + move.getY());
+                return;
             }
         }
+        // If none of the moves worked -> Skip action.
+        agentAction.skip();
     }
 
     private void calcMovement(AgentState agentState, AgentAction agentAction, Perception perception) {
@@ -101,25 +104,29 @@ public class SimpleSearch extends Behavior {
         dy = moveCoordinate.getY() - agentState.getY() > 0 ? 1:dy;
         dy = moveCoordinate.getY() - agentState.getY() < 0 ? -1:dy;
 
-        if (perception.getCellPerceptionOnRelPos(dx, dy) != null && perception.getCellPerceptionOnRelPos(dx, dy).isWalkable())
+        if (perception.getCellPerceptionOnRelPos(dx, dy) != null && Objects.requireNonNull(perception.getCellPerceptionOnRelPos(dx, dy)).isWalkable())
         {
+            // Shortest path to move coordinate can be used -> Move one step towards it.
             agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
             System.out.println("Moved");
         } else
         {
+            // If shortest path to move coordinate can't be used -> Perform random action.
             randomMove(agentState, agentAction,perception);
             System.out.println("Random move");
         }
     }
 
-    private DestinationRep findDestination() {
-        for (DestinationRep dest : destinations) {
-            if (currentPacket.getColor() == dest.getColor()){
-                return dest;
-            }
+    private Coordinate findNewPacket() {
+        for (Coordinate coordinate : packetCells.keySet()) {
+            return coordinate;
         }
         return null;
+    }
 
+    private Coordinate findDestination() {
+        assert packetColor != null;
+        return destinationCells.get(packetColor);
     }
 
     private boolean targetReached(AgentState agentState) {
@@ -132,26 +139,39 @@ public class SimpleSearch extends Behavior {
         for (int x = 0; x < perception.getWidth(); x++) {
             for (int y = 0; y < perception.getHeight(); y++) {
                 CellPerception cell = perception.getCellAt(x,y);
-                assert cell != null;
 
-                // If packet in perception cell and new packet
-                if (cell.containsPacket() && knownCells[y][x] == null){
-                    PacketRep rep = Objects.requireNonNull(cell.getRepOfType(PacketRep.class)); // TODO: Should only save (x,y)
-                    packetQueue.add(rep);
-                    knownCells[cell.getY()][cell.getX()] = rep;
-                    System.out.println("Added new packet");
-                }
+                if (cell != null) {
+                    // If packet in perception cell and new packet
+                    if (cell.containsPacket() && packetCells.get(getCoord(cell)) == null) {
+                        PacketRep rep = Objects.requireNonNull(cell.getRepOfType(PacketRep.class));
+                        packetCells.put(getCoord(cell), rep.getColor());
+                        System.out.println("Added new packet");
+                    } else if (!cell.containsPacket() && packetCells.get(getCoord(cell)) != null) {
+                        // Remove positions where packets have disappeared.
+                        packetCells.remove(getCoord(cell));
 
-                // If destination in cell
-                if (cell.containsAnyDestination() && knownCells[y][x] == null) {
-                    DestinationRep rep = Objects.requireNonNull(cell.getRepOfType(DestinationRep.class)); // TODO: Should only save (x,y)
-                    destinations.add(rep);
-                    knownCells[cell.getY()][cell.getX()] = rep;
-                    System.out.println("Added new destination");
+                        // If agent is moving towards a disappeared packet -> remove the move coordinate.
+                        if (getCoord(cell).equals(moveCoordinate)) {
+                            moveCoordinate = null;
+                        }
+                    }
+
+                    // If destination in cell
+                    if (cell.containsAnyDestination()) {
+                        DestinationRep rep = Objects.requireNonNull(cell.getRepOfType(DestinationRep.class));
+
+                        // If destination for this color does not already exist -> add it.
+                        if (destinationCells.get(rep.getColor()) == null)
+                            destinationCells.put(rep.getColor(), new Coordinate(cell.getX(), cell.getY()));
+                        System.out.println("Added new destination");
+                    }
                 }
             }
         }
-        System.out.println("Handled perception");
+    }
+
+    private Coordinate getCoord(CellPerception cell) {
+        return new Coordinate(cell.getX(), cell.getY());
     }
 
     private List<Coordinate> getPossibleRelMoves() {
