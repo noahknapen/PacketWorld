@@ -8,7 +8,7 @@ nbStates 1                          # The wander behavior is implemented in a si
 
 
 # Enumeration of the behavior agent states
-1 agent.behavior.simpleSearch.SimpleSearch     # First and only agent state of class "agent.behavior.wander.Wander"
+1 agent.behavior.simple_behavior.SimpleBehavior     # First and only agent state of class "agent.behavior.wander.Wander"
 nbArgs 0                            # 0 arguments required for the constructor of "agent.behavior.wander.Wander"
 
 

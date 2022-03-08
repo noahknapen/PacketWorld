@@ -1,4 +1,4 @@
-package agent.behavior.simpleSearch;
+package agent.behavior.simple_behavior;
 
 import agent.AgentAction;
 import agent.AgentCommunication;
@@ -7,7 +7,6 @@ import agent.behavior.Behavior;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
-import environment.Representation;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
 
@@ -20,7 +19,7 @@ enum REP_TYPES {
     TYPE_DESTINATION
 }
 
-public class SimpleSearch extends Behavior {
+public class SimpleBehavior extends Behavior {
 
     //REP_TYPES[][] knownCells = new REP_TYPES[50][50]; // Width and height should not be explicitly defined.
     HashMap<Coordinate, Color> packetCells = new HashMap<>();
