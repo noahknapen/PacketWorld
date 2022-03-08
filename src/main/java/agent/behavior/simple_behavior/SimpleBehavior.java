@@ -1,8 +1,11 @@
 package agent.behavior.simple_behavior;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.swing.text.AttributeSet.ColorAttribute;
 
 import agent.AgentAction;
 import agent.AgentCommunication;
@@ -70,11 +73,15 @@ public class SimpleBehavior extends Behavior {
                                 if (currentDistance == 1) {
                                     for (Coordinate possibleRelMoveToPacket : this.relMoves) {
                                         // The agent is next to the packet and should pick it up
-                                        System.out.println("the agent is next to the packet");
-                                        if (perception.getCellPerceptionOnRelPos(possibleRelMoveToPacket.getX(), possibleRelMoveToPacket.getY()).containsPacket()) {
-                                            System.out.println("the agent should now pick up the packet");
-                                            agentAction.pickPacket(agentState.getX() + possibleRelMoveToPacket.getX(), agentState.getY() + possibleRelMoveToPacket.getY());
-                                            return;
+                                        System.out.println("The agent is next to the packet");
+                                        CellPerception possiblePacketCellPerception = perception.getCellPerceptionOnRelPos(possibleRelMoveToPacket.getX(), possibleRelMoveToPacket.getY());
+
+                                        if (possiblePacketCellPerception != null) {
+                                            if (possiblePacketCellPerception.containsPacket()) {
+                                                System.out.println("The agent should now pick up the packet");
+                                                agentAction.pickPacket(agentState.getX() + possibleRelMoveToPacket.getX(), agentState.getY() + possibleRelMoveToPacket.getY());
+                                                return;
+                                            }
                                         }
                                     }
                                     
@@ -102,25 +109,80 @@ public class SimpleBehavior extends Behavior {
                         }
                     }
                 }
-
             } else {
+                // just move randomly
+                agentAction.step(agentState.getX() + possibleRelMoves.get(0).getX(), agentState.getY() + possibleRelMoves.get(0).getY());
+            }
+
+        } else {
+            Color color = agentState.getCarry().get().getColor();
+
+            if (agentState.seesDestination(color)) {
                 Perception perception = agentState.getPerception();
-                Coordinate nextMoveCoordinate = possibleRelMoves.get(0);
+                int widthOfPerception = perception.getWidth();
+                int heightOfPerception = perception.getHeight();
 
-                 for (Coordinate move : possibleRelMoves) {
-                    int x = move.getX();
-                    int y = move.getY();
-                    
+                for (int w=0; w < widthOfPerception; w++) {
+                    for (int h=0; h < heightOfPerception; h++) {
+                        CellPerception cellPerception= perception.getCellAt(w, h);
 
-                    // If the area is null, it is outside the bounds of the environment
-                    //  (when the agent is at any edge for example some moves are not possible)
-                    if (perception.getCellPerceptionOnRelPos(x, y) != null && perception.getCellPerceptionOnRelPos(x, y).isWalkable()) {
-                        agentAction.step(agentState.getX() + nextMoveCoordinate.getX(), agentState.getY() + nextMoveCoordinate.getY());
-                        return;
+                        if (cellPerception.containsDestination(color)) {
+                            int destinationXCoordinate = perception.getOffsetX() + w;
+                            int destinationYCoordinate = perception.getOffsetY() + h;
+
+                            // measure distance from current cell to packet cell, then go over all possible moves and see if the distance decreases. If it does, take that move
+                            int currentDistance = Perception.distance(agentState.getX(), agentState.getY(), destinationXCoordinate, destinationYCoordinate);
+                            List<Coordinate> equalValueSteps = new ArrayList<>();
+
+                            for (Coordinate move : possibleRelMoves) {
+                                int nextX = agentState.getX() + move.getX();
+                                int nextY = agentState.getY() + move.getY();
+                                int nextDistance = Perception.distance(nextX, nextY, destinationXCoordinate, destinationYCoordinate);
+                                System.out.println(String.format("The move to be considered is to coordinate (%d,%d) which has a distance %d from the destination", nextX, nextY, nextDistance));
+                                
+                                if (currentDistance == 1) {
+                                    for (Coordinate possibleRelMoveToPacket : this.relMoves) {
+                                        // The agent is next to the destination and should put the packet down
+                                        System.out.println("The agent is next to the destination");
+                                        if (perception.getCellPerceptionOnRelPos(possibleRelMoveToPacket.getX(), possibleRelMoveToPacket.getY()).containsDestination(color)) {
+                                            System.out.println("The agent should now put the packet down at the destination");
+                                            agentAction.putPacket(agentState.getX() + possibleRelMoveToPacket.getX(), agentState.getY() + possibleRelMoveToPacket.getY());
+                                            return;
+                                        }
+                                    }
+                                    
+                                }
+                                else if (nextDistance < currentDistance) {
+                                    // look for steps that decrease the distance
+                                    agentAction.step(nextX, nextY);
+                                    return;
+                                } else if (nextDistance == currentDistance) {
+                                    // look for steps that equal the current distance as current distance
+                                    equalValueSteps.add(new Coordinate(nextX, nextY));
+                                }
+                            }
+
+                            if (equalValueSteps.size() > 0) {
+                                Coordinate equalCoordinate = equalValueSteps.get(0);
+                                agentAction.step(agentState.getX() + equalCoordinate.getX(), agentState.getY() + equalCoordinate.getY());
+                                return;
+                            } else {
+                                // if there is no other option, just take a step back
+                                Coordinate previousCoordinate = possibleRelMoves.get(possibleRelMoves.size()-1);
+                                agentAction.step(agentState.getX() + previousCoordinate.getX(), agentState.getY() + previousCoordinate.getY());
+                                return;
+                            }
+                        }
                     }
-                }   
+                }  
+            } else {
+                // just move randomly
+                agentAction.step(agentState.getX() + possibleRelMoves.get(0).getX(), agentState.getY() + possibleRelMoves.get(0).getY());
             }
         }
+    }
+
+
 
         // List<Coordinate> relMoves = this.getPossibleRelMoves();
 
@@ -179,7 +241,7 @@ public class SimpleBehavior extends Behavior {
  
         //     }
         // }
-    }
+    //}
 
     /**
      * Get the possible moves from a location. A move is possible when it does not go outside the environment. This method favors moves that do not go to the previous coordinate the agent was on.
