@@ -1,12 +1,5 @@
 package agent.behavior.simple_behavior;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.text.AttributeSet.ColorAttribute;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
@@ -14,273 +7,183 @@ import agent.behavior.Behavior;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
-import environment.world.packet.Packet;
+import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+
+enum REP_TYPES {
+    TYPE_PACKET,
+    TYPE_DESTINATION
+}
 
 public class SimpleBehavior extends Behavior {
 
-    private List<Coordinate> relMoves = new ArrayList<>(List.of(
-        new Coordinate(1, 1), new Coordinate(-1, -1),
-        new Coordinate(1, 0), new Coordinate(-1, 0),
-        new Coordinate(0, 1), new Coordinate(0, -1),
-        new Coordinate(1, -1), new Coordinate(-1, 1)
-        ));
-    
-
+    //REP_TYPES[][] knownCells = new REP_TYPES[50][50]; // Width and height should not be explicitly defined.
+    HashMap<Coordinate, Color> packetCells = new HashMap<>();
+    HashMap<Color, Coordinate> destinationCells = new HashMap<>();
+    Color packetColor;
+    Coordinate moveCoordinate;
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // No communication necessary
-        
+        // No communication
     }
 
-    /**
-     * If the agent is not holding a packet, it should search for a packet to deliver.
-     * If the agent is holding a packet, it should search for the destination to deliver its packet to.
-     */
+    
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        List<Coordinate> possibleRelMoves = this.getPossibleWalkableRelMoves(agentState);
 
-        if (!agentState.hasCarry()) {
-            // The agent is not carrying a packet
-            
-            if (agentState.seesPacket()) {
-                // The agent sees a packet.
-                // Scan the tiles in the agent's vision to see where the packet is and then use manhattan distance to see if the move is a move towards the packet.
-                Perception perception = agentState.getPerception();
-                int widthOfPerception = perception.getWidth();
-                int heightOfPerception = perception.getHeight();
+        var perception = agentState.getPerception();
+        handlePerception(perception);
 
-                for (int w=0; w < widthOfPerception; w++) {
-                    for (int h=0; h < heightOfPerception; h++) {
-                        CellPerception cellPerception= perception.getCellAt(w, h);
-
-                        if (cellPerception.containsPacket()) {
-                            int packetXCoordinate = perception.getOffsetX() + w;
-                            int packetYCoordinate = perception.getOffsetY() + h;
-
-                            // measure distance from current cell to packet cell, then go over all possible moves and see if the distance decreases. If it does, take that move
-                            int currentDistance = Perception.distance(agentState.getX(), agentState.getY(), packetXCoordinate, packetYCoordinate);
-                            List<Coordinate> equalValueSteps = new ArrayList<>();
-
-                            for (Coordinate move : possibleRelMoves) {
-                                int nextX = agentState.getX() + move.getX();
-                                int nextY = agentState.getY() + move.getY();
-                                int nextDistance = Perception.distance(nextX, nextY, packetXCoordinate, packetYCoordinate);
-                                System.out.println(String.format("The move to be considered is to coordinate (%d,%d) which has a distance %d from the packet", nextX, nextY, nextDistance));
-                                
-                                if (currentDistance == 1) {
-                                    for (Coordinate possibleRelMoveToPacket : this.relMoves) {
-                                        // The agent is next to the packet and should pick it up
-                                        System.out.println("The agent is next to the packet");
-                                        CellPerception possiblePacketCellPerception = perception.getCellPerceptionOnRelPos(possibleRelMoveToPacket.getX(), possibleRelMoveToPacket.getY());
-
-                                        if (possiblePacketCellPerception != null) {
-                                            if (possiblePacketCellPerception.containsPacket()) {
-                                                System.out.println("The agent should now pick up the packet");
-                                                agentAction.pickPacket(agentState.getX() + possibleRelMoveToPacket.getX(), agentState.getY() + possibleRelMoveToPacket.getY());
-                                                return;
-                                            }
-                                        }
-                                    }
-                                    
-                                }
-                                else if (nextDistance < currentDistance) {
-                                    // look for steps that decrease the distance
-                                    agentAction.step(nextX, nextY);
-                                    return;
-                                } else if (nextDistance == currentDistance) {
-                                    // look for steps that equal the current distance as current distance
-                                    equalValueSteps.add(new Coordinate(nextX, nextY));
-                                }
-                            }
-
-                            if (equalValueSteps.size() > 0) {
-                                Coordinate equalCoordinate = equalValueSteps.get(0);
-                                agentAction.step(agentState.getX() + equalCoordinate.getX(), agentState.getY() + equalCoordinate.getY());
-                                return;
-                            } else {
-                                // if there is no other option, just take a step back
-                                Coordinate previousCoordinate = possibleRelMoves.get(possibleRelMoves.size()-1);
-                                agentAction.step(agentState.getX() + previousCoordinate.getX(), agentState.getY() + previousCoordinate.getY());
-                                return;
-                            }
-                        }
-                    }
-                }
-            } else {
-                // just move randomly
-                agentAction.step(agentState.getX() + possibleRelMoves.get(0).getX(), agentState.getY() + possibleRelMoves.get(0).getY());
+        // ----------------- Calculate new movement coordinate -----------------------
+        if (moveCoordinate == null) {
+            // If not carrying a packet -> set destination to new packet.
+            if (!agentState.hasCarry()) {
+                moveCoordinate = findNewPacket();
             }
+            // If carrying packet but no destination -> Find destination for packet.
+            else if (packetColor != null){
+                moveCoordinate = findDestination();
+            }
+        }
 
-        } else {
-            Color color = agentState.getCarry().get().getColor();
-
-            if (agentState.seesDestination(color)) {
-                Perception perception = agentState.getPerception();
-                int widthOfPerception = perception.getWidth();
-                int heightOfPerception = perception.getHeight();
-
-                for (int w=0; w < widthOfPerception; w++) {
-                    for (int h=0; h < heightOfPerception; h++) {
-                        CellPerception cellPerception= perception.getCellAt(w, h);
-
-                        if (cellPerception.containsDestination(color)) {
-                            int destinationXCoordinate = perception.getOffsetX() + w;
-                            int destinationYCoordinate = perception.getOffsetY() + h;
-
-                            // measure distance from current cell to packet cell, then go over all possible moves and see if the distance decreases. If it does, take that move
-                            int currentDistance = Perception.distance(agentState.getX(), agentState.getY(), destinationXCoordinate, destinationYCoordinate);
-                            List<Coordinate> equalValueSteps = new ArrayList<>();
-
-                            for (Coordinate move : possibleRelMoves) {
-                                int nextX = agentState.getX() + move.getX();
-                                int nextY = agentState.getY() + move.getY();
-                                int nextDistance = Perception.distance(nextX, nextY, destinationXCoordinate, destinationYCoordinate);
-                                System.out.println(String.format("The move to be considered is to coordinate (%d,%d) which has a distance %d from the destination", nextX, nextY, nextDistance));
-                                
-                                if (currentDistance == 1) {
-                                    for (Coordinate possibleRelMoveToPacket : this.relMoves) {
-                                        // The agent is next to the destination and should put the packet down
-                                        System.out.println("The agent is next to the destination");
-                                        if (perception.getCellPerceptionOnRelPos(possibleRelMoveToPacket.getX(), possibleRelMoveToPacket.getY()).containsDestination(color)) {
-                                            System.out.println("The agent should now put the packet down at the destination");
-                                            agentAction.putPacket(agentState.getX() + possibleRelMoveToPacket.getX(), agentState.getY() + possibleRelMoveToPacket.getY());
-                                            return;
-                                        }
-                                    }
-                                    
-                                }
-                                else if (nextDistance < currentDistance) {
-                                    // look for steps that decrease the distance
-                                    agentAction.step(nextX, nextY);
-                                    return;
-                                } else if (nextDistance == currentDistance) {
-                                    // look for steps that equal the current distance as current distance
-                                    equalValueSteps.add(new Coordinate(nextX, nextY));
-                                }
-                            }
-
-                            if (equalValueSteps.size() > 0) {
-                                Coordinate equalCoordinate = equalValueSteps.get(0);
-                                agentAction.step(agentState.getX() + equalCoordinate.getX(), agentState.getY() + equalCoordinate.getY());
-                                return;
-                            } else {
-                                // if there is no other option, just take a step back
-                                Coordinate previousCoordinate = possibleRelMoves.get(possibleRelMoves.size()-1);
-                                agentAction.step(agentState.getX() + previousCoordinate.getX(), agentState.getY() + previousCoordinate.getY());
-                                return;
-                            }
-                        }
-                    }
-                }  
-            } else {
-                // just move randomly
-                agentAction.step(agentState.getX() + possibleRelMoves.get(0).getX(), agentState.getY() + possibleRelMoves.get(0).getY());
+        // -------------------- Determine action -----------------------
+        if (moveCoordinate != null && targetReached(agentState)) {
+            // Agent has reached its move coordinate.
+            if (!agentState.hasCarry()) {
+                // Agent does not carry packet -> pick up packet.
+                System.out.println("Pick up packet");
+                packetColor = packetCells.get(moveCoordinate);
+                agentAction.pickPacket(moveCoordinate.getX(), moveCoordinate.getY());
+            } else if (agentState.hasCarry())
+            {
+                // Agent does carry packet -> drop packet.
+                System.out.println("Put down packet at destinations");
+                packetColor = null;
+                agentAction.putPacket(moveCoordinate.getX(), moveCoordinate.getY());
+            }
+            moveCoordinate = null;
+        } else
+        {
+            // Agent not close to a move coordinate.
+            if (moveCoordinate == null) {
+                // No movement coordinate -> Perform random action.
+                randomMove(agentState, agentAction, perception);
+            }
+            else
+            {
+                // Agent has a move coordinate to move against -> move towards it.
+                calcMovement(agentState, agentAction, perception);
             }
         }
     }
 
-
-
-        // List<Coordinate> relMoves = this.getPossibleRelMoves();
-
-        // if (!agentState.hasCarry()) {
-        //     // The agent is not carrying a packet
-        //     boolean agentSeesPacket = agentState.seesPacket();
-
-        //     for (Coordinate move : relMoves) {
-        //         Perception perception = agentState.getPerception();
-        //         int x = move.getX();
-        //         int y = move.getY();
-
-        //         // If the move is possible, the agent will take it
-        //         // TODO: NOTE: this is incredibly inefficient, the agent should look at least to all moves if one of them contains a packet
-        //         CellPerception cellPerception = perception.getCellPerceptionOnRelPos(x, y);
-        //         if (cellPerception != null) {
-        //                 int absX = agentState.getX() + x;
-        //                 int absY = agentState.getY() + y;
-
-        //             if (cellPerception.containsPacket()) {
-        //                 agentAction.pickPacket(absX, absY);
-        //                 return;
-        //             }
-        //             else {
-        //                 System.out.println("The agent is looking to move to " + absX + " " + absY);
-        //                 agentAction.step(absX, absY);
-        //                 return;
-        //             }
-        //         }
-        //     }
-
-        // }
-        // else {
-        //     Packet packet = agentState.getCarry().get();
-        //     for (Coordinate move : relMoves) {
-        //         Perception perception = agentState.getPerception();
-        //         int x = move.getX();
-        //         int y = move.getY();
-
-        //         // If the move is possible, the agent will take it
-        //         // TODO: NOTE: this is incredibly inefficient, the agent should look at least to all moves if one of them contains a packet
-        //         CellPerception cellPerception = perception.getCellPerceptionOnRelPos(x, y);
-        //         if (cellPerception != null) {
-        //             int absX = agentState.getX() + x;
-        //             int absY = agentState.getY() + y;
-
-        //             if (cellPerception.containsDestination(packet.getColor())) {
-        //                 agentAction.putPacket(absX, absY);
-        //                 return;
-        //             }
-        //             else {
-        //                 agentAction.step(absX, absY);
-        //                 return;
-        //             }
-        //         }
- 
-        //     }
-        // }
-    //}
-
-    /**
-     * Get the possible moves from a location. A move is possible when it does not go outside the environment. This method favors moves that do not go to the previous coordinate the agent was on.
-     * @param agentState
-     * @return Return a list of type {@code Coordinate} where the last element of this list is always the move to go to the previous location of the agent.
-     */
-    private List<Coordinate> getPossibleWalkableRelMoves(AgentState agentState) {
-
-        List<Coordinate> possibleRelMoves = new ArrayList<>();
-        Coordinate relMoveToPreviousCoordinate = null;
-
-        for (Coordinate relMove : this.relMoves) {
-
-            Perception perception = agentState.getPerception();
-            int x = relMove.getX();
-            int y = relMove.getY();
-
-            CellPerception cellPerception = perception.getCellPerceptionOnRelPos(x, y);
-            
-            if (cellPerception != null) {
-                Coordinate cellPerceptionCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
-
-                CellPerception previousCellPerception = agentState.getPerceptionLastCell();
-                Coordinate previousCellPerceptionCoordinate = previousCellPerception == null ? null : new Coordinate(previousCellPerception.getX(), previousCellPerception.getY());
-                if (previousCellPerceptionCoordinate != null && cellPerceptionCoordinate.equals(previousCellPerceptionCoordinate)) {
-                    relMoveToPreviousCoordinate = relMove;
-                }
-                if (cellPerception != null && cellPerception.isWalkable() && (previousCellPerceptionCoordinate == null || !cellPerceptionCoordinate.equals(previousCellPerceptionCoordinate))) {
-                    possibleRelMoves.add(relMove);
-                }
+    private void randomMove(AgentState agentState, AgentAction agentAction, Perception perception) {
+        List<Coordinate> relMoves = this.getPossibleRelMoves();
+        for (Coordinate move : relMoves) {
+            if (perception.getCellPerceptionOnRelPos(move.getX(), move.getY()) != null && Objects.requireNonNull(perception.getCellPerceptionOnRelPos(move.getX(), move.getY()))
+                    .isWalkable()) {
+                agentAction.step(agentState.getX() + move.getX(), agentState.getY() + move.getY());
+                return;
             }
-            
-
-            Collections.shuffle(possibleRelMoves);
         }
-        // add the move to the previous candidate as last move so it will only be used as a desperate solution.
-            if (relMoveToPreviousCoordinate != null) {
-                possibleRelMoves.add(relMoveToPreviousCoordinate);
+        // If none of the moves worked -> Skip action.
+        agentAction.skip();
+    }
+
+    private void calcMovement(AgentState agentState, AgentAction agentAction, Perception perception) {
+        int dx = 0;
+        int dy = 0;
+        dx = moveCoordinate.getX() - agentState.getX() > 0 ? 1:dx;
+        dx = moveCoordinate.getX() - agentState.getX() < 0 ? -1:dx;
+        dy = moveCoordinate.getY() - agentState.getY() > 0 ? 1:dy;
+        dy = moveCoordinate.getY() - agentState.getY() < 0 ? -1:dy;
+
+        if (perception.getCellPerceptionOnRelPos(dx, dy) != null && Objects.requireNonNull(perception.getCellPerceptionOnRelPos(dx, dy)).isWalkable())
+        {
+            // Shortest path to move coordinate can be used -> Move one step towards it.
+            agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
+            System.out.println("Moved");
+        } else
+        {
+            // If shortest path to move coordinate can't be used -> Perform random action.
+            randomMove(agentState, agentAction,perception);
+            System.out.println("Random move");
+        }
+    }
+
+    private Coordinate findNewPacket() {
+        for (Coordinate coordinate : packetCells.keySet()) {
+            return coordinate;
+        }
+        return null;
+    }
+
+    private Coordinate findDestination() {
+        assert packetColor != null;
+        return destinationCells.get(packetColor);
+    }
+
+    private boolean targetReached(AgentState agentState) {
+        int dx = Math.abs(moveCoordinate.getX() - agentState.getX());
+        int dy = Math.abs(moveCoordinate.getY() - agentState.getY());
+        return dx <= 1 && dy <= 1;
+    }
+
+    private void handlePerception(Perception perception) {
+        for (int x = 0; x < perception.getWidth(); x++) {
+            for (int y = 0; y < perception.getHeight(); y++) {
+                CellPerception cell = perception.getCellAt(x,y);
+
+                if (cell != null) {
+                    // If packet in perception cell and new packet
+                    if (cell.containsPacket() && packetCells.get(getCoord(cell)) == null) {
+                        PacketRep rep = Objects.requireNonNull(cell.getRepOfType(PacketRep.class));
+                        packetCells.put(getCoord(cell), rep.getColor());
+                        System.out.println("Added new packet");
+                    } else if (!cell.containsPacket() && packetCells.get(getCoord(cell)) != null) {
+                        // Remove positions where packets have disappeared.
+                        packetCells.remove(getCoord(cell));
+
+                        // If agent is moving towards a disappeared packet -> remove the move coordinate.
+                        if (getCoord(cell).equals(moveCoordinate)) {
+                            moveCoordinate = null;
+                        }
+                    }
+
+                    // If destination in cell
+                    if (cell.containsAnyDestination()) {
+                        DestinationRep rep = Objects.requireNonNull(cell.getRepOfType(DestinationRep.class));
+
+                        // If destination for this color does not already exist -> add it.
+                        if (destinationCells.get(rep.getColor()) == null)
+                            destinationCells.put(rep.getColor(), new Coordinate(cell.getX(), cell.getY()));
+                        System.out.println("Added new destination");
+                    }
+                }
             }
-        return possibleRelMoves;
+        }
+    }
+
+    private Coordinate getCoord(CellPerception cell) {
+        return new Coordinate(cell.getX(), cell.getY());
+    }
+
+    private List<Coordinate> getPossibleRelMoves() {
+        // Potential moves an agent can make (radius of 1 around the agent)
+        List<Coordinate> moves = new ArrayList<>(List.of(
+                new Coordinate(1, 1), new Coordinate(-1, -1),
+                new Coordinate(1, 0), new Coordinate(-1, 0),
+                new Coordinate(0, 1), new Coordinate(0, -1),
+                new Coordinate(1, -1), new Coordinate(-1, 1)
+        ));
+
+        Collections.shuffle(moves);
+
+        return moves;
     }
 }
