@@ -14,14 +14,8 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-enum REP_TYPES {
-    TYPE_PACKET,
-    TYPE_DESTINATION
-}
-
 public class SimpleBehavior extends Behavior {
 
-    //REP_TYPES[][] knownCells = new REP_TYPES[50][50]; // Width and height should not be explicitly defined.
     HashMap<Coordinate, Color> packetCells = new HashMap<>();
     HashMap<Color, Coordinate> destinationCells = new HashMap<>();
     Color packetColor;

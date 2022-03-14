@@ -8,4 +8,12 @@ public class Node {
     public Node(Coordinate position) {
         this.position = position;
     }
+
+    public int getX() {
+        return position.getX();
+    }
+
+    public int getY() {
+        return position.getY();
+    }
 }

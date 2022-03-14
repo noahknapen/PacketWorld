@@ -14,16 +14,31 @@ public class Graph {
         edges.put(initNode, new ArrayList<>());
     }
 
-    public void addNode(Coordinate p) {
+    public Node addNode(Coordinate p) {
+        Node n = new Node(p);
+        edges.put(n, new ArrayList<>());
+        return n;
+    }
 
+    public void addNodes(List<Coordinate> coords) {
+        for (Coordinate coord : coords) {
+
+        }
     }
 
     public void addEdge(Node n1, Node n2) {
-
+        edges.get(n1).add(new Edge(n1, n2, distance(n1, n2)));
+        edges.get(n2).add(new Edge(n2, n1, distance(n2, n1)));
     }
 
     public double distance(Node n1, Node n2) {
-        return 0;
+        int distX = n2.getX() - n1.getX();
+        int distY = n2.getY() - n1.getY();
+        int minDist = Math.min(distX, distY);
+
+        // Diagonal distance (minDist) plus the rest (if distX or distY is larger than the other)
+        return minDist + Math.abs(distX - distY);
+
     }
 
     private List<Edge> getEdges() {
@@ -31,5 +46,26 @@ public class Graph {
         List<Edge> eList = new ArrayList<>();
         eList.add(e);
         return eList;
+    }
+
+    public Node closestNode(List<Node> nodeList, Node n) {
+        Node closestNode = nodeList.get(0);
+        double closestDistance = distance(n, closestNode);
+        for (Node node : nodeList) {
+            double dist = distance(n, node);
+            if (dist < closestDistance) {
+                closestNode = node;
+                closestDistance = dist;
+            }
+        }
+        return closestNode;
+    }
+
+    public boolean nodeExists(int x, int y) {
+        Node n = new Node(new Coordinate(x, y));
+        if (edges.containsKey(n)) {
+            return true;
+        }
+        return false;
     }
 }
