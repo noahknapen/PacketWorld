@@ -585,7 +585,6 @@ abstract public class AgentImp extends ActiveImp implements AgentState, AgentCom
                         return true;
                     }
                 }
-
             }
         }
         return false;
