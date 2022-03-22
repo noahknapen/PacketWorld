@@ -23,6 +23,7 @@ public class ComplexBehavior extends Behavior {
     private HashMap<Color, Coordinate> destinationCells = new HashMap<>();
     private Color packetColor;
     private Coordinate moveCoordinate;
+    private int counter = 0;
 
     private String behavior = "explore";
 
@@ -71,20 +72,15 @@ public class ComplexBehavior extends Behavior {
         // else
         //    bahavior = explore
         // Draw edge to current pos
-        //    If pre pos on the line (path start node) -> current node
-        //         Delete edge (path start node -> pre node)
-        //         Delete node pre node
-        //         Add edge (path start node -> current node)
-        //         pre node = current node
-        //    else
+        //    If not pre node on the line (path start node) -> current node
+        //         Add edge (path start node -> pre node)
         //         path start node = pre node
-        //         Add edge (path start node -> current node)
-        //         pre node = current node
+        //    pre node = current node
 
 
         // ---------------- Action Step ----------------
         // If follow wall mode
-        //     if behavior != explore
+        //     if behavior == explore
         //          Check going straight cell first (if it is close to wall)
         //          Then check the other free cells (that are close to wall)
         //      else
@@ -102,8 +98,32 @@ public class ComplexBehavior extends Behavior {
         //         performRandomAction()
 
         handleGraph(agentState);
-        agentAction.step(agentState.getX() + 1, agentState.getY() + 0);
 
+        int dx = 1;
+        int dy = 0;
+
+        if (counter >= 2) {
+            dx = 1;
+            dy = 1;
+        }
+
+        if (counter >= 3) {
+            dx = 0;
+            dy = 1;
+        }
+
+        if (counter >= 4) {
+            dx = -1;
+            dy = 0;
+        }
+
+        if (counter >= 7) {
+            dx = 0;
+            dy = -1;
+        }
+
+        agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
+        counter++;
 
     }
 
@@ -112,21 +132,25 @@ public class ComplexBehavior extends Behavior {
         int cuurY = agentState.getY();
 
         Coordinate currPos = new Coordinate(currX, cuurY);
-        if (!graph.nodeExists(currPos))
+        /*if (!graph.nodeExists(currPos))
         {
             graph.addNode(currPos);
         } else
         {
             behavior = "explore";
         }
+        */
 
-        if (!prePos.equals(currPos)) {
-            if (graph.onTheLine(edgeStartPos, currPos, prePos))
+        if (!edgeStartPos.equals(prePos) && !prePos.equals(currPos)) {
+            if (!graph.onTheLine(edgeStartPos, currPos, prePos))
             {
-
-                System.out.println("Heh");
+                Node n = graph.addNode(prePos);
+                graph.addEdge(edgeStartPos, prePos);
+                edgeStartPos = prePos;
+                System.out.println("Added new edge");
             }
         }
+        prePos = currPos;
     }
 
     private void doExplore(AgentState agentState, AgentAction agentAction) {
@@ -243,7 +267,7 @@ public class ComplexBehavior extends Behavior {
 
         // Create node for current agent position and add edge to one of the closest one.
         Node n = graph.addNode(new Coordinate(agentState.getX(), agentState.getY()));
-        graph.addEdge(n, graph.closestNode(newlyAdded, n));
+        graph.addEdge(n.getPosition(), graph.closestNode(newlyAdded, n).getPosition());
         // System.out.println("hej");
     }
 
@@ -253,7 +277,7 @@ public class ComplexBehavior extends Behavior {
                 Node n1 = newlyAdded.get(i);
                 Node n2 = newlyAdded.get(j);
                 if (i != j && graph.distance(n1, n2) <= 1) {
-                    graph.addEdge(n1, n2);
+                    graph.addEdge(n1.getPosition(), n2.getPosition());
                 }
             }
         }

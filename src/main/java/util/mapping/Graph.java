@@ -20,13 +20,21 @@ public class Graph {
         return n;
     }
 
+    public void deleteNode(Coordinate p) {
+        Node n = new Node(p);
+        edges.remove(n);
+    }
+
+
     public void addNodes(List<Coordinate> coords) {
         for (Coordinate coord : coords) {
 
         }
     }
 
-    public void addEdge(Node n1, Node n2) {
+    public void addEdge(Coordinate c1, Coordinate c2) {
+        Node n1 = new Node(c1);
+        Node n2 = new Node(c2);
         edges.get(n1).add(new Edge(n1, n2, distance(n1, n2)));
         edges.get(n2).add(new Edge(n2, n1, distance(n2, n1)));
     }
