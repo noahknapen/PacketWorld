@@ -68,4 +68,26 @@ public class Graph {
         }
         return false;
     }
+
+    public boolean nodeExists(Coordinate c) {
+        Node n = new Node(c);
+        if (edges.containsKey(n)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean onTheLine(Coordinate edgeStart, Coordinate edgeEnd, Coordinate p) {
+        int distX = edgeEnd.getX() - edgeStart.getX();
+        int distY = edgeEnd.getY() - edgeStart.getY();
+
+        int normX = distY;
+        int normY = -1*distX;
+        int D = normX*edgeStart.getX() + normY*edgeStart.getY();
+        boolean res = normX* p.getX() + normY*p.getY() == D;
+        return res;
+
+
+
+    }
 }

@@ -26,6 +26,9 @@ public class ComplexBehavior extends Behavior {
 
     private String behavior = "explore";
 
+    private Coordinate edgeStartPos;
+    private Coordinate prePos;
+
 
     private Coordinate unexploredNode = new Coordinate(4, 1);
     private List<Coordinate> unexploredPositions;
@@ -47,36 +50,83 @@ public class ComplexBehavior extends Behavior {
     public void act(AgentState agentState, AgentAction agentAction) {
         if (graph == null) {
             graph = new Graph(agentState.getX(), agentState.getY());
+            Coordinate currPos = new Coordinate(agentState.getX(), agentState.getY());
+            edgeStartPos = currPos;
+            prePos = currPos;
             // path = perceptionSearch(agentState, unexploredNode);
         }
+        // Path start node
+        // Pre pos node
+        // maxX
+        // maxY
+
+        // maxX = max(maxX, currX)
+        // maxY = max(maxY, currY)
 
 
-        // Handle perception
-        //     Here you will add new unexplored points.
-        //     Here you will also add nodes to the graph. Destinations DONE,
-        //     Save positions of packets. DONE
-        //handlePerception(agentState);
+        // ------------------ Perception Step ----------------
+        // Handle graph
+        // If current pose  not exists in graph
+        //    Add new node
+        // else
+        //    bahavior = explore
+        // Draw edge to current pos
+        //    If pre pos on the line (path start node) -> current node
+        //         Delete edge (path start node -> pre node)
+        //         Delete node pre node
+        //         Add edge (path start node -> current node)
+        //         pre node = current node
+        //    else
+        //         path start node = pre node
+        //         Add edge (path start node -> current node)
+        //         pre node = current node
 
-        if (Objects.equals(behavior, "explore")) {
-            doExplore(agentState, agentAction);
+
+        // ---------------- Action Step ----------------
+        // If follow wall mode
+        //     if behavior != explore
+        //          Check going straight cell first (if it is close to wall)
+        //          Then check the other free cells (that are close to wall)
+        //      else
+        //         behaviorchange(explore)
+        //
+
+        // If explore mode
+        //     neigbours = lookForWalls()
+        //     if non visited neigbour next to wall exists && neigbour not in graph paths
+        //         path start = curr pos
+        //         prepos = curr pos
+        //         behaviorchange(followwall)
+
+        //     else
+        //         performRandomAction()
+
+        handleGraph(agentState);
+        agentAction.step(agentState.getX() + 1, agentState.getY() + 0);
+
+
+    }
+
+    private void handleGraph(AgentState agentState) {
+        int currX = agentState.getX();
+        int cuurY = agentState.getY();
+
+        Coordinate currPos = new Coordinate(currX, cuurY);
+        if (!graph.nodeExists(currPos))
+        {
+            graph.addNode(currPos);
+        } else
+        {
+            behavior = "explore";
         }
-        // ---------------- Do action ----------------
-        // If not holding and packet in perception (seesPacket == true)
-        //     Go and pick up packet.
 
-        // Else go to unexplored node
+        if (!prePos.equals(currPos)) {
+            if (graph.onTheLine(edgeStartPos, currPos, prePos))
+            {
 
-        // Walk to destination
-        /*if (!path.isEmpty()) {
-            Coordinate pos = path.remove(0);
-            agentAction.step(agentState.getX() + pos.getX(), agentState.getY() + pos.getY());
-            return;
-        }*/
-
-
-        agentAction.step(agentState.getX() + 1,agentState.getY() + 1);
-
-
+                System.out.println("Heh");
+            }
+        }
     }
 
     private void doExplore(AgentState agentState, AgentAction agentAction) {
@@ -85,8 +135,8 @@ public class ComplexBehavior extends Behavior {
             Collections.shuffle(neighbours.get("free"));
 
             for (Coordinate freeCell : neighbours.get("free")) {
-                if (closeTo(freeCell, neighbours.get("walls"))) {
-
+                if (closeTo(freeCell, neighbours.get("walls")) && !graph.nodeExists(freeCell)) {
+                    // step freecell
                 }
             }
             System.out.println("Hej");
