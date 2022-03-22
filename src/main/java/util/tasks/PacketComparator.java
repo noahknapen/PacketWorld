@@ -1,4 +1,4 @@
-package agent.behavior.simple_behavior;
+package util.tasks;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import agent.AgentState;
+import util.tasks.Destination;
+import util.tasks.Packet;
 
 /**
  * A class implementing a comparator for packets

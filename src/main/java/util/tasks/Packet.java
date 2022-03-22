@@ -1,4 +1,4 @@
-package agent.behavior.simple_behavior;
+package util.tasks;
 
 import environment.Coordinate;
 

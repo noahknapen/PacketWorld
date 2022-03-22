@@ -14,14 +14,20 @@ String "Alice"
 nbPackets 1
 environment.world.packet.Packet
 nbArgs 3
-Integer 0
+Integer 4
 Integer 4
 String "blue"
 
-nbDestinations 1
+nbDestinations 2
 environment.world.destination.Destination
 nbArgs 3
 Integer 4
+Integer 0
+String "blue"
+
+environment.world.destination.Destination
+nbArgs 3
+Integer 0
 Integer 4
 String "blue"
 

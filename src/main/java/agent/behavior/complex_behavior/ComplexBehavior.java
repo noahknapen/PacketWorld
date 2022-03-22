@@ -9,6 +9,7 @@ import environment.Coordinate;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
+import util.tasks.*;
 import util.mapping.Graph;
 import util.mapping.Node;
 
@@ -19,9 +20,19 @@ import java.util.*;
 public class ComplexBehavior extends Behavior {
 
     private Graph graph;
+
+    // List of discovered destinations
+    // TODO: Save multiple destinations with same color
+    ArrayList<Destination> discoveredDestinations = new ArrayList<>();
+
+    // List (queue) of packets to be delivered
+    ArrayList<Packet> toBeDeliveredPackets = new ArrayList<Packet>();
+
+    // Current task that is handled
+    Task task;
+
     private HashMap<Coordinate, Color> packetCells = new HashMap<>();
     private HashMap<Color, Coordinate> destinationCells = new HashMap<>();
-    private Color packetColor;
     private Coordinate moveCoordinate;
     private int counter = 0;
 
@@ -40,6 +51,7 @@ public class ComplexBehavior extends Behavior {
             new Coordinate(0, 1), new Coordinate(0, -1),
             new Coordinate(1, -1), new Coordinate(-1, 1)
     ));
+    private Coordinate currPos;
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
@@ -65,18 +77,6 @@ public class ComplexBehavior extends Behavior {
         // maxY = max(maxY, currY)
 
 
-        // ------------------ Perception Step ----------------
-        // Handle graph
-        // If current pose  not exists in graph
-        //    Add new node
-        // else
-        //    bahavior = explore
-        // Draw edge to current pos
-        //    If not pre node on the line (path start node) -> current node
-        //         Add edge (path start node -> pre node)
-        //         path start node = pre node
-        //    pre node = current node
-
 
         // ---------------- Action Step ----------------
         // If follow wall mode
@@ -97,33 +97,18 @@ public class ComplexBehavior extends Behavior {
         //     else
         //         performRandomAction()
 
+
+        // Handle the graph mapping
         handleGraph(agentState);
 
-        int dx = 1;
-        int dy = 0;
+        // Handle state
+        discoverItem(agentState);
 
-        if (counter >= 2) {
-            dx = 1;
-            dy = 1;
-        }
+        // Handle action
+        handleAction(agentState, agentAction);
 
-        if (counter >= 3) {
-            dx = 0;
-            dy = 1;
-        }
-
-        if (counter >= 4) {
-            dx = -1;
-            dy = 0;
-        }
-
-        if (counter >= 7) {
-            dx = 0;
-            dy = -1;
-        }
-
-        agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
-        counter++;
+        // counter++;
+        prePos = currPos;
 
     }
 
@@ -131,17 +116,7 @@ public class ComplexBehavior extends Behavior {
         int currX = agentState.getX();
         int cuurY = agentState.getY();
 
-        Coordinate currPos = new Coordinate(currX, cuurY);
-        /*if (!graph.nodeExists(currPos))
-        {
-            graph.addNode(currPos);
-        } else
-        {
-            behavior = "explore";
-        }
-        */
-
-
+        currPos = new Coordinate(currX, cuurY);
         if (!edgeStartPos.equals(prePos) && !prePos.equals(currPos)) {
             if (!graph.onTheLine(edgeStartPos, currPos, prePos))
             {
@@ -151,7 +126,6 @@ public class ComplexBehavior extends Behavior {
                 System.out.println("Added new edge");
             }
         }
-        prePos = currPos;
     }
 
     private void doExplore(AgentState agentState, AgentAction agentAction) {
@@ -221,57 +195,19 @@ public class ComplexBehavior extends Behavior {
         return path;
     }
 
-    private void handlePerception(AgentState agentState) {
-        var perception = agentState.getPerception();
-        for (int x = 0; x < perception.getWidth(); x++) {
-            for (int y = 0; y < perception.getHeight(); y++) {
-                CellPerception cell = perception.getCellAt(x,y);
+    private void addDestinationToGraph(AgentState agentState, Destination dest) {
+        List<Coordinate> possibleCoords = getPossibleNodesAround(dest.getCoordinate(), agentState);
+        Coordinate agentCoord = new Coordinate(agentState.getX(), agentState.getY());
+        Coordinate destinationCoord = graph.closestCoordinate(possibleCoords, agentCoord);
 
-                if (cell != null) {
-                    // If packet in perception cell and new packet
-                    if (cell.containsPacket() && packetCells.get(getCoord(cell)) == null) {
-                        PacketRep rep = Objects.requireNonNull(cell.getRepOfType(PacketRep.class));
-                        packetCells.put(getCoord(cell), rep.getColor());
-                        System.out.println("Added new packet");
-                    }
-                    else if (!cell.containsPacket() && packetCells.get(getCoord(cell)) != null) {
-                        // Remove positions where packets have disappeared.
-                        packetCells.remove(getCoord(cell));
-
-                        // If agent is moving towards a disappeared packet -> remove the move coordinate.
-                        if (getCoord(cell).equals(moveCoordinate)) {
-                            moveCoordinate = null;
-                        }
-                    }
-
-                    // If destination in cell
-                    if (cell.containsAnyDestination() && !graph.nodeExists(cell.getX(), cell.getY())) {
-                        DestinationRep rep = Objects.requireNonNull(cell.getRepOfType(DestinationRep.class));
-
-                        // If this destination is not already in the graph -> add it.
-                        addDestinationToGraph(agentState, cell, rep.getColor());
-
-                    }
-                }
-            }
+        if (!agentCoord.equals(destinationCoord)) {
+            graph.addNode(agentCoord);
+            graph.addNode(destinationCoord, "destination", dest.getColor());
+            graph.addEdge(agentCoord, destinationCoord);
         }
     }
 
-    private void addDestinationToGraph(AgentState agentState, CellPerception destCell, Color destinationColor) {
-        List<Coordinate> possibleCoords = getPossibleCoordsAround(destCell, agentState);
-        List<Node> newlyAdded = new ArrayList<>();
-        for (Coordinate c : possibleCoords) {
-            Node n = graph.addNode(c);
-            newlyAdded.add(n);
-        }
-        addPossibleEdges(newlyAdded); // TODO: What if list is empty?
-
-        // Create node for current agent position and add edge to one of the closest one.
-        Node n = graph.addNode(new Coordinate(agentState.getX(), agentState.getY()));
-        graph.addEdge(n.getPosition(), graph.closestNode(newlyAdded, n).getPosition());
-        // System.out.println("hej");
-    }
-
+    /*
     private void addPossibleEdges(List<Node> newlyAdded) {
         for (int i = 0; i < newlyAdded.size(); i++) {
             for (int j = i; j < newlyAdded.size(); j++) {
@@ -284,19 +220,29 @@ public class ComplexBehavior extends Behavior {
         }
     }
 
+     */
+
     private Coordinate getCoord(CellPerception cell) {
         return new Coordinate(cell.getX(), cell.getY());
     }
 
-    private List<Coordinate> getPossibleCoordsAround(CellPerception destCell, AgentState agentState) {
-        List<Coordinate> moves = new ArrayList<>(List.of(
-                new Coordinate(1, 0), new Coordinate(-1, 0),
-                new Coordinate(0, 1), new Coordinate(0, -1)
+    private List<Coordinate> getPossibleNodesAround(Coordinate dest, AgentState agentState) {
+        ArrayList<Coordinate> moves = new ArrayList<>(List.of(
+                new Coordinate(1, 1),
+                new Coordinate(-1, -1),
+                new Coordinate(1, 0),
+                new Coordinate(-1, 0),
+                new Coordinate(0, 1),
+                new Coordinate(0, -1),
+                new Coordinate(1, -1),
+                new Coordinate(-1, 1)
         ));
+
+        // Check if positions are walkable
         List<Coordinate> possibleCoords = new ArrayList<>();
         for (Coordinate move : moves) {
-            int x = destCell.getX() + move.getX();
-            int y = destCell.getY() + move.getY();
+            int x = dest.getX() + move.getX();
+            int y = dest.getY() + move.getY();
             if (agentState.getPerception().getCellPerceptionOnAbsPos(x, y) != null &&
                     Objects.requireNonNull(agentState.getPerception().getCellPerceptionOnAbsPos(x, y)).isWalkable())
                 possibleCoords.add(new Coordinate(x, y));
@@ -304,6 +250,401 @@ public class ComplexBehavior extends Behavior {
         return possibleCoords;
     }
 
+
+
+    // ------------------------------------- Packet and destination handling ----------------------------------
+
+    /**
+     * Check the perception of the agent to discover:
+     * - New destinations
+     * - New packets
+     *
+     * @param agentState The current state of the agent
+     */
+    private void discoverItem(AgentState agentState) {
+        Perception perception = agentState.getPerception();
+
+        // Loop over whole perception
+        for (int x = 0; x < perception.getWidth(); x++) {
+            for (int y = 0; y < perception.getHeight(); y++) {
+                CellPerception cell = perception.getCellAt(x,y);
+
+                if(cell == null) continue;
+
+                Coordinate cellCoordinate = new Coordinate(cell.getX(), cell.getY());
+
+                // Check if current cell contains a destination
+                if(cell.containsAnyDestination()) {
+                    Color destinationColor = cell.getRepOfType(DestinationRep.class).getColor();
+
+                    Destination destination = new Destination(cellCoordinate, destinationColor);
+
+                    // Check if destination was not discoverd yet
+                    if(discoveredDestinations.contains(destination)) continue;
+                    else {
+                        discoveredDestinations.add(destination);
+                        System.out.println("[discoverItems] New destination discovered (" + discoveredDestinations.size() + ")");
+                    }
+
+                    // Update graph if unknown destination in cell
+                    if (!graph.nodeExists(cell.getX(), cell.getY())) {
+
+                        // If this destination is not already in the graph -> add it.
+                        addDestinationToGraph(agentState, destination);
+
+                    }
+                }
+                // Check if current cell contains a packet
+                else if(cell.containsPacket()) {
+                    Color packetColor = cell.getRepOfType(PacketRep.class).getColor();
+
+                    Packet packet= new Packet(cellCoordinate, packetColor);
+
+                    // Check if packet was not discoverd yet
+                    if(toBeDeliveredPackets.contains(packet)) continue;
+                        // Check if packet is not currently handled (hence should not be added to list again)
+                    else if(task != null && task.getPacket().equals(packet)) continue;
+                    else {
+                        toBeDeliveredPackets.add(packet);
+                        System.out.println("[discoverItems] New packet discovered (" + toBeDeliveredPackets.size() + ")");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle an action
+     *
+     * @param agentState The current state of the agent
+     * @param agentAction Perform an action with the agent
+     */
+    private void handleAction(AgentState agentState, AgentAction agentAction) {
+        // Define a task
+        defineTask(agentState);
+
+        // Perform the defined action
+        performAction(agentState, agentAction);
+    }
+
+    /////////////////
+    // SIDE METHODS//
+    /////////////////
+
+    /**
+     * Define a task based on the (past) perception
+     *
+     * @param agentState The current state of the agent
+     */
+    private void defineTask(AgentState agentState) {
+        // Check if a task is still be handled
+        if(task != null) return;
+
+        // Create a default random task
+        task = new Task(null, null, TaskState.RANDOM);
+
+        // Check if there is something to deliver
+        if(toBeDeliveredPackets.isEmpty()) return;
+
+        // Sort the packets to be delivered
+        PacketComparator packComparator = new PacketComparator(agentState, discoveredDestinations);
+        Collections.sort(toBeDeliveredPackets, packComparator);
+
+        // Loop through the sorted list of packets to be delivered
+        for(int i = 0; i < toBeDeliveredPackets.size(); i++) {
+            // Define a candidate packet
+            Packet candidatepacket= toBeDeliveredPackets.get(i);
+            Color candidatePackColor = candidatepacket.getColor();
+
+            // Loop through the list of discovered destinations
+            for(int j = 0; j < discoveredDestinations.size(); j++) {
+                Color destinationColor = discoveredDestinations.get(j).getColor();
+
+                // Check if a corresponding (color) destination was already discovered
+                if(candidatePackColor.equals(destinationColor)) {
+                    Destination destination = discoveredDestinations.get(j);
+
+                    // Remvoe the packet from the list
+                    candidatepacket= toBeDeliveredPackets.remove(i);
+
+                    // Redefine the task
+                    task.setPacket(candidatepacket);
+                    task.setDestination(destination);
+                    task.setTaskState(TaskState.TO_PACKET);
+
+                    return;
+                }
+
+            }
+
+        }
+    }
+
+    /**
+     * Perform an action based on the defined task
+     *
+     * @param agentState The current state of the agent
+     * @param agentAction Perform an action with the agent
+     */
+    private void performAction(AgentState agentState, AgentAction agentAction) {
+        // Check if no task was defined
+        if(task == null) return;
+
+        // Check the task state
+        switch(task.getTaskState()) {
+            case RANDOM:
+                // Move randomly
+                moveRandom(agentState, agentAction);
+
+                // Reset the task
+                task = null;
+
+                break;
+            case TO_PACKET:
+                Coordinate packCoordinate = task.getPacket().getCoordinate();
+
+                // Check if packet was already handled by another agent
+                if(packetAlreadyHandled(agentState)) {
+                    // Skip this turn
+                    agentAction.skip();
+
+                    // Reset the task
+                    task = null;
+                }
+                // Check if position reached
+                else if(positionReached(agentState, packCoordinate)) {
+                    // Pick up packet
+                    pickPacket(agentAction);
+
+                    // Redefine task state
+                    task.setTaskState(TaskState.TO_DESTINATION);
+                }
+                // Position not reached yet, so make a step towards position
+                else moveToPosition(agentState, agentAction, packCoordinate);
+
+                break;
+            case TO_DESTINATION:
+                Coordinate destinationCoordinate = task.getDestination().getCoordinate();
+
+                // Check if position reached
+                if(positionReached(agentState, destinationCoordinate)) {
+                    // Put down packet
+                    putPacket(agentAction);
+
+                    // Reset the task
+                    task = null;
+                }
+                // Position not reached yet, so make a step towards position
+                else moveToPosition(agentState, agentAction, destinationCoordinate);
+
+                break;
+            default:
+                agentAction.skip();
+                break;
+        }
+    }
+
+    /**
+     * Pick up a packet
+     *
+     * @param agentAction Perform an action with the agent
+     */
+    private void pickPacket(AgentAction agentAction) {
+        System.out.println("[pickPacket] Packet picked up (" + task.getPacket().getColor() + ")");
+
+        agentAction.pickPacket(task.getPacket().getCoordinate().getX(), task.getPacket().getCoordinate().getY());
+    }
+
+    /* Pick down a packet
+     *
+     * @param agentAction Perform an action with the agent
+     */
+    private void putPacket(AgentAction agentAction) {
+        System.out.println("[pickPacket] Packet put down (" + task.getPacket().getColor() + ")");
+
+        agentAction.putPacket(task.getDestination().getCoordinate().getX(), task.getDestination().getCoordinate().getY());
+    }
+
+    /**
+     * Move towards a specific position
+     * TODO: Make more efficient
+     *
+     * @param agentState The current state of the agent
+     * @param agentAction Perform an action with the agent
+     * @param position The position to move towards
+     */
+    private void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate position) {
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+        int positionX = position.getX();
+        int positionY = position.getY();
+
+        System.out.println("[moveToPosition] Agent: (" + agentX + ", " + agentY + ") Position: (" + positionX + ", " + positionY + ")");
+
+        // Check if position is in current perception
+        if(positionInPerception(agentState, position)) {
+            int dx = positionX - agentX;
+            int dy = positionY - agentY;
+            int dxStep = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
+            int dyStep = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
+
+            if (agentState.getPerception().getCellPerceptionOnRelPos(dxStep, dyStep) != null && Objects.requireNonNull(agentState.getPerception().getCellPerceptionOnRelPos(dxStep, dyStep)).isWalkable()) {
+                int newPositionX = agentX + dxStep;
+                int newPositionY = agentY + dyStep;
+
+                System.out.println("\t\t Agent: (" + newPositionX + ", " + newPositionY + ")");
+
+                // Make a step towards position
+                agentAction.step(newPositionX, newPositionY);
+            }
+            else {
+                System.out.println("\t\t Random move");
+
+                // Make a random step
+                moveRandom(agentState, agentAction);
+            }
+        }
+        else {
+            System.out.println("\t\t Random move");
+
+            // Make a random step
+            moveRandom(agentState, agentAction);
+        }
+    }
+
+    /**
+     * Move randomly
+     *
+     * @param agentState The current state of the agent
+     * @param agentAction Perform an action with the agent
+     */
+    private void moveRandom(AgentState agentState, AgentAction agentAction) {
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+
+        ArrayList<Coordinate> positions = new ArrayList<>(List.of(
+                new Coordinate(1, 1),
+                new Coordinate(-1, -1),
+                new Coordinate(1, 0),
+                new Coordinate(-1, 0),
+                new Coordinate(0, 1),
+                new Coordinate(0, -1),
+                new Coordinate(1, -1),
+                new Coordinate(-1, 1)
+        ));
+
+        // Prioritize going straight
+        int vecX = agentState.getX() - prePos.getX();
+        int vecY = agentState.getY() - prePos.getY();
+        int dx = Integer.signum(vecX);
+        int dy = Integer.signum(vecY);
+
+        Coordinate inFront = new Coordinate(dx, dy);
+        positions.remove(inFront);
+        Collections.shuffle(positions);
+        positions.add(0, inFront);
+
+        for (Coordinate position : positions) {
+            int dxStep = position.getX();
+            int dyStep = position.getY();
+
+            if (agentState.getPerception().getCellPerceptionOnRelPos(dxStep, dyStep) != null && Objects.requireNonNull(agentState.getPerception().getCellPerceptionOnRelPos(dxStep, dyStep)).isWalkable()) {
+                int newPositionX = agentX + dxStep;
+                int newPositionY = agentY + dyStep;
+
+                agentAction.step(newPositionX, newPositionY);
+
+                return;
+            }
+        }
+
+        agentAction.skip();
+    }
+
+    //////////////////
+    // EXTRA METHODS//
+    //////////////////
+
+    /**
+     * Check if the packet was already handled by another agent
+     *
+     * @param agentState The current state of the agent
+     * @return True is packet is not at initial place, otherwise false
+     */
+    private boolean packetAlreadyHandled(AgentState agentState) {
+        Perception perception = agentState.getPerception();
+
+        Packet packet= task.getPacket();
+        int packetX = packet.getCoordinate().getX();
+        int packetY = packet.getCoordinate().getY();
+
+        // Loop over whole perception
+        for (int x = 0; x < perception.getWidth(); x++) {
+            for (int y = 0; y < perception.getHeight(); y++) {
+                CellPerception cell = perception.getCellAt(x,y);
+
+                if(cell == null) continue;
+
+                int cellX = cell.getX();
+                int cellY = cell.getY();
+
+                // Check if coordinates correspond
+                if(cellX == packetX && cellY == packetY) {
+                    return !cell.containsPacket();
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if position is reached
+     *
+     * @param agentState The current state of the agent
+     * @param position The position to reach
+     * @return True if agent is next to position
+     */
+    private boolean positionReached(AgentState agentState, Coordinate position) {
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+        int positionX = position.getX();
+        int positionY = position.getY();
+
+        int dx = Math.abs(agentX - positionX);
+        int dy = Math.abs(agentY - positionY);
+        return (dx <= 1) && (dy <= 1);
+    }
+
+    /**
+     * Check if position is in the current perception
+     *
+     * @param agentState The current state of the agent
+     * @param position The position to check
+     * @return True if position is in current perception
+     */
+    private boolean positionInPerception(AgentState agentState, Coordinate position) {
+        Perception perception = agentState.getPerception();
+        int positionX = position.getX();
+        int positionY = position.getY();
+
+        // Loop over whole perception
+        for (int x = 0; x < perception.getWidth(); x++) {
+            for (int y = 0; y < perception.getHeight(); y++) {
+                CellPerception cell = perception.getCellAt(x,y);
+
+                if(cell == null) continue;
+
+                int cellX = cell.getX();
+                int cellY = cell.getY();
+
+                // Check if coordinates correspond
+                if(cellX == positionX && cellY == positionY) return true;
+            }
+        }
+
+        return false;
+    }
 
 }
 

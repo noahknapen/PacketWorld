@@ -2,15 +2,24 @@ package util.mapping;
 
 import environment.Coordinate;
 
+import java.awt.*;
 import java.util.Objects;
 
 public class Node {
+    private Color color;
     private Coordinate position;
+    private String type = "free";
     private int hashCode;
 
     public Node(Coordinate position) {
         this.position = position;
         this.hashCode = Objects.hash(position);
+    }
+
+    public Node(Coordinate position, String type, Color color) {
+        this(position);
+        this.type = type;
+        this.color = color;
     }
 
     public int getX() {

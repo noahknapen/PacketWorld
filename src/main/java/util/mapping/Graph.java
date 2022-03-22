@@ -2,6 +2,7 @@ package util.mapping;
 
 import environment.Coordinate;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,12 @@ public class Graph {
 
     public Node addNode(Coordinate p) {
         Node n = new Node(p);
+        edges.put(n, new ArrayList<>());
+        return n;
+    }
+
+    public Node addNode(Coordinate p, String type, Color color) {
+        Node n = new Node(p, type, color);
         edges.put(n, new ArrayList<>());
         return n;
     }
@@ -35,13 +42,13 @@ public class Graph {
     public void addEdge(Coordinate c1, Coordinate c2) {
         Node n1 = new Node(c1);
         Node n2 = new Node(c2);
-        edges.get(n1).add(new Edge(n1, n2, distance(n1, n2)));
-        edges.get(n2).add(new Edge(n2, n1, distance(n2, n1)));
+        edges.get(n1).add(new Edge(n1, n2, distance(c1, c2)));
+        edges.get(n2).add(new Edge(n2, n1, distance(c2, c1)));
     }
 
-    public double distance(Node n1, Node n2) {
-        int distX = n2.getX() - n1.getX();
-        int distY = n2.getY() - n1.getY();
+    public double distance(Coordinate c1, Coordinate c2) {
+        int distX = c2.getX() - c1.getX();
+        int distY = c2.getY() - c1.getY();
         int minDist = Math.min(distX, distY);
 
         // Diagonal distance (minDist) plus the rest (if distX or distY is larger than the other)
@@ -56,17 +63,18 @@ public class Graph {
         return eList;
     }
 
-    public Node closestNode(List<Node> nodeList, Node n) {
-        Node closestNode = nodeList.get(0);
-        double closestDistance = distance(n, closestNode);
-        for (Node node : nodeList) {
-            double dist = distance(n, node);
+    public Coordinate closestCoordinate(List<Coordinate> coords, Coordinate c0) {
+        // TODO: Check if edge is free bewteen start and end node.
+        Coordinate closestCoord = coords.get(0);
+        double closestDistance = distance(c0, closestCoord);
+        for (Coordinate c : coords) {
+            double dist = distance(c0, c);
             if (dist < closestDistance) {
-                closestNode = node;
+                closestCoord = c;
                 closestDistance = dist;
             }
         }
-        return closestNode;
+        return closestCoord;
     }
 
     public boolean nodeExists(int x, int y) {
