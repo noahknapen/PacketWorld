@@ -141,6 +141,7 @@ public class ComplexBehavior extends Behavior {
         }
         */
 
+
         if (!edgeStartPos.equals(prePos) && !prePos.equals(currPos)) {
             if (!graph.onTheLine(edgeStartPos, currPos, prePos))
             {
