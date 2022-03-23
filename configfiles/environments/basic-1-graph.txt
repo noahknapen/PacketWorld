@@ -31,10 +31,6 @@ Integer 0
 Integer 4
 String "blue"
 
-nbWalls 1
-environment.world.wall.SolidWall
-nbArgs 2
-Integer 1
-Integer 1
+nbWalls 0
 
 nbEnergyStations 0

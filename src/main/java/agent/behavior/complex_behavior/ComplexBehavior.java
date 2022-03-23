@@ -107,7 +107,7 @@ public class ComplexBehavior extends Behavior {
         // Handle action
         handleAction(agentState, agentAction);
 
-        // counter++;
+        counter++;
         prePos = currPos;
 
     }
@@ -117,10 +117,16 @@ public class ComplexBehavior extends Behavior {
         int cuurY = agentState.getY();
 
         currPos = new Coordinate(currX, cuurY);
+
+        if (graph.nodeExists(currPos) && !edgeStartPos.equals(currPos)) {
+            graph.addEdge(edgeStartPos, currPos);
+        }
+
         if (!edgeStartPos.equals(prePos) && !prePos.equals(currPos)) {
             if (!graph.onTheLine(edgeStartPos, currPos, prePos))
             {
-                Node n = graph.addNode(prePos);
+                if (!graph.nodeExists(prePos))
+                    graph.addFreeNode(prePos);
                 graph.addEdge(edgeStartPos, prePos);
                 edgeStartPos = prePos;
                 System.out.println("Added new edge");
@@ -200,30 +206,29 @@ public class ComplexBehavior extends Behavior {
         Coordinate agentCoord = new Coordinate(agentState.getX(), agentState.getY());
         Coordinate destinationCoord = graph.closestCoordinate(possibleCoords, agentCoord);
 
-        if (!agentCoord.equals(destinationCoord)) {
-            graph.addNode(agentCoord);
-            graph.addNode(destinationCoord, "destination", dest.getColor());
-            graph.addEdge(agentCoord, destinationCoord);
-        }
+        // If closest destination node to agent is the position of the agent itself -> Just add the destination node.
+        graph.addFreeNode(agentCoord);
+        graph.addDestinationNode(dest.getCoordinate(), dest.getColor());
+
+        // TODO: Check if path is free from obstacles
+        graph.addEdge(agentCoord, dest.getCoordinate(), "destination", dest.getColor());
+
     }
 
-    /*
-    private void addPossibleEdges(List<Node> newlyAdded) {
-        for (int i = 0; i < newlyAdded.size(); i++) {
-            for (int j = i; j < newlyAdded.size(); j++) {
-                Node n1 = newlyAdded.get(i);
-                Node n2 = newlyAdded.get(j);
-                if (i != j && graph.distance(n1, n2) <= 1) {
-                    graph.addEdge(n1.getPosition(), n2.getPosition());
-                }
-            }
-        }
-    }
 
-     */
 
-    private Coordinate getCoord(CellPerception cell) {
-        return new Coordinate(cell.getX(), cell.getY());
+    private void addPacketToGraph(AgentState agentState, Packet packet) {
+        // TODO: This and addDestinationToGraph are similar -> Maybe its possible to restructure to reuse the same code.
+        List<Coordinate> possibleCoords = getPossibleNodesAround(packet.getCoordinate(), agentState);
+        Coordinate agentCoord = new Coordinate(agentState.getX(), agentState.getY());
+        Coordinate packetCoord = graph.closestCoordinate(possibleCoords, agentCoord);
+
+        // If closest packet node to agent is the position of the agent itself -> Just add the destination node.
+        graph.addFreeNode(agentCoord);
+        graph.addPacketNode(packet.getCoordinate(), packet.getColor());
+
+        // TODO: Check if path is free from obstacles
+        graph.addEdge(agentCoord, packet.getCoordinate(), "packet", packet.getColor());
     }
 
     private List<Coordinate> getPossibleNodesAround(Coordinate dest, AgentState agentState) {
@@ -243,8 +248,11 @@ public class ComplexBehavior extends Behavior {
         for (Coordinate move : moves) {
             int x = dest.getX() + move.getX();
             int y = dest.getY() + move.getY();
+
             if (agentState.getPerception().getCellPerceptionOnAbsPos(x, y) != null &&
-                    Objects.requireNonNull(agentState.getPerception().getCellPerceptionOnAbsPos(x, y)).isWalkable())
+                    ((Objects.requireNonNull(agentState.getPerception().getCellPerceptionOnAbsPos(x, y)).isWalkable()) ||
+                    Objects.requireNonNull(agentState.getPerception().getCellPerceptionOnAbsPos(x, y)).containsAgent()))
+
                 possibleCoords.add(new Coordinate(x, y));
         }
         return possibleCoords;
@@ -299,19 +307,26 @@ public class ComplexBehavior extends Behavior {
                     Color packetColor = cell.getRepOfType(PacketRep.class).getColor();
 
                     Packet packet= new Packet(cellCoordinate, packetColor);
-
+/*
                     // Check if packet was not discoverd yet
                     if(toBeDeliveredPackets.contains(packet)) continue;
                         // Check if packet is not currently handled (hence should not be added to list again)
-                    else if(task != null && task.getPacket().equals(packet)) continue;
+                    else if (task != null && task.getPacket().equals(packet)) continue;
                     else {
                         toBeDeliveredPackets.add(packet);
                         System.out.println("[discoverItems] New packet discovered (" + toBeDeliveredPackets.size() + ")");
+                    }
+*/
+                    // Add node of agent position that says that agent can see packet from position.
+                    if (!graph.nodeExists(cell.getX(), cell.getY())) {
+                        addPacketToGraph(agentState, packet);
                     }
                 }
             }
         }
     }
+
+
 
     /**
      * Handle an action
@@ -324,7 +339,32 @@ public class ComplexBehavior extends Behavior {
         defineTask(agentState);
 
         // Perform the defined action
-        performAction(agentState, agentAction);
+        // performAction(agentState, agentAction);
+
+        int dx = 0;
+        int dy = 0;
+
+        if (counter >= 0) {
+            dx = 1;
+            dy = 0;
+        }
+
+        if (counter >= 3) {
+            dx = 0;
+            dy = 1;
+        }
+
+        if (counter >= 6) {
+            dx = -1;
+            dy = 0;
+        }
+
+        if (counter >= 9) {
+            dx = 0;
+            dy = -1;
+        }
+
+        agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
     }
 
     /////////////////
@@ -408,6 +448,9 @@ public class ComplexBehavior extends Behavior {
                     // Skip this turn
                     agentAction.skip();
 
+                    // Remove packet node from graph
+                    graph.removePacketNode(task.getPacket().getCoordinate());
+
                     // Reset the task
                     task = null;
                 }
@@ -415,6 +458,9 @@ public class ComplexBehavior extends Behavior {
                 else if(positionReached(agentState, packCoordinate)) {
                     // Pick up packet
                     pickPacket(agentAction);
+
+                    // Set packet node to free since it is picked up
+                    graph.setType(task.getPacket().getCoordinate(), "free");
 
                     // Redefine task state
                     task.setTaskState(TaskState.TO_DESTINATION);

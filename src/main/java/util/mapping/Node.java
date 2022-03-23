@@ -3,6 +3,9 @@ package util.mapping;
 import environment.Coordinate;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class Node {
@@ -11,9 +14,17 @@ public class Node {
     private String type = "free";
     private int hashCode;
 
+    private HashMap<Node, Double> edges = new HashMap<>();
+
     public Node(Coordinate position) {
         this.position = position;
         this.hashCode = Objects.hash(position);
+    }
+
+    public Node(Coordinate position, String type) {
+        this(position);
+        this.type = type;
+        this.color = color;
     }
 
     public Node(Coordinate position, String type, Color color) {
@@ -33,7 +44,9 @@ public class Node {
     @Override
     public String toString() {
         return "Node{" +
-                "position=" + position +
+                "color=" + color +
+                ", position=" + position +
+                ", type='" + type + '\'' +
                 '}';
     }
 
@@ -52,5 +65,21 @@ public class Node {
     @Override
     public int hashCode() {
         return this.hashCode;
+    }
+
+    public HashMap<Node, Double> getEdges() {
+        return edges;
+    }
+
+    public void deleteEdge(Node other) {
+        edges.remove(other);
+    }
+
+    public void addEdge(Node other, double cost) {
+        this.edges.put(other, cost);
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

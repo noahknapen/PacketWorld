@@ -8,29 +8,42 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Graph {
-    private HashMap<Node, List<Edge>> edges = new HashMap<>();
+    private HashMap<Coordinate, Node> nodes = new HashMap<>();
+    private List<Node> packets = new ArrayList<>();
+    private List<Node> destinations = new ArrayList<>();
+
 
     public Graph(int initX, int initY) {
-        Node initNode = new Node(new Coordinate(initX, initY));
-        edges.put(initNode, new ArrayList<>());
+        Coordinate initCoordinate = new Coordinate(initX, initY);
+        Node initNode = new Node(initCoordinate);
+        nodes.put(initCoordinate, initNode);
     }
 
-    public Node addNode(Coordinate p) {
+    public Node addFreeNode(Coordinate p) {
         Node n = new Node(p);
-        edges.put(n, new ArrayList<>());
+        nodes.put(p, n);
         return n;
     }
 
-    public Node addNode(Coordinate p, String type, Color color) {
-        Node n = new Node(p, type, color);
-        edges.put(n, new ArrayList<>());
+    public Node addDestinationNode(Coordinate p, Color color) {
+        Node n = new Node(p, "destination", color);
+        nodes.put(p, n);
+        destinations.add(n);
+        return n;
+    }
+
+    public Node addPacketNode(Coordinate p, Color color) {
+        Node n = new Node(p, "packet", color);
+        nodes.put(p, n);
+        packets.add(n);
         return n;
     }
 
     public void deleteNode(Coordinate p) {
         Node n = new Node(p);
-        edges.remove(n);
+        nodes.remove(n);
     }
+
 
 
     public void addNodes(List<Coordinate> coords) {
@@ -42,8 +55,8 @@ public class Graph {
     public void addEdge(Coordinate c1, Coordinate c2) {
         Node n1 = new Node(c1);
         Node n2 = new Node(c2);
-        edges.get(n1).add(new Edge(n1, n2, distance(c1, c2)));
-        edges.get(n2).add(new Edge(n2, n1, distance(c2, c1)));
+        nodes.get(c1).addEdge(n2, distance(c1, c2));
+        nodes.get(c2).addEdge(n1, distance(c2, c1));
     }
 
     public double distance(Coordinate c1, Coordinate c2) {
@@ -56,7 +69,7 @@ public class Graph {
 
     }
 
-    private List<Edge> getEdges() {
+    private List<Edge> getNodes() {
         Edge e = new Edge(new Node(new Coordinate(1,2)), new Node(new Coordinate(3,4)), 2);
         List<Edge> eList = new ArrayList<>();
         eList.add(e);
@@ -78,19 +91,11 @@ public class Graph {
     }
 
     public boolean nodeExists(int x, int y) {
-        Node n = new Node(new Coordinate(x, y));
-        if (edges.containsKey(n)) {
-            return true;
-        }
-        return false;
+        return nodes.containsKey(new Coordinate(x, y));
     }
 
     public boolean nodeExists(Coordinate c) {
-        Node n = new Node(c);
-        if (edges.containsKey(n)) {
-            return true;
-        }
-        return false;
+        return nodes.containsKey(c);
     }
 
     public boolean onTheLine(Coordinate edgeStart, Coordinate edgeEnd, Coordinate p) {
@@ -100,10 +105,26 @@ public class Graph {
         int normX = distY;
         int normY = -1*distX;
         int D = normX*edgeStart.getX() + normY*edgeStart.getY();
-        boolean res = normX* p.getX() + normY*p.getY() == D;
+        boolean res = normX * p.getX() + normY*p.getY() == D;
         return res;
+    }
 
+    public void removePacketNode(Coordinate c) {
+        Node n = nodes.get(c);
 
+        for (Node other : n.getEdges().keySet()) {
+            other.deleteEdge(n);
+        }
+    }
 
+    public void setType(Coordinate c, String type) {
+        nodes.get(c).setType(type);
+    }
+
+    public void addEdge(Coordinate c1, Coordinate c2, String type, Color color) {
+        Node n1 = new Node(c1);
+        Node n2 = new Node(c2, type, color);
+        nodes.get(c1).addEdge(n2, distance(c1, c2));
+        nodes.get(c2).addEdge(n1, distance(c2, c1));
     }
 }
