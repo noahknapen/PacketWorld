@@ -187,14 +187,25 @@ public class Graph {
     private List<Coordinate> generatePathPoints(Coordinate start, Coordinate end) {
         int dx = end.getX() - start.getX();
         int dy = end.getY() - start.getY();
-        int numSteps = Math.max(Math.abs(dx), Math.abs(dy));
+        int numDiagSteps = Math.min(Math.abs(dx), Math.abs(dy));
         int dxStep = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
         int dyStep = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
 
         List<Coordinate> result = new LinkedList<>();
-        for (int i = 1; i <= numSteps; i++) {
-            result.add(new Coordinate(start.getX() + i*dxStep, start.getY() + i*dyStep));
+        Coordinate lastCoordinate = null;
+        for (int i = 1; i <= numDiagSteps; i++) {
+            lastCoordinate = new Coordinate(start.getX() + i*dxStep, start.getY() + i*dyStep);
+            result.add(lastCoordinate);
         }
+
+        int dxxStep = dx > dy ? 1 : 0;
+        int dyxStep = dy > dx ? 1 : 0;
+        int diffSteps = Math.abs(dx - dy);
+
+        for (int i = 1; i <= diffSteps; i++) {
+            result.add(new Coordinate(lastCoordinate.getX() + i*dxStep, lastCoordinate.getY() + i*dyStep));
+        }
+
         return result;
     }
 }

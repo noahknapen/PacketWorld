@@ -13,6 +13,7 @@ import util.tasks.*;
 import util.mapping.Graph;
 import util.mapping.Node;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
@@ -67,8 +68,8 @@ public class ComplexBehavior extends Behavior {
             Coordinate currPos = new Coordinate(agentState.getX(), agentState.getY());
             edgeStartPos = currPos;
             prePos = currPos;
-            // path = perceptionSearch(agentState, unexploredNode);
         }
+
 
         // ---------------- Action Step ----------------
         // If follow wall mode
@@ -331,10 +332,10 @@ public class ComplexBehavior extends Behavior {
         defineTask(agentState);
 
         // Perform the defined action
-        //performAction(agentState, agentAction);
+        performAction(agentState, agentAction);
 
 
-        int dx = 0;
+        /*int dx = 0;
         int dy = 0;
 
         if (counter >= 0) {
@@ -347,17 +348,6 @@ public class ComplexBehavior extends Behavior {
             dy = 1;
         }
 
-        /*if (counter >= 6) {
-            dx = -1;
-            dy = 0;
-        }
-
-        if (counter >= 9) {
-            dx = 0;
-            dy = -1;
-        }
-        */
-
         if (counter < 6) {
             agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
         }
@@ -365,6 +355,7 @@ public class ComplexBehavior extends Behavior {
         {
             performAction(agentState, agentAction);
         }
+         */
 
 
 
@@ -710,6 +701,5 @@ public class ComplexBehavior extends Behavior {
 
         return false;
     }
-
 }
 
