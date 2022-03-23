@@ -43,7 +43,8 @@ public class ComplexBehavior extends Behavior {
 
 
     private Coordinate unexploredNode = new Coordinate(4, 1);
-    private List<Coordinate> unexploredPositions;
+    private List<Coordinate> path;
+    private Coordinate pathDestination;
 
     List<Coordinate> possibleMoves = new ArrayList<>(List.of(
             new Coordinate(1, 1), new Coordinate(-1, -1),
@@ -68,15 +69,6 @@ public class ComplexBehavior extends Behavior {
             prePos = currPos;
             // path = perceptionSearch(agentState, unexploredNode);
         }
-        // Path start node
-        // Pre pos node
-        // maxX
-        // maxY
-
-        // maxX = max(maxX, currX)
-        // maxY = max(maxY, currY)
-
-
 
         // ---------------- Action Step ----------------
         // If follow wall mode
@@ -204,7 +196,7 @@ public class ComplexBehavior extends Behavior {
     private void addDestinationToGraph(AgentState agentState, Destination dest) {
         List<Coordinate> possibleCoords = getPossibleNodesAround(dest.getCoordinate(), agentState);
         Coordinate agentCoord = new Coordinate(agentState.getX(), agentState.getY());
-        Coordinate destinationCoord = graph.closestCoordinate(possibleCoords, agentCoord);
+        // Coordinate destinationCoord = graph.closestCoordinate(possibleCoords, agentCoord);
 
         // If closest destination node to agent is the position of the agent itself -> Just add the destination node.
         graph.addFreeNode(agentCoord);
@@ -221,7 +213,7 @@ public class ComplexBehavior extends Behavior {
         // TODO: This and addDestinationToGraph are similar -> Maybe its possible to restructure to reuse the same code.
         List<Coordinate> possibleCoords = getPossibleNodesAround(packet.getCoordinate(), agentState);
         Coordinate agentCoord = new Coordinate(agentState.getX(), agentState.getY());
-        Coordinate packetCoord = graph.closestCoordinate(possibleCoords, agentCoord);
+        // Coordinate packetCoord = graph.closestCoordinate(possibleCoords, agentCoord);
 
         // If closest packet node to agent is the position of the agent itself -> Just add the destination node.
         graph.addFreeNode(agentCoord);
@@ -307,16 +299,16 @@ public class ComplexBehavior extends Behavior {
                     Color packetColor = cell.getRepOfType(PacketRep.class).getColor();
 
                     Packet packet= new Packet(cellCoordinate, packetColor);
-/*
+
                     // Check if packet was not discoverd yet
                     if(toBeDeliveredPackets.contains(packet)) continue;
                         // Check if packet is not currently handled (hence should not be added to list again)
-                    else if (task != null && task.getPacket().equals(packet)) continue;
+                    else if (task != null && task.getPacket() != null && task.getPacket().equals(packet)) continue;
                     else {
                         toBeDeliveredPackets.add(packet);
                         System.out.println("[discoverItems] New packet discovered (" + toBeDeliveredPackets.size() + ")");
                     }
-*/
+
                     // Add node of agent position that says that agent can see packet from position.
                     if (!graph.nodeExists(cell.getX(), cell.getY())) {
                         addPacketToGraph(agentState, packet);
@@ -339,7 +331,8 @@ public class ComplexBehavior extends Behavior {
         defineTask(agentState);
 
         // Perform the defined action
-        // performAction(agentState, agentAction);
+        //performAction(agentState, agentAction);
+
 
         int dx = 0;
         int dy = 0;
@@ -354,7 +347,7 @@ public class ComplexBehavior extends Behavior {
             dy = 1;
         }
 
-        if (counter >= 6) {
+        /*if (counter >= 6) {
             dx = -1;
             dy = 0;
         }
@@ -363,8 +356,18 @@ public class ComplexBehavior extends Behavior {
             dx = 0;
             dy = -1;
         }
+        */
 
-        agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
+        if (counter < 6) {
+            agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
+        }
+        else
+        {
+            performAction(agentState, agentAction);
+        }
+
+
+
     }
 
     /////////////////
@@ -459,8 +462,8 @@ public class ComplexBehavior extends Behavior {
                     // Pick up packet
                     pickPacket(agentAction);
 
-                    // Set packet node to free since it is picked up
-                    graph.setType(task.getPacket().getCoordinate(), "free");
+                    // Remove packet node from graph
+                    graph.removePacketNode(task.getPacket().getCoordinate());
 
                     // Redefine task state
                     task.setTaskState(TaskState.TO_DESTINATION);
@@ -551,10 +554,26 @@ public class ComplexBehavior extends Behavior {
             }
         }
         else {
-            System.out.println("\t\t Random move");
 
-            // Make a random step
-            moveRandom(agentState, agentAction);
+            if (pathDestination != null && pathDestination.equals(position) && !path.isEmpty()) {
+                // Pop first coordinate in path and step on it.
+                Coordinate nextCoordinate = path.remove(0); // TODO: Maybe path should not be linked list. (Stack?)
+                agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
+            }
+            else if (!graph.nodeExists(currPos)) {
+                // TODO: Might not need to recompute closest node every time
+                Coordinate closestNodeCoordinate = graph.closestNodeCoordinate(currPos);
+                moveToPosition(agentState, agentAction, closestNodeCoordinate);
+            }
+            else
+            {
+                // Perform Dijkstras algorithm
+                // TODO: Change to Astar???
+                pathDestination = position;
+                path = graph.doSearch(currPos, position);
+                Coordinate nextCoordinate = path.remove(0); // TODO: Maybe path should not be linked list. (Stack?)
+                agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
+            }
         }
     }
 

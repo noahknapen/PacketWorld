@@ -3,14 +3,16 @@ package util.mapping;
 import environment.Coordinate;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 
 public class Graph {
     private HashMap<Coordinate, Node> nodes = new HashMap<>();
     private List<Node> packets = new ArrayList<>();
     private List<Node> destinations = new ArrayList<>();
+
+    // For Dijkstas algorithm
+
 
 
     public Graph(int initX, int initY) {
@@ -60,8 +62,8 @@ public class Graph {
     }
 
     public double distance(Coordinate c1, Coordinate c2) {
-        int distX = c2.getX() - c1.getX();
-        int distY = c2.getY() - c1.getY();
+        int distX = Math.abs(c2.getX() - c1.getX());
+        int distY = Math.abs(c2.getY() - c1.getY());
         int minDist = Math.min(distX, distY);
 
         // Diagonal distance (minDist) plus the rest (if distX or distY is larger than the other)
@@ -76,11 +78,11 @@ public class Graph {
         return eList;
     }
 
-    public Coordinate closestCoordinate(List<Coordinate> coords, Coordinate c0) {
+    public Coordinate closestNodeCoordinate(Coordinate c0) {
         // TODO: Check if edge is free bewteen start and end node.
-        Coordinate closestCoord = coords.get(0);
-        double closestDistance = distance(c0, closestCoord);
-        for (Coordinate c : coords) {
+        Coordinate closestCoord = null;
+        double closestDistance = Double.MAX_VALUE;
+        for (Coordinate c : nodes.keySet()) {
             double dist = distance(c0, c);
             if (dist < closestDistance) {
                 closestCoord = c;
@@ -113,8 +115,9 @@ public class Graph {
         Node n = nodes.get(c);
 
         for (Node other : n.getEdges().keySet()) {
-            other.deleteEdge(n);
+            nodes.get(other.getPosition()).deleteEdge(n);
         }
+        nodes.remove(c);
     }
 
     public void setType(Coordinate c, String type) {
@@ -126,5 +129,111 @@ public class Graph {
         Node n2 = new Node(c2, type, color);
         nodes.get(c1).addEdge(n2, distance(c1, c2));
         nodes.get(c2).addEdge(n1, distance(c2, c1));
+    }
+
+    public List<Coordinate> doSearch(Coordinate start, Coordinate end) {
+        PriorityQueue<PathNode> unsettledNodes = new PriorityQueue<>();
+        Set<Coordinate> visited = new HashSet<>();
+
+        PathNode source = new PathNode(nodes.get(start).getPosition(), 0);
+        unsettledNodes.add(source);
+
+        while (unsettledNodes.size() != 0) {
+            PathNode currentNode = unsettledNodes.poll();
+            visited.add(currentNode.getPosition());
+
+            if (currentNode.getPosition().equals(end)) {
+                return generateNodePath(currentNode);
+            }
+
+            HashMap<Node, Double> neghbours = nodes.get(currentNode.getPosition()).getEdges();
+
+            for (Node neigbour : neghbours.keySet()) {
+                // totalCost = cost to current node + cost of edge bewteen current node and neighbour
+                // TODO: Maybe implement Astar here
+                if (!visited.contains(neigbour.getPosition()) && !neigbour.getType().equals("packet")) {
+                    double totalCost = currentNode.getCost() + neghbours.get(neigbour);
+                    PathNode newNode = new PathNode(neigbour.getPosition(), totalCost);
+                    newNode.setCheapestPreNode(currentNode);
+                    unsettledNodes.add(newNode);
+                }
+            }
+        }
+
+        // If no path exists
+        return new ArrayList<>();
+    }
+
+
+    private List<Coordinate> generateNodePath(PathNode currentNode) {
+
+        if (currentNode.getCheapestPreNode() == null) {
+            return new LinkedList<>();
+        }
+        else
+        {
+            List<Coordinate> result = generateNodePath(currentNode.getCheapestPreNode());
+            Coordinate pathTail = currentNode.getCheapestPreNode().getPosition();
+            if (!result.isEmpty())
+                pathTail = result.get(result.size() - 1);
+
+            Coordinate nextCoordinate = currentNode.getPosition();
+            List<Coordinate> path = generatePathPoints(pathTail, nextCoordinate);
+            result.addAll(path);
+            return result;
+        }
+    }
+
+    private List<Coordinate> generatePathPoints(Coordinate start, Coordinate end) {
+        int dx = end.getX() - start.getX();
+        int dy = end.getY() - start.getY();
+        int numSteps = Math.max(Math.abs(dx), Math.abs(dy));
+        int dxStep = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
+        int dyStep = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
+
+        List<Coordinate> result = new LinkedList<>();
+        for (int i = 1; i <= numSteps; i++) {
+            result.add(new Coordinate(start.getX() + i*dxStep, start.getY() + i*dyStep));
+        }
+        return result;
+    }
+}
+
+class PathNode implements Comparable {
+    private Coordinate position;
+    private double cost;
+    private PathNode cheapestPreNode;
+
+    public PathNode(Coordinate position, double cost) {
+        this.position = position;
+        this.cost = cost;
+    }
+
+    public PathNode getCheapestPreNode() {
+        return cheapestPreNode;
+    }
+
+    public void setCheapestPreNode(PathNode cheapestPreNode) {
+        this.cheapestPreNode = cheapestPreNode;
+    }
+
+    public double getCost() {
+        return cost;
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        PathNode other = (PathNode) o;
+        return (int) (this.getCost() - other.getCost());
+    }
+
+
+
+    public Coordinate getPosition() {
+        return position;
     }
 }

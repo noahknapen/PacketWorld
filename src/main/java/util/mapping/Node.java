@@ -3,10 +3,8 @@ package util.mapping;
 import environment.Coordinate;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
 public class Node {
     private Color color;
@@ -75,6 +73,10 @@ public class Node {
         edges.remove(other);
     }
 
+    public String getType() {
+        return type;
+    }
+
     public void addEdge(Node other, double cost) {
         this.edges.put(other, cost);
     }
@@ -82,4 +84,6 @@ public class Node {
     public void setType(String type) {
         this.type = type;
     }
+
+
 }
