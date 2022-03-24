@@ -11,9 +11,7 @@ import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
 import util.tasks.*;
 import util.mapping.Graph;
-import util.mapping.Node;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
@@ -111,9 +109,9 @@ public class ComplexBehavior extends Behavior {
 
         currPos = new Coordinate(currX, cuurY);
 
-        if (graph.nodeExists(currPos) && !edgeStartPos.equals(currPos)) {
+        /*if (graph.nodeExists(currPos) && !edgeStartPos.equals(currPos)) {
             graph.addEdge(edgeStartPos, currPos);
-        }
+        }*/
 
         if (!edgeStartPos.equals(prePos) && !prePos.equals(currPos)) {
             if (!graph.onTheLine(edgeStartPos, currPos, prePos))
@@ -200,7 +198,12 @@ public class ComplexBehavior extends Behavior {
         // Coordinate destinationCoord = graph.closestCoordinate(possibleCoords, agentCoord);
 
         // If closest destination node to agent is the position of the agent itself -> Just add the destination node.
-        graph.addFreeNode(agentCoord);
+        if (!graph.nodeExists(agentCoord)) {
+            graph.addFreeNode(agentCoord);
+            graph.addEdge(edgeStartPos, agentCoord);
+            edgeStartPos = agentCoord;
+        }
+
         graph.addDestinationNode(dest.getCoordinate(), dest.getColor());
 
         // TODO: Check if path is free from obstacles
@@ -217,7 +220,12 @@ public class ComplexBehavior extends Behavior {
         // Coordinate packetCoord = graph.closestCoordinate(possibleCoords, agentCoord);
 
         // If closest packet node to agent is the position of the agent itself -> Just add the destination node.
-        graph.addFreeNode(agentCoord);
+        if (!graph.nodeExists(agentCoord)) {
+            graph.addFreeNode(agentCoord);
+            graph.addEdge(edgeStartPos, agentCoord);
+            edgeStartPos = agentCoord;
+        }
+
         graph.addPacketNode(packet.getCoordinate(), packet.getColor());
 
         // TODO: Check if path is free from obstacles
@@ -332,10 +340,10 @@ public class ComplexBehavior extends Behavior {
         defineTask(agentState);
 
         // Perform the defined action
-        performAction(agentState, agentAction);
+        //performAction(agentState, agentAction);
 
 
-        /*int dx = 0;
+        int dx = 0;
         int dy = 0;
 
         if (counter >= 0) {
@@ -343,8 +351,8 @@ public class ComplexBehavior extends Behavior {
             dy = 0;
         }
 
-        if (counter >= 3) {
-            dx = 0;
+        if (counter >= 2) {
+            dx = 1;
             dy = 1;
         }
 
@@ -355,9 +363,6 @@ public class ComplexBehavior extends Behavior {
         {
             performAction(agentState, agentAction);
         }
-         */
-
-
 
     }
 
@@ -553,7 +558,7 @@ public class ComplexBehavior extends Behavior {
             }
             else if (!graph.nodeExists(currPos)) {
                 // TODO: Might not need to recompute closest node every time
-                Coordinate closestNodeCoordinate = graph.closestNodeCoordinate(currPos);
+                Coordinate closestNodeCoordinate = graph.closestFreeNodeCoordinate(currPos);
                 moveToPosition(agentState, agentAction, closestNodeCoordinate);
             }
             else

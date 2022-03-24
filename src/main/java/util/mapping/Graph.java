@@ -46,14 +46,6 @@ public class Graph {
         nodes.remove(n);
     }
 
-
-
-    public void addNodes(List<Coordinate> coords) {
-        for (Coordinate coord : coords) {
-
-        }
-    }
-
     public void addEdge(Coordinate c1, Coordinate c2) {
         Node n1 = new Node(c1);
         Node n2 = new Node(c2);
@@ -78,13 +70,13 @@ public class Graph {
         return eList;
     }
 
-    public Coordinate closestNodeCoordinate(Coordinate c0) {
+    public Coordinate closestFreeNodeCoordinate(Coordinate c0) {
         // TODO: Check if edge is free bewteen start and end node.
         Coordinate closestCoord = null;
         double closestDistance = Double.MAX_VALUE;
         for (Coordinate c : nodes.keySet()) {
             double dist = distance(c0, c);
-            if (dist < closestDistance) {
+            if (dist < closestDistance && nodes.get(c).getType().equals("free")) {
                 closestCoord = c;
                 closestDistance = dist;
             }
@@ -151,7 +143,7 @@ public class Graph {
             for (Node neigbour : neghbours.keySet()) {
                 // totalCost = cost to current node + cost of edge bewteen current node and neighbour
                 // TODO: Maybe implement Astar here
-                if (!visited.contains(neigbour.getPosition()) && !neigbour.getType().equals("packet")) {
+                if (!visited.contains(neigbour.getPosition())) {
                     double totalCost = currentNode.getCost() + neghbours.get(neigbour);
                     PathNode newNode = new PathNode(neigbour.getPosition(), totalCost);
                     newNode.setCheapestPreNode(currentNode);
@@ -192,18 +184,18 @@ public class Graph {
         int dyStep = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
 
         List<Coordinate> result = new LinkedList<>();
-        Coordinate lastCoordinate = null;
+        Coordinate lastCoordinate = start;
         for (int i = 1; i <= numDiagSteps; i++) {
             lastCoordinate = new Coordinate(start.getX() + i*dxStep, start.getY() + i*dyStep);
             result.add(lastCoordinate);
         }
 
-        int dxxStep = dx > dy ? 1 : 0;
-        int dyxStep = dy > dx ? 1 : 0;
-        int diffSteps = Math.abs(dx - dy);
+        int dxxStep = dx > dy ? dxStep : 0;
+        int dyxStep = dy > dx ? dyStep : 0;
+        int diffSteps = Math.abs(Math.abs(dx) - Math.abs(dy));
 
-        for (int i = 1; i <= diffSteps; i++) {
-            result.add(new Coordinate(lastCoordinate.getX() + i*dxStep, lastCoordinate.getY() + i*dyStep));
+        for (int i = 1; i < diffSteps; i++) {
+            result.add(new Coordinate(lastCoordinate.getX() + i*dxxStep, lastCoordinate.getY() + i*dyxStep));
         }
 
         return result;
