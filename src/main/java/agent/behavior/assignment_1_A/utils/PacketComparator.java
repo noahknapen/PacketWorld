@@ -1,4 +1,4 @@
-package agent.behavior.simple_behavior;
+package agent.behavior.assignment_1_A.utils;
 
 import java.awt.*;
 import java.util.ArrayList;

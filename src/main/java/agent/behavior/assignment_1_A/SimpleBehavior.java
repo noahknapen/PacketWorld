@@ -1,9 +1,14 @@
-package agent.behavior.simple_behavior;
+package agent.behavior.assignment_1_A;
 
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
+import agent.behavior.assignment_1_A.utils.Destination;
+import agent.behavior.assignment_1_A.utils.Packet;
+import agent.behavior.assignment_1_A.utils.PacketComparator;
+import agent.behavior.assignment_1_A.utils.Task;
+import agent.behavior.assignment_1_A.utils.TaskState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;

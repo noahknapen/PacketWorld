@@ -1,11 +1,13 @@
-package agent.behavior.simple_behavior;
+package agent.behavior.assignment_1_A.utils;
 
 import environment.Coordinate;
 
 import java.awt.*;
 
+import com.google.gson.Gson;
+
 /**
- *  A class representing a destination
+ * A class representing a destination
  */
 public class Destination {
 
@@ -47,5 +49,19 @@ public class Destination {
         }
 
         return result;
+    }
+
+    //////////
+    // JSON //
+    //////////
+
+    public String toJson() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
+    }
+
+    public static Task fromJson(String taskString) {
+        Gson gson = new Gson();
+        return gson.fromJson(taskString, Task.class);
     }
 }

@@ -1,16 +1,6 @@
-package agent.behavior.simple_behavior;
+package agent.behavior.assignment_1_A.utils;
 
-/**
- *  A class representing a task state
- *  - RANDOM: No actual task
- *  - TO_PACKET: The goal is pick up a pack
- *  - TO_DESTINATION: The goal is to put the packetat the destination
- */
-enum TaskState {
-    RANDOM,
-    TO_PACKET,
-    TO_DESTINATION
-}
+import com.google.gson.Gson;
 
 /**
  *  A class representing a task
@@ -57,5 +47,19 @@ public class Task {
 
     public void setTaskState(TaskState taskState) {
         this.taskState = taskState;
+    }
+
+    //////////
+    // JSON //
+    //////////
+
+    public String toJson() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
+    }
+
+    public static Task fromJson(String taskString) {
+        Gson gson = new Gson();
+        return gson.fromJson(taskString, Task.class);
     }
 }
