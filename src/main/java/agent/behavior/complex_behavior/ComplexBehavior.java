@@ -16,6 +16,9 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
+/**
+ * A class representing a more complex behaviour of packet delivery
+ */
 public class ComplexBehavior extends Behavior {
 
     private Graph graph;
@@ -30,9 +33,7 @@ public class ComplexBehavior extends Behavior {
     // Current task that is handled
     Task task;
 
-    private HashMap<Coordinate, Color> packetCells = new HashMap<>();
-    private HashMap<Color, Coordinate> destinationCells = new HashMap<>();
-    private Coordinate moveCoordinate;
+    // For debugPath method.
     private int counter = 0;
 
     private String behavior = "explore";
@@ -40,9 +41,7 @@ public class ComplexBehavior extends Behavior {
     private Coordinate edgeStartPos;
     private Coordinate prePos;
 
-
-    private Coordinate unexploredNode = new Coordinate(4, 1);
-    private List<Coordinate> path;
+    private List<Coordinate> path = new LinkedList<>();
     private Coordinate pathDestination;
 
     List<Coordinate> possibleMoves = new ArrayList<>(List.of(
@@ -61,33 +60,14 @@ public class ComplexBehavior extends Behavior {
     
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
+
+        // Initialize the graph
         if (graph == null) {
             graph = new Graph(agentState.getX(), agentState.getY());
-            Coordinate currPos = new Coordinate(agentState.getX(), agentState.getY());
+            currPos = new Coordinate(agentState.getX(), agentState.getY());
             edgeStartPos = currPos;
             prePos = currPos;
         }
-
-
-        // ---------------- Action Step ----------------
-        // If follow wall mode
-        //     if behavior == explore
-        //          Check going straight cell first (if it is close to wall)
-        //          Then check the other free cells (that are close to wall)
-        //      else
-        //         behaviorchange(explore)
-        //
-
-        // If explore mode
-        //     neigbours = lookForWalls()
-        //     if non visited neigbour next to wall exists && neigbour not in graph paths
-        //         path start = curr pos
-        //         prepos = curr pos
-        //         behaviorchange(followwall)
-
-        //     else
-        //         performRandomAction()
-
 
         // Handle the graph mapping
         handleGraph(agentState);
@@ -98,7 +78,6 @@ public class ComplexBehavior extends Behavior {
         // Handle action
         handleAction(agentState, agentAction);
 
-        counter++;
         prePos = currPos;
 
     }
@@ -108,10 +87,6 @@ public class ComplexBehavior extends Behavior {
         int cuurY = agentState.getY();
 
         currPos = new Coordinate(currX, cuurY);
-
-        /*if (graph.nodeExists(currPos) && !edgeStartPos.equals(currPos)) {
-            graph.addEdge(edgeStartPos, currPos);
-        }*/
 
         if (!edgeStartPos.equals(prePos) && !prePos.equals(currPos)) {
             if (!graph.onTheLine(edgeStartPos, currPos, prePos))
@@ -125,79 +100,10 @@ public class ComplexBehavior extends Behavior {
         }
     }
 
-    private void doExplore(AgentState agentState, AgentAction agentAction) {
-        if (moveCoordinate == null) {
-            HashMap<String, ArrayList<Coordinate>> neighbours = lookForWalls(agentState.getPerception());
-            Collections.shuffle(neighbours.get("free"));
-
-            for (Coordinate freeCell : neighbours.get("free")) {
-                if (closeTo(freeCell, neighbours.get("walls")) && !graph.nodeExists(freeCell)) {
-                    // step freecell
-                }
-            }
-            System.out.println("Hej");
-        }
-    }
-
-    private boolean closeTo(Coordinate freeCell, ArrayList<Coordinate> walls) {
-        for (Coordinate wall : walls) {
-            int distX = Math.abs(wall.getX() - freeCell.getX());
-            int distY = Math.abs(wall.getY() - freeCell.getY());
-
-            // If at least one wall is
-            if (distX == 1 || distY == 1) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private HashMap<String, ArrayList<Coordinate>> lookForWalls(Perception perception) {
-        HashMap<String, ArrayList<Coordinate>> moves = new HashMap<>();
-        moves.put("walls", new ArrayList<>());
-        moves.put("free", new ArrayList<>());
-        for (Coordinate move : possibleMoves) {
-            if (perception.getCellPerceptionOnRelPos(move.getX(), move.getY()) == null) {
-                moves.get("walls").add(move);
-            }
-            else if (Objects.requireNonNull(perception.getCellPerceptionOnRelPos(move.getX(), move.getY())).isWalkable()){
-                moves.get("free").add(move);
-            }
-        }
-        return moves;
-    }
-
-    private List<Coordinate> perceptionSearch(AgentState agentState, Coordinate p) {
-        int distX = p.getX() - agentState.getX();
-        int distY = p.getY() - agentState.getY();
-        int minDist = Math.min(distX, distY);
-        int dx = Integer.signum(distX);
-        int dy = Integer.signum(distY);
-
-        List<Coordinate> path = new ArrayList<>();
-        for (int i = 0; i < minDist; i++) {
-            path.add(new Coordinate(dx, dy));
-        }
-
-        if (distX > distY) {
-            for (int i = 0; i < (distX - minDist); i++) {
-                path.add(new Coordinate(dx, 0));
-            }
-        } else if (distY > distX) {
-            for (int i = 0; i < (distY - minDist); i++) {
-                path.add(new Coordinate(0, dy));
-            }
-        }
-
-        return path;
-    }
-
     private void addDestinationToGraph(AgentState agentState, Destination dest) {
-        List<Coordinate> possibleCoords = getPossibleNodesAround(dest.getCoordinate(), agentState);
         Coordinate agentCoord = new Coordinate(agentState.getX(), agentState.getY());
-        // Coordinate destinationCoord = graph.closestCoordinate(possibleCoords, agentCoord);
 
-        // If closest destination node to agent is the position of the agent itself -> Just add the destination node.
+        // If agent position is not in the graph -> Add the position and an edge from edgeStartPos.
         if (!graph.nodeExists(agentCoord)) {
             graph.addFreeNode(agentCoord);
             graph.addEdge(edgeStartPos, agentCoord);
@@ -206,20 +112,17 @@ public class ComplexBehavior extends Behavior {
 
         graph.addDestinationNode(dest.getCoordinate(), dest.getColor());
 
-        // TODO: Check if path is free from obstacles
+        // TODO: Check if path is free from obstacles (It should be but not sure)
         graph.addEdge(agentCoord, dest.getCoordinate(), "destination", dest.getColor());
 
     }
 
 
-
     private void addPacketToGraph(AgentState agentState, Packet packet) {
         // TODO: This and addDestinationToGraph are similar -> Maybe its possible to restructure to reuse the same code.
-        List<Coordinate> possibleCoords = getPossibleNodesAround(packet.getCoordinate(), agentState);
         Coordinate agentCoord = new Coordinate(agentState.getX(), agentState.getY());
-        // Coordinate packetCoord = graph.closestCoordinate(possibleCoords, agentCoord);
 
-        // If closest packet node to agent is the position of the agent itself -> Just add the destination node.
+        // If agent position is not in the graph -> Add the position and an edge from edgeStartPos.
         if (!graph.nodeExists(agentCoord)) {
             graph.addFreeNode(agentCoord);
             graph.addEdge(edgeStartPos, agentCoord);
@@ -228,40 +131,10 @@ public class ComplexBehavior extends Behavior {
 
         graph.addPacketNode(packet.getCoordinate(), packet.getColor());
 
-        // TODO: Check if path is free from obstacles
+        // TODO: Check if path is free from obstacles (It should be but not sure)
         graph.addEdge(agentCoord, packet.getCoordinate(), "packet", packet.getColor());
     }
 
-    private List<Coordinate> getPossibleNodesAround(Coordinate dest, AgentState agentState) {
-        ArrayList<Coordinate> moves = new ArrayList<>(List.of(
-                new Coordinate(1, 1),
-                new Coordinate(-1, -1),
-                new Coordinate(1, 0),
-                new Coordinate(-1, 0),
-                new Coordinate(0, 1),
-                new Coordinate(0, -1),
-                new Coordinate(1, -1),
-                new Coordinate(-1, 1)
-        ));
-
-        // Check if positions are walkable
-        List<Coordinate> possibleCoords = new ArrayList<>();
-        for (Coordinate move : moves) {
-            int x = dest.getX() + move.getX();
-            int y = dest.getY() + move.getY();
-
-            if (agentState.getPerception().getCellPerceptionOnAbsPos(x, y) != null &&
-                    ((Objects.requireNonNull(agentState.getPerception().getCellPerceptionOnAbsPos(x, y)).isWalkable()) ||
-                    Objects.requireNonNull(agentState.getPerception().getCellPerceptionOnAbsPos(x, y)).containsAgent()))
-
-                possibleCoords.add(new Coordinate(x, y));
-        }
-        return possibleCoords;
-    }
-
-
-
-    // ------------------------------------- Packet and destination handling ----------------------------------
 
     /**
      * Check the perception of the agent to discover:
@@ -327,6 +200,43 @@ public class ComplexBehavior extends Behavior {
         }
     }
 
+    /**
+     * This method can be used to define a path for the agent in the beginning.
+     * @param agentState The current state of the agent
+     * @param agentAction Perform an action with the agent
+     */
+    private void debuggingPath(AgentState agentState, AgentAction agentAction) {
+        int dx = 0;
+        int dy = 0;
+
+        if (counter >= 0) {
+            dx = 0;
+            dy = 1;
+        }
+
+        if (counter >= 1) {
+            dx = 1;
+            dy = 0;
+        }
+
+        if (counter >= 4) {
+            dx = 1;
+            dy = 1;
+        }
+
+        if (counter >= 6) {
+            dx = 1;
+            dy = 0;
+        }
+
+        if (counter < 7) {
+            agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
+        }
+        else
+        {
+            performAction(agentState, agentAction);
+        }
+    }
 
 
     /**
@@ -340,29 +250,11 @@ public class ComplexBehavior extends Behavior {
         defineTask(agentState);
 
         // Perform the defined action
-        //performAction(agentState, agentAction);
+        performAction(agentState, agentAction);
 
+        // In case you want to make agent go predefined path. (Don't forget to comment out performAction above if used).
+        // debuggingPath(agentState, agentAction);
 
-        int dx = 0;
-        int dy = 0;
-
-        if (counter >= 0) {
-            dx = 1;
-            dy = 0;
-        }
-
-        if (counter >= 2) {
-            dx = 1;
-            dy = 1;
-        }
-
-        if (counter < 6) {
-            agentAction.step(agentState.getX() + dx, agentState.getY() + dy);
-        }
-        else
-        {
-            performAction(agentState, agentAction);
-        }
 
     }
 
@@ -548,25 +440,32 @@ public class ComplexBehavior extends Behavior {
                 // Make a random step
                 moveRandom(agentState, agentAction);
             }
+
+            // Reset path
+            path.clear();
         }
         else {
 
-            if (pathDestination != null && pathDestination.equals(position) && !path.isEmpty()) {
-                // Pop first coordinate in path and step on it.
+            // If path exists -> Just follow the path.
+            if (!path.isEmpty())
+            {
                 Coordinate nextCoordinate = path.remove(0); // TODO: Maybe path should not be linked list. (Stack?)
                 agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
             }
-            else if (!graph.nodeExists(currPos)) {
-                // TODO: Might not need to recompute closest node every time
-                Coordinate closestNodeCoordinate = graph.closestFreeNodeCoordinate(currPos);
+
+            // If agent position outside the graph -> Move to the closest node first.
+            else if (!graph.nodeExists(currPos))
+            {
+                Coordinate closestNodeCoordinate = graph.closestFreeNodeCoordinate(agentState.getPerception(), currPos);
                 moveToPosition(agentState, agentAction, closestNodeCoordinate);
             }
+
+            // Search for path from current position to the desired position.
             else
             {
-                // Perform Dijkstras algorithm
-                // TODO: Change to Astar???
-                pathDestination = position;
+                // Perform Dijkstra's algorithm
                 path = graph.doSearch(currPos, position);
+
                 Coordinate nextCoordinate = path.remove(0); // TODO: Maybe path should not be linked list. (Stack?)
                 agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
             }

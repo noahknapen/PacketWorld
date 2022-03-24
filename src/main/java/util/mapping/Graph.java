@@ -1,19 +1,24 @@
 package util.mapping;
 
 import environment.Coordinate;
+import environment.Perception;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+/**
+ * A class representing the mapping of the MAS.
+ * The mapping is represented by a graph consisting of nodes and edges.
+ *
+ * Each node can either be a packet, destination or free cell.
+ * Each edge between nodes have a cost which is equal to the euclidean distance between the nodes.
+ *
+ */
 public class Graph {
     private HashMap<Coordinate, Node> nodes = new HashMap<>();
     private List<Node> packets = new ArrayList<>();
     private List<Node> destinations = new ArrayList<>();
-
-    // For Dijkstas algorithm
-
-
 
     public Graph(int initX, int initY) {
         Coordinate initCoordinate = new Coordinate(initX, initY);
@@ -70,13 +75,15 @@ public class Graph {
         return eList;
     }
 
-    public Coordinate closestFreeNodeCoordinate(Coordinate c0) {
+    public Coordinate closestFreeNodeCoordinate(Perception perception, Coordinate c0) {
         // TODO: Check if edge is free bewteen start and end node.
         Coordinate closestCoord = null;
         double closestDistance = Double.MAX_VALUE;
         for (Coordinate c : nodes.keySet()) {
             double dist = distance(c0, c);
-            if (dist < closestDistance && nodes.get(c).getType().equals("free")) {
+            if (perception.getCellPerceptionOnAbsPos(c.getX(), c.getY()) != null
+                    && dist < closestDistance
+                    && nodes.get(c).getType().equals("free")) {
                 closestCoord = c;
                 closestDistance = dist;
             }
@@ -190,11 +197,11 @@ public class Graph {
             result.add(lastCoordinate);
         }
 
-        int dxxStep = dx > dy ? dxStep : 0;
-        int dyxStep = dy > dx ? dyStep : 0;
+        int dxxStep = Math.abs(dx) > Math.abs(dy)  ? dxStep : 0;
+        int dyxStep = Math.abs(dy)  > Math.abs(dx)  ? dyStep : 0;
         int diffSteps = Math.abs(Math.abs(dx) - Math.abs(dy));
 
-        for (int i = 1; i < diffSteps; i++) {
+        for (int i = 1; i <= diffSteps; i++) {
             result.add(new Coordinate(lastCoordinate.getX() + i*dxxStep, lastCoordinate.getY() + i*dyxStep));
         }
 
