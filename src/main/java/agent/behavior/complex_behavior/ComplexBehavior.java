@@ -36,13 +36,11 @@ public class ComplexBehavior extends Behavior {
     // For debugPath method.
     private int counter = 0;
 
-    private String behavior = "explore";
-
     private Coordinate edgeStartPos;
     private Coordinate prePos;
 
     private List<Coordinate> path = new LinkedList<>();
-    private Coordinate pathDestination;
+    private Coordinate shouldBeHerePos;
 
     List<Coordinate> possibleMoves = new ArrayList<>(List.of(
             new Coordinate(1, 1), new Coordinate(-1, -1),
@@ -78,10 +76,24 @@ public class ComplexBehavior extends Behavior {
         // Handle action
         handleAction(agentState, agentAction);
 
+        // Update agents previous position
         prePos = currPos;
 
     }
 
+    /**
+     * Dynamically builds the graph
+     * Agent saves potential starts of edges in edgeStartPos.
+     *
+     * If agent goes in a straight line -> agents previous position lies on the line between
+     * edgeStartPos and agents current position.
+     *
+     * If agent turns -> agents previous position DOES NOT lie on the line between
+     * edgeStartPos and agents current position
+     * -> create new edge between edgeStartPos and agents previous position.
+     *
+     * @param agentState The agent state
+     */
     private void handleGraph(AgentState agentState) {
         int currX = agentState.getX();
         int cuurY = agentState.getY();
@@ -95,11 +107,18 @@ public class ComplexBehavior extends Behavior {
                     graph.addFreeNode(prePos);
                 graph.addEdge(edgeStartPos, prePos);
                 edgeStartPos = prePos;
-                System.out.println("Added new edge");
             }
         }
     }
 
+    /**
+     * Adds new destination to graph
+     * Draws an edge from:
+     *     From edgeStartPos -> agentPos
+     *     agentPos -> destinationPos
+     * @param agentState The agent state
+     * @param dest The new destination to be added to the graph
+     */
     private void addDestinationToGraph(AgentState agentState, Destination dest) {
         Coordinate agentCoord = new Coordinate(agentState.getX(), agentState.getY());
 
@@ -117,7 +136,14 @@ public class ComplexBehavior extends Behavior {
 
     }
 
-
+    /**
+     * Adds new packet to graph
+     * Draws an edge from:
+     *     From edgeStartPos -> agentPos
+     *     agentPos -> packetPos
+     * @param agentState The agent state
+     * @param packet The new packet to be added to the graph
+     */
     private void addPacketToGraph(AgentState agentState, Packet packet) {
         // TODO: This and addDestinationToGraph are similar -> Maybe its possible to restructure to reuse the same code.
         Coordinate agentCoord = new Coordinate(agentState.getX(), agentState.getY());
@@ -413,7 +439,7 @@ public class ComplexBehavior extends Behavior {
     private void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate position) {
         int agentX = agentState.getX();
         int agentY = agentState.getY();
-        int positionX = position.getX();
+        int positionX = position.getX(); // TODO: Fix bug - position is null like 1% of the time
         int positionY = position.getY();
 
         System.out.println("[moveToPosition] Agent: (" + agentX + ", " + agentY + ") Position: (" + positionX + ", " + positionY + ")");
@@ -444,12 +470,20 @@ public class ComplexBehavior extends Behavior {
             // Reset path
             path.clear();
         }
-        else {
+        else
+        {
 
             // If path exists -> Just follow the path.
             if (!path.isEmpty())
             {
+                // If previous movement failed for some reason -> Try again.
+                if (!currPos.equals(shouldBeHerePos)) {
+                    moveToPosition(agentState, agentAction, shouldBeHerePos);
+                    return;
+                }
+
                 Coordinate nextCoordinate = path.remove(0); // TODO: Maybe path should not be linked list. (Stack?)
+                shouldBeHerePos = nextCoordinate;
                 agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
             }
 
@@ -466,8 +500,16 @@ public class ComplexBehavior extends Behavior {
                 // Perform Dijkstra's algorithm
                 path = graph.doSearch(currPos, position);
 
-                Coordinate nextCoordinate = path.remove(0); // TODO: Maybe path should not be linked list. (Stack?)
-                agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
+                if (!path.isEmpty())
+                {
+                    Coordinate nextCoordinate = path.remove(0); // TODO: Maybe path should not be linked list. (Stack?)
+                    shouldBeHerePos = nextCoordinate;
+                    agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
+                }
+                else
+                {
+                    moveRandom(agentState, agentAction);
+                }
             }
         }
     }
@@ -511,7 +553,9 @@ public class ComplexBehavior extends Behavior {
             if (agentState.getPerception().getCellPerceptionOnRelPos(dxStep, dyStep) != null && Objects.requireNonNull(agentState.getPerception().getCellPerceptionOnRelPos(dxStep, dyStep)).isWalkable()) {
                 int newPositionX = agentX + dxStep;
                 int newPositionY = agentY + dyStep;
-
+                if (agentState.getName().equals("Ana")) {
+                    System.out.println("Random move");
+                }
                 agentAction.step(newPositionX, newPositionY);
 
                 return;

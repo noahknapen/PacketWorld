@@ -46,11 +46,6 @@ public class Graph {
         return n;
     }
 
-    public void deleteNode(Coordinate p) {
-        Node n = new Node(p);
-        nodes.remove(n);
-    }
-
     public void addEdge(Coordinate c1, Coordinate c2) {
         Node n1 = new Node(c1);
         Node n2 = new Node(c2);
@@ -66,13 +61,6 @@ public class Graph {
         // Diagonal distance (minDist) plus the rest (if distX or distY is larger than the other)
         return minDist + Math.abs(distX - distY);
 
-    }
-
-    private List<Edge> getNodes() {
-        Edge e = new Edge(new Node(new Coordinate(1,2)), new Node(new Coordinate(3,4)), 2);
-        List<Edge> eList = new ArrayList<>();
-        eList.add(e);
-        return eList;
     }
 
     public Coordinate closestFreeNodeCoordinate(Perception perception, Coordinate c0) {
@@ -99,6 +87,13 @@ public class Graph {
         return nodes.containsKey(c);
     }
 
+    /**
+     * Just your regular linear algebra.
+     * @param edgeStart Start of line.
+     * @param edgeEnd End of line.
+     * @param p Point to be tested if its on the line.
+     * @return True if p is on the line.
+     */
     public boolean onTheLine(Coordinate edgeStart, Coordinate edgeEnd, Coordinate p) {
         int distX = edgeEnd.getX() - edgeStart.getX();
         int distY = edgeEnd.getY() - edgeStart.getY();
@@ -117,10 +112,6 @@ public class Graph {
             nodes.get(other.getPosition()).deleteEdge(n);
         }
         nodes.remove(c);
-    }
-
-    public void setType(Coordinate c, String type) {
-        nodes.get(c).setType(type);
     }
 
     public void addEdge(Coordinate c1, Coordinate c2, String type, Color color) {
@@ -231,17 +222,11 @@ class PathNode implements Comparable {
         return cost;
     }
 
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
     @Override
     public int compareTo(Object o) {
         PathNode other = (PathNode) o;
         return (int) (this.getCost() - other.getCost());
     }
-
-
 
     public Coordinate getPosition() {
         return position;
