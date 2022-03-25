@@ -18,8 +18,11 @@ public class HasCarry extends BehaviorChange{
 
     @Override
     public void updateChange() {
+        System.out.println("[HasCarry]{updateChange}");
+
         AgentState agentState = this.getAgentState();
 
+        // Has carry if task state is TO_DESTINATION and if agent carries a packet
         hasCarry = toDestinationTask(agentState) && agentCarriesPacket(agentState);
     }
 
@@ -33,27 +36,32 @@ public class HasCarry extends BehaviorChange{
     /////////////
 
     /**
-     * Check if the current state of the task is TO_DESTINATION
+     * Check if current state of task is TO_DESTINATION
      * 
-     * @param agentState The current state of the agent
+     * @param agentState Current state of agent
+     * @return True if task state is TO_DESTINATION
      */
     private boolean toDestinationTask(AgentState agentState) {
+        // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
 
+        // Check if task exists in memory
         if(memoryFragments.contains(MemoryKeys.TASK)) {
+            // Retrieve task
             String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
             Task task = Task.fromJson(taskString);
 
+            // Check if state is TO_DESTINATION
             return task.getTaskState() == TaskState.TO_DESTINATION;
         }
-
-        return false;
+        else return false;
     }
 
     /**
-     * Check if the agent carries a packet
+     * Check if agent carries a packet
      * 
-     * @param agentState The current state of the agent
+     * @param agentState Current state of agent
+     * @return True if agent has carry
      */
     private boolean agentCarriesPacket(AgentState agentState) {
         return agentState.hasCarry();

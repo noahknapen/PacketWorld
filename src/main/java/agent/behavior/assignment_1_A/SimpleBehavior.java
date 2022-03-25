@@ -15,7 +15,7 @@ import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.*;
 import java.util.List;
 

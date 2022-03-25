@@ -27,9 +27,9 @@ nbArgs 0
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 5
+nbChanges 7
 
-agent.behavior.assignment_1_B.change.TaskAvailable
+agent.behavior.assignment_1_B.change.TaskDefinitionPossible
 nbArgs 0
 priority 0
 source 1
@@ -40,6 +40,12 @@ nbArgs 0
 priority 0
 source 2
 target 3
+
+agent.behavior.assignment_1_B.change.PacketAlreadyHandled
+nbArgs 0
+priority 1
+source 2
+target 1
 
 agent.behavior.assignment_1_B.change.HasCarry
 nbArgs 0
@@ -53,13 +59,13 @@ priority 0
 source 4
 target 5
 
-agent.behavior.assignment_1_B.change.NoTasks
+agent.behavior.assignment_1_B.change.TaskDefinitionNotPossible
 nbArgs 0
 priority 0
 source 5
 target 1
 
-agent.behavior.assignment_1_B.change.TaskAvailable
+agent.behavior.assignment_1_B.change.TaskDefinitionPossible
 nbArgs 0
 priority 0
 source 5

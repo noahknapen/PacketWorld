@@ -23,21 +23,23 @@ public class PutDownPacketBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        System.out.println("[PutDownPacketBehavior] act");
-
+        System.out.println("[PutDownPacketBehavior]{act}");
+        
+        // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
+        //Check if task exists in memory
         if(memoryFragments.contains(MemoryKeys.TASK)) {
+            // Retrieve task
             String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
             Task task = Task.fromJson(taskString);
-            Coordinate position = task.getDestination().getCoordinate();
-            
-            putDownPacket(agentState, agentAction, position);
-      
-            return;
-        }
 
-        agentAction.skip();
+            // Put down packet
+            putDownPacket(agentState, agentAction, task);
+
+            // Update memory
+            updateMemory(agentState);
+        }
+        else agentAction.skip();
     }
 
     /////////////
@@ -45,18 +47,33 @@ public class PutDownPacketBehavior extends Behavior {
     /////////////
 
     /**
-     * Put down a packet at a certain position
+     * Put down packet
      * 
-     * @param agentAction Perfom an action with the agent
-     * @param position The position of the destination
+     * @param agentState Current state of agent
+     * @param agentAction Perfom an action with agent
+     * @param task Current task
      */
-    private void putDownPacket(AgentState agentState, AgentAction agentAction, Coordinate position) {
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+    private void putDownPacket(AgentState agentState, AgentAction agentAction, Task task) {
+        // Retrieve position
+        Coordinate position = task.getDestination().getCoordinate();
         int positionX = position.getX();
         int positionY = position.getY();
         
+        // Put down packet
         agentAction.putPacket(positionX, positionY);
+        
+        System.out.println("[PutDownPacketBehavior]{putDownPacket} Packet put down (" + task.getPacket().getColor() + ")");
+    }
 
-        if(memoryFragments.contains(MemoryKeys.TASK)) agentState.removeMemoryFragment(MemoryKeys.TASK);
+    /**
+     * Update memory of agent
+     * 
+     * @param agentState Current state of the agent
+     */
+    private void updateMemory(AgentState agentState) {
+        // Remove task from memory
+        agentState.removeMemoryFragment(MemoryKeys.TASK);
+        
+        System.out.println("[PutDownPacketBehavior]{updateMemory} Task deleted from memory");
     }
 }

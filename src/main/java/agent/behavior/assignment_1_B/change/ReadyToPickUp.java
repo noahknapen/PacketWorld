@@ -18,8 +18,11 @@ public class ReadyToPickUp extends BehaviorChange{
 
     @Override
     public void updateChange() {
+        System.out.println("[ReadyToPickUp] updateChange");
+
         AgentState agentState = this.getAgentState();
         
+        // Ready to pick up if task state is TO_PACKET and if position is reached
         readyToPickUp = toPacketTask(agentState) && positionReached(agentState);      
     }
 
@@ -33,48 +36,56 @@ public class ReadyToPickUp extends BehaviorChange{
     /////////////
 
     /**
-     * Check if the current state of the task is TO_PACKET
+     * Check if current state of task is TO_PACKET
      * 
-     * @param agentState The current state of the agent
+     * @param agentState Current state of agent
+     * @return True if task state is TO_PACKET
      */
     private boolean toPacketTask(AgentState agentState) {
+        // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
 
+        // Check if task exists in memory
         if(memoryFragments.contains(MemoryKeys.TASK)) {
+            // Retrieve task
             String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
             Task task = Task.fromJson(taskString);
 
+            // Check if state is TO_PACKET
             return task.getTaskState() == TaskState.TO_PACKET;
         }
-
-        return false;
+        else return false;
     }
 
     /**
      * Check if position is reached
      * 
-     * @param agentState The current state of the agent
-     * @param position The position to reach
+     * @param agentState Current state of agent
+     * @param position Position to reach
      * @return True if agent is next to position
      */
     private boolean positionReached(AgentState agentState) {
+        // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
 
+        // Check if task exists in memory
         if(memoryFragments.contains(MemoryKeys.TASK)) {
+            // Retrieve task
             String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
             Task task = Task.fromJson(taskString);
+
+            // Retrieve position
             int agentX = agentState.getX();
             int agentY = agentState.getY();
             int positionX = task.getPacket().getCoordinate().getX();
             int positionY = task.getPacket().getCoordinate().getY();
     
-            int dx = Math.abs(agentX - positionX);
-            int dy = Math.abs(agentY - positionY);
+            int dX = Math.abs(agentX - positionX);
+            int dY = Math.abs(agentY - positionY);
 
-            return (dx <= 1) && (dy <= 1);
+            return (dX <= 1) && (dY <= 1);
         }
-
-        return false;  
+        else return false;  
     }
     
 }

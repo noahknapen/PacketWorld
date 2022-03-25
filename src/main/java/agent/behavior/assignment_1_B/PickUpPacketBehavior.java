@@ -24,21 +24,25 @@ public class PickUpPacketBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        System.out.println("[PickUpPacketBehavior] act");
+        System.out.println("[PickUpPacketBehavior]{act}");
 
+        // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
+        // Check if task exists in memory
         if(memoryFragments.contains(MemoryKeys.TASK)) {
+            // Retrieve task
             String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
             Task task = Task.fromJson(taskString);
-            Coordinate position = task.getPacket().getCoordinate();
-            
-            pickUpPacket(agentState, agentAction, position);
-      
-            return;
-        }
 
-        agentAction.skip();
+            // Pick up packet
+            pickUpPacket(agentState, agentAction, task);
+
+            task.setTaskState(TaskState.TO_DESTINATION);
+
+            // Update memory
+            updateMemory(agentState, task);
+        }
+        else agentAction.skip();   
     }
 
     /////////////
@@ -46,31 +50,38 @@ public class PickUpPacketBehavior extends Behavior {
     /////////////
 
     /**
-     * Pick up a packet at a certain position
+     * Pick up packet
      * 
-     * @param agentAction Perfom an action with the agent
-     * @param position The position of the packet
+     * @param agentState Current state of agent
+     * @param agentAction Perfom an action with agent
+     * @param task Current task
      */
-    private void pickUpPacket(AgentState agentState, AgentAction agentAction, Coordinate position) {
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+    private void pickUpPacket(AgentState agentState, AgentAction agentAction, Task task) {
+        // Retrieve position
+        Coordinate position = task.getPacket().getCoordinate();
         int positionX = position.getX();
         int positionY = position.getY();
-        
+
+        // Pick up packet
         agentAction.pickPacket(positionX, positionY);
 
-        Task task = null;
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            task = Task.fromJson(taskString);
-        }
-        else return;
+        System.out.println("[PickUpPacketBehavior]{pickUpPacket} Packet picked up (" + task.getPacket().getColor() + ")");   
+    }
 
-        if(task == null) return;
+    /**
+     * Update the memory of the agent
+     * 
+     * @param agentState Current state of the agent
+     * @param task Current task
+     */
+    private void updateMemory(AgentState agentState, Task task) {
+        // Remove task from memory
+        agentState.removeMemoryFragment(MemoryKeys.TASK);
 
-        task.setTaskState(TaskState.TO_DESTINATION);
-
-        if(memoryFragments.contains(MemoryKeys.TASK)) agentState.removeMemoryFragment(MemoryKeys.TASK);
+        // Add updated task to memory
         String taskString = task.toJson();
         agentState.addMemoryFragment(MemoryKeys.TASK, taskString);
+        
+        System.out.println("[PickUpPacketBehavior]{updateMemory} Task updated in memory");
     }
 }

@@ -1,9 +1,7 @@
 package agent.behavior.assignment_1_B;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import com.google.gson.Gson;
@@ -15,9 +13,7 @@ import agent.AgentState;
 import agent.behavior.Behavior;
 import agent.behavior.assignment_1_A.utils.Destination;
 import agent.behavior.assignment_1_A.utils.Packet;
-import agent.behavior.assignment_1_A.utils.PacketComparator;
 import agent.behavior.assignment_1_A.utils.Task;
-import agent.behavior.assignment_1_A.utils.TaskState;
 import agent.behavior.assignment_1_B.utils.MemoryKeys;
 import environment.CellPerception;
 import environment.Coordinate;
@@ -38,26 +34,23 @@ public class MoveToPacketBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        System.out.println("[MoveToPacketBehavior] act");
+        System.out.println("[MoveToPacketBehavior]{act}");
         
+        // Check perception
         checkPerception(agentState);
 
-        defineTask(agentState);
-
-
+        // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
+        // Check if task exists in memory
         if(memoryFragments.contains(MemoryKeys.TASK)) {
+            // Retrieve task
             String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
             Task task = Task.fromJson(taskString);
-            Coordinate position = task.getPacket().getCoordinate();
 
-            moveToPosition(agentState, agentAction, position);
-      
-            return;
+            // Move to position
+            moveToPosition(agentState, agentAction, task);
         }
-
-        agentAction.skip();
+        else agentAction.skip();;
     }
 
     /////////////
@@ -65,30 +58,16 @@ public class MoveToPacketBehavior extends Behavior {
     /////////////
 
     /**
-     * Check the perception of the agent
+     * Check perception of agent
      *  
-     * @param agentState The current state of the agent
+     * @param agentState Current state of agent
      */
     private void checkPerception(AgentState agentState) {
+        // Retrieve discovered packets, discovered destinations and task
         Perception perception = agentState.getPerception();
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-        
-        ArrayList<Packet> discoveredPackets = new ArrayList<Packet>();
-        ArrayList<Destination> discoveredDestinations = new ArrayList<Destination>();
-        Task task = null;
-        Gson gson = new Gson();
-        if(memoryFragments.contains(MemoryKeys.DISCOVERED_PACKETS)) {
-            String discoveredPacketsString = agentState.getMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
-            discoveredPackets = gson.fromJson(discoveredPacketsString, new TypeToken<List<Packet>>(){}.getType());
-        }
-        if(memoryFragments.contains(MemoryKeys.DISCOVERED_DESTINATIONS)) {
-            String discoveredDestinationsString = agentState.getMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
-            discoveredDestinations = gson.fromJson(discoveredDestinationsString, new TypeToken<List<Destination>>(){}.getType());
-        }
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            task = Task.fromJson(taskString);
-        }
+        ArrayList<Packet> discoveredPackets = getDiscoveredPackets(agentState);
+        ArrayList<Destination> discoveredDestinations = getDiscoveredDestinations(agentState);
+        Task task = getTask(agentState);
 
         // Loop over whole perception
         for (int x = 0; x < perception.getWidth(); x++) {
@@ -109,6 +88,8 @@ public class MoveToPacketBehavior extends Behavior {
                     if(discoveredDestinations.contains(destination)) continue;
                     else {
                         discoveredDestinations.add(destination);
+
+                        System.out.println("[MoveToPacketBehavior]{checkPerception} New destination discovered (" + discoveredDestinations.size() + ")");
                     }
                 }
                 // Check if current cell contains a packet
@@ -123,115 +104,150 @@ public class MoveToPacketBehavior extends Behavior {
                     else if(task != null && task.getPacket().equals(packet)) continue;
                     else {
                         discoveredPackets.add(packet);
+
+                        System.out.println("[MoveToPacketBehavior]{checkPerception} New packet discovered (" + discoveredPackets.size() + ")");
                     }
                 }
             }
         }
 
-        if(memoryFragments.contains(MemoryKeys.DISCOVERED_PACKETS)) agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
-        if(memoryFragments.contains(MemoryKeys.DISCOVERED_DESTINATIONS)) agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
-        String discoveredPacketsString = gson.toJson(discoveredPackets);
-        String discoveredDestinationsString = gson.toJson(discoveredDestinations);
-        agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
-        agentState.addMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinationsString);
-    }
-
-    /**
-     * Define a task based on the (past) perception
-     * 
-     * @param agentState The current state of the agent
-     */
-    private void defineTask(AgentState agentState) {
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
-        ArrayList<Packet> discoveredPackets = new ArrayList<Packet>();
-        ArrayList<Destination> discoveredDestinations = new ArrayList<Destination>();
-        Task task = null;
-        Gson gson = new Gson();
-        if(memoryFragments.contains(MemoryKeys.DISCOVERED_PACKETS)) {
-            String discoveredPacketsString = agentState.getMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
-            discoveredPackets = gson.fromJson(discoveredPacketsString, new TypeToken<List<Packet>>(){}.getType());
-        }
-        else return;
-        if(memoryFragments.contains(MemoryKeys.DISCOVERED_DESTINATIONS)) {
-            String discoveredDestinationsString = agentState.getMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
-            discoveredDestinations = gson.fromJson(discoveredDestinationsString, new TypeToken<List<Destination>>(){}.getType());
-        }
-        else return;
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            task = Task.fromJson(taskString);
-        }
-
-        // Check if a task is still be handled
-        if(task != null) return;
-
-        // Sort the packets to be delivered
-        PacketComparator packComparator = new PacketComparator(agentState, discoveredDestinations);
-        Collections.sort(discoveredPackets, packComparator);
-
-        // Loop through the sorted list of packets to be delivered
-        for(int i = 0; i < discoveredPackets.size(); i++) {
-            // Define a candidate packet
-            Packet candidatepacket= discoveredPackets.get(i);
-            Color candidatePackColor = candidatepacket.getColor();
-            
-            // Loop through the list of discovered destinations
-            for(int j = 0; j < discoveredDestinations.size(); j++) {
-                Color destinationColor = discoveredDestinations.get(j).getColor();
-                
-                // Check if a corresponding (color) destination was already discovered
-                if(candidatePackColor.equals(destinationColor)) {
-                    Destination destination = discoveredDestinations.get(j);
-
-                    // Remvoe the packet from the list
-                    candidatepacket= discoveredPackets.remove(i);
-
-                    // Redefine the task
-                    task.setPacket(candidatepacket);
-                    task.setDestination(destination);
-                    task.setTaskState(TaskState.TO_PACKET);
-                }
-            }
-        }
-
-        if(task == null) return;
-
-        if(memoryFragments.contains(MemoryKeys.TASK)) agentState.removeMemoryFragment(MemoryKeys.TASK);
-        String taskString = task.toJson();
-        agentState.addMemoryFragment(MemoryKeys.TASK, taskString);
+        // Update memory
+        updateMemory(agentState, discoveredPackets, discoveredDestinations);        
     }
 
     /**
      * Move towards a specific position
      * 
-     * @param agentState The current state of the agent
-     * @param agentAction Perform an action with the agent
-     * @param position The position to move towards
+     * @param agentState Current state of agent
+     * @param agentAction Perform an action with agent
+     * @param task Current task
      */
-    private void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate position) {
+    private void moveToPosition(AgentState agentState, AgentAction agentAction, Task task) {
+        // Retrieve position
         Perception agentPerception = agentState.getPerception();
         int agentX = agentState.getX();
         int agentY = agentState.getY();
-        int positionX = position.getX();
-        int positionY = position.getY();
+        int positionX = task.getPacket().getCoordinate().getX();
+        int positionY = task.getPacket().getCoordinate().getY();
 
+        // Calculate move
         int dX = positionX - agentX;
         int dY = positionY - agentY;
         int relativePositionX = (dX > 0) ? 1 : ((dX < 0) ? -1 : 0);
         int relativePositionY = (dY > 0) ? 1 : ((dY < 0) ? -1 : 0);
         CellPerception cellPerception = agentPerception.getCellPerceptionOnRelPos(relativePositionX, relativePositionY);
 
-
+        // Check if cell is walkable
         if (cellPerception != null && cellPerception.isWalkable()) {
             int newPositionX = agentX + relativePositionX;
             int newPositionY = agentY + relativePositionY;
-            
-            agentAction.step(newPositionX, newPositionY);
-            
-            return;
-        }
 
-        agentAction.skip();
+            // Perform a step 
+            agentAction.step(newPositionX, newPositionY);
+
+            System.out.println("[MoveToPacketBehavior]{moveToPosition} Agent: (" + agentX + ", " + agentY + ") Position: (" + positionX + ", " + positionY + ")");
+        }
+        else agentAction.skip();
     }
+
+    /**
+     * Retrieve discovered packets from memory
+     * Create list if not yet created
+     * 
+     * @param agentState Current state of agent
+     * @return List of discovered packets
+     */
+    private ArrayList<Packet> getDiscoveredPackets(AgentState agentState) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
+        Gson gson = new Gson();
+        // Check if list of discovered packets exists in memory
+        if(memoryFragments.contains(MemoryKeys.DISCOVERED_PACKETS)) {
+            // Retrieve list of discovered packets 
+            String discoveredPacketsString = agentState.getMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
+            return gson.fromJson(discoveredPacketsString, new TypeToken<ArrayList<Packet>>(){}.getType());
+        }
+        else {
+            // Create list of discovered packets
+            ArrayList<Packet> discoveredPackets = new ArrayList<Packet>();
+
+            // Add list of discovered packets to memory
+            String discoveredPacketsString = gson.toJson(discoveredPackets);
+            agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
+
+            return discoveredPackets;
+        }
+    }
+
+    /**
+     * Retrieve discovered destinations from memory
+     * Create list if not yet created
+     * 
+     * @param agentState Current state of agent
+     * @return List of discovered destinations
+     */ 
+    private ArrayList<Destination> getDiscoveredDestinations(AgentState agentState) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
+        Gson gson = new Gson();
+        // Check if list of discovered destinations exists in memory
+        if(memoryFragments.contains(MemoryKeys.DISCOVERED_DESTINATIONS)) {
+            // Retrieve list of discovered destinations 
+            String discoveredDestinationsString = agentState.getMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
+            return gson.fromJson(discoveredDestinationsString, new TypeToken<ArrayList<Destination>>(){}.getType());
+        }
+        else {
+            // Create list of discovered destinations
+            ArrayList<Destination> discoveredDestinations = new ArrayList<Destination>();
+
+            // Add list of discovered destinations to memory
+            String discoveredDestinationsString = gson.toJson(discoveredDestinations);
+            agentState.addMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinationsString);
+
+            return discoveredDestinations;
+        }
+    }
+
+    /**
+     * Retrieve task from memory
+     * 
+     * @param agentState Current state of agent
+     * @return Task
+     */
+    private Task getTask(AgentState agentState) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
+        // Check if task exists in memory
+        if(memoryFragments.contains(MemoryKeys.TASK)) {
+            // Retrieve task
+            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
+            return Task.fromJson(taskString);
+        }
+        else return null;
+    }
+
+    /**
+     * Update memory of agent
+     * 
+     * @param agentState Current state of the agent
+     * @param discoveredPackets List of discovered packets
+     * @param discoveredDestinations List of discovered destinations
+     */
+    private void updateMemory(AgentState agentState, ArrayList<Packet> discoveredPackets, ArrayList<Destination> discoveredDestinations) {
+        // Remove discovered packets and discovered destinations from memory
+        agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
+        agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
+
+        // Add updated discovered packets and updated discovered destinations to memory
+        Gson gson = new Gson();
+        String discoveredPacketsString = gson.toJson(discoveredPackets);
+        String discoveredDestinationsString = gson.toJson(discoveredDestinations);
+        agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
+        agentState.addMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinationsString);
+        
+        System.out.println("[MoveToPacketBehavior]{updateMemory} Discovered packets and discovered destinations updated in memory");
+    }    
 }

@@ -2,7 +2,7 @@ package agent.behavior.assignment_1_A.utils;
 
 import environment.Coordinate;
 
-import java.awt.*;
+import java.awt.Color;
 
 import com.google.gson.Gson;
 
@@ -12,7 +12,7 @@ import com.google.gson.Gson;
 public class Packet {
 
     private Coordinate coordinate;
-    private Color color;
+    private int colorRGB;
 
     ////////////////
     // CONSTRUCTOR//
@@ -20,7 +20,7 @@ public class Packet {
 
     public Packet(Coordinate coordinate, Color color) {
         this.coordinate = coordinate;
-        this.color = color;
+        this.colorRGB = color.getRGB();
     }
 
     ////////////
@@ -32,7 +32,7 @@ public class Packet {
     }
 
     public Color getColor() {
-        return color;
+        return new Color(colorRGB);
     }
     
     //////////////
@@ -45,7 +45,7 @@ public class Packet {
 
         if(object instanceof Packet) {
             Packet packet= (Packet) object;
-            result = packet.getCoordinate().equals(this.coordinate) && packet.getColor().equals(this.color);
+            result = packet.getCoordinate().equals(this.coordinate) && packet.getColor().equals(new Color(this.colorRGB));
         }
 
         return result;

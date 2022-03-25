@@ -1,6 +1,6 @@
 package agent.behavior.assignment_1_A.utils;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.stream.Collectors;
