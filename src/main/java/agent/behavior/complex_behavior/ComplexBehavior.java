@@ -428,6 +428,7 @@ public class ComplexBehavior extends Behavior {
         agentAction.putPacket(task.getDestination().getCoordinate().getX(), task.getDestination().getCoordinate().getY());
     }
 
+
     /**
      * Move towards a specific position
      * TODO: Make more efficient
