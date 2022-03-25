@@ -23,6 +23,8 @@ public class PutDownPacketBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
+        System.out.println("[PutDownPacketBehavior] act");
+
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
 
         if(memoryFragments.contains(MemoryKeys.TASK)) {
@@ -30,7 +32,7 @@ public class PutDownPacketBehavior extends Behavior {
             Task task = Task.fromJson(taskString);
             Coordinate position = task.getDestination().getCoordinate();
             
-            putDownPacket(agentAction, position);
+            putDownPacket(agentState, agentAction, position);
       
             return;
         }
@@ -48,10 +50,13 @@ public class PutDownPacketBehavior extends Behavior {
      * @param agentAction Perfom an action with the agent
      * @param position The position of the destination
      */
-    private void putDownPacket(AgentAction agentAction, Coordinate position) {
+    private void putDownPacket(AgentState agentState, AgentAction agentAction, Coordinate position) {
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
         int positionX = position.getX();
         int positionY = position.getY();
         
         agentAction.putPacket(positionX, positionY);
+
+        if(memoryFragments.contains(MemoryKeys.TASK)) agentState.removeMemoryFragment(MemoryKeys.TASK);
     }
 }

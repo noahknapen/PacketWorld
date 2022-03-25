@@ -2,7 +2,6 @@ package agent.behavior.assignment_1_B;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -23,18 +22,7 @@ import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
 
-public class MoveRandomBehavior extends Behavior {
-
-    final ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
-        new Coordinate(1, 1), 
-        new Coordinate(-1, -1),
-        new Coordinate(1, 0), 
-        new Coordinate(-1, 0),
-        new Coordinate(0, 1), 
-        new Coordinate(0, -1),
-        new Coordinate(1, -1), 
-        new Coordinate(-1, 1)
-    ));
+public class MoveToDestinationBehavior extends Behavior {
 
     ///////////////
     // OVERRIDES //
@@ -47,11 +35,23 @@ public class MoveRandomBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        System.out.println("[MoveRandomBehavior] act");
+        System.out.println("[MoveToDestinationBehavior] act");
 
         checkPerception(agentState);
-        
-        moveRandom(agentState, agentAction);
+
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
+        if(memoryFragments.contains(MemoryKeys.TASK)) {
+            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
+            Task task = Task.fromJson(taskString);
+            Coordinate position = task.getDestination().getCoordinate();
+                    
+            moveToPosition(agentState, agentAction, position);
+
+            return;
+        }
+
+        agentAction.skip();
     }
 
     /////////////
@@ -59,31 +59,33 @@ public class MoveRandomBehavior extends Behavior {
     /////////////
 
     /**
-     * Move randomly
+     * Move towards a specific position
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
+     * @param position The position to move towards
      */
-    private void moveRandom(AgentState agentState, AgentAction agentAction) {
+    private void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate position) {
         Perception agentPerception = agentState.getPerception();
         int agentX = agentState.getX();
         int agentY = agentState.getY();
+        int positionX = position.getX();
+        int positionY = position.getY();
 
-        Collections.shuffle(RELATIVE_POSITIONS);
+        int dX = positionX - agentX;
+        int dY = positionY - agentY;
+        int relativePositionX = (dX > 0) ? 1 : ((dX < 0) ? -1 : 0);
+        int relativePositionY = (dY > 0) ? 1 : ((dY < 0) ? -1 : 0);
+        CellPerception cellPerception = agentPerception.getCellPerceptionOnRelPos(relativePositionX, relativePositionY);
 
-        for (Coordinate relativePosition : RELATIVE_POSITIONS) {
-            int relativePositionX = relativePosition.getX();
-            int relativePositionY = relativePosition.getY();
-            CellPerception cellPerception = agentPerception.getCellPerceptionOnRelPos(relativePositionX, relativePositionY);
 
-            if (cellPerception != null && cellPerception.isWalkable()) {
-                int newPositionX = agentX + relativePositionX;
-                int newPositionY = agentY + relativePositionY;
-                
-                agentAction.step(newPositionX, newPositionY);
-                
-                return;
-            }
+        if (cellPerception != null && cellPerception.isWalkable()) {
+            int newPositionX = agentX + relativePositionX;
+            int newPositionY = agentY + relativePositionY;
+            
+            agentAction.step(newPositionX, newPositionY);
+            
+            return;
         }
 
         agentAction.skip();
