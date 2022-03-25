@@ -17,8 +17,6 @@ import java.util.List;
  */
 public class Graph {
     private HashMap<Coordinate, Node> nodes = new HashMap<>();
-    private List<Node> packets = new ArrayList<>();
-    private List<Node> destinations = new ArrayList<>();
 
     public Graph(int initX, int initY) {
         Coordinate initCoordinate = new Coordinate(initX, initY);
@@ -35,14 +33,12 @@ public class Graph {
     public Node addDestinationNode(Coordinate p, Color color) {
         Node n = new Node(p, "destination", color);
         nodes.put(p, n);
-        destinations.add(n);
         return n;
     }
 
     public Node addPacketNode(Coordinate p, Color color) {
         Node n = new Node(p, "packet", color);
         nodes.put(p, n);
-        packets.add(n);
         return n;
     }
 
