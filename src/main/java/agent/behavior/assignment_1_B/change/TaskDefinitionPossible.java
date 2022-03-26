@@ -78,7 +78,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
                     Task task = new Task(candidatepacket, destination, TaskState.TO_PACKET);
 
                     // Update memory
-                    updateMemory(agentState, discoveredPackets, task);
+                    updateTaskMemory(agentState, discoveredPackets, task);
 
                     return true;
                 }
@@ -155,9 +155,12 @@ public class TaskDefinitionPossible extends BehaviorChange{
      * @param task Current task
      * @param discoveredPackets List of discovered packets
      */
-    private void updateMemory(AgentState agentState, ArrayList<Packet> discoveredPackets, Task task) {
+    private void updateTaskMemory(AgentState agentState, ArrayList<Packet> discoveredPackets, Task task) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
         // Remove discovered packets from memory
-        agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
+        if(memoryFragments.contains(MemoryKeys.DISCOVERED_PACKETS)) agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
 
         // Add updated discovered packets and updated task to memory
         Gson gson = new Gson();
@@ -166,6 +169,6 @@ public class TaskDefinitionPossible extends BehaviorChange{
         agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
         agentState.addMemoryFragment(MemoryKeys.TASK, taskString);
         
-        System.out.println("[TaskDefinitionPossible]{updateMemory} Discovered packets and task updated in memory");
+        System.out.println("[TaskDefinitionPossible]{updateTaskMemory} Discovered packets and task updated in memory");
     }
 }

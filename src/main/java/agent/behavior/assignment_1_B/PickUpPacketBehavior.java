@@ -40,7 +40,7 @@ public class PickUpPacketBehavior extends Behavior {
             task.setState(TaskState.TO_DESTINATION);
 
             // Update memory
-            updateMemory(agentState, task);
+            updateTaskMemory(agentState, task);
         }
         else agentAction.skip();   
     }
@@ -69,19 +69,22 @@ public class PickUpPacketBehavior extends Behavior {
     }
 
     /**
-     * Update the memory of the agent
+     * Update memory of agent
      * 
-     * @param agentState Current state of the agent
+     * @param agentState Current state of agent
      * @param task Current task
      */
-    private void updateMemory(AgentState agentState, Task task) {
+    private void updateTaskMemory(AgentState agentState, Task task) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
         // Remove task from memory
-        agentState.removeMemoryFragment(MemoryKeys.TASK);
+        if(memoryFragments.contains(MemoryKeys.TASK)) agentState.removeMemoryFragment(MemoryKeys.TASK);
 
         // Add updated task to memory
         String taskString = task.toJson();
         agentState.addMemoryFragment(MemoryKeys.TASK, taskString);
         
-        System.out.println("[PickUpPacketBehavior]{updateMemory} Task updated in memory");
+        System.out.println("[PickUpPacketBehavior]{updateTaskMemory} Task updated in memory");
     }
 }

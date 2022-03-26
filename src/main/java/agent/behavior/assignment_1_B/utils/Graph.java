@@ -6,6 +6,8 @@ import environment.Perception;
 import java.util.*;
 import java.util.List;
 
+import com.google.gson.Gson;
+
 /**
  * A class representing the mapping of the MAS.
  * The mapping is represented by a graph consisting of nodes and edges.
@@ -21,11 +23,15 @@ public class Graph {
     // CONSTRUCTOR //
     /////////////////
 
+    public Graph(HashMap<Coordinate, Node> nodes) {
+        this.nodes = nodes;
+    }
+
     public Graph(int initialX, int initialY) {
         this.nodes = new HashMap<>();
 
         Coordinate initialCoordinate = new Coordinate(initialX, initialY);
-        Node initialNode = new Node(initialCoordinate, NodeState.FREE);
+        Node initialNode = new Node(initialCoordinate, NodeType.FREE);
         nodes.put(initialCoordinate, initialNode);
     }
 
@@ -33,7 +39,7 @@ public class Graph {
     // METHODS //
     /////////////
 
-    public Node addNode(Coordinate position, NodeState state) {
+    public Node addNode(Coordinate position, NodeType state) {
         Node node = new Node(position, state);
         nodes.put(position, node);
         
@@ -41,11 +47,11 @@ public class Graph {
     }
 
     public void addEdge(Coordinate position1, Coordinate position2) {
-        Node node1 = new Node(position1, NodeState.FREE);
-        Node node2 = new Node(position2, NodeState.FREE);
+        Node node1 = new Node(position1, NodeType.FREE);
+        Node node2 = new Node(position2, NodeType.FREE);
         
-        nodes.get(position1).addEdge(node2, calculateDistance(position1, position2));
-        nodes.get(position2).addEdge(node1, calculateDistance(position2, position1));
+        nodes.get(position1).addEdge(node2.getPosition(), calculateDistance(position1, position2));
+        nodes.get(position2).addEdge(node1.getPosition(), calculateDistance(position2, position1));
     }
 
     public double calculateDistance(Coordinate position1, Coordinate position2) {
@@ -67,7 +73,7 @@ public class Graph {
 
             if (perception.getCellPerceptionOnAbsPos(candidatePosition.getX(), candidatePosition.getY()) != null
                 && candidateDistance < minDistance
-                && nodes.get(candidatePosition).getState() == NodeState.FREE) {
+                && nodes.get(candidatePosition).getState() == NodeType.FREE) {
 
                 minDistance = candidateDistance;
                 result = candidatePosition;
@@ -95,7 +101,7 @@ public class Graph {
      * @param position Position to be tested if its on the edge
      * @return True if position is on the edge
      */
-    public boolean checkPositionOnEdge(Coordinate edgeStart, Coordinate edgeEnd, Coordinate position) {
+    public boolean onTheLine(Coordinate edgeStart, Coordinate edgeEnd, Coordinate position) {
         int distanceX = edgeEnd.getX() - edgeStart.getX();
         int distanceY = edgeEnd.getY() - edgeStart.getY();
 
@@ -108,18 +114,18 @@ public class Graph {
     public void removeNode(Coordinate position) {
         Node node = nodes.get(position);
 
-        for (Node edgeNode : node.getEdges().keySet()) {
-            nodes.get(edgeNode.getPosition()).deleteEdge(node);
+        for (Coordinate edgeCoordinate : node.getEdges().keySet()) {
+            nodes.get(edgeCoordinate).deleteEdge(node.getPosition());
         }
 
         nodes.remove(position);
     }
 
-    public void addEdge(Coordinate position1, Coordinate position2, NodeState state) {
-        Node node1 = new Node(position1, NodeState.FREE);
+    public void addEdge(Coordinate position1, Coordinate position2, NodeType state) {
+        Node node1 = new Node(position1, NodeType.FREE);
         Node node2 = new Node(position2, state);
-        nodes.get(position1).addEdge(node2, calculateDistance(position1, position2));
-        nodes.get(position2).addEdge(node1, calculateDistance(position2, position1));
+        nodes.get(position1).addEdge(node2.getPosition(), calculateDistance(position1, position2));
+        nodes.get(position2).addEdge(node1.getPosition(), calculateDistance(position2, position1));
     }
 
     public List<Coordinate> doSearch(Coordinate startPosition, Coordinate endPosition) {
@@ -137,15 +143,15 @@ public class Graph {
                 return generateNodePath(currentPathNode);
             }
 
-            HashMap<Node, Double> neighbours = nodes.get(currentPathNode.getPosition()).getEdges();
+            HashMap<Coordinate, Double> neighbours = nodes.get(currentPathNode.getPosition()).getEdges();
 
-            for (Node neigbour : neighbours.keySet()) {
+            for (Coordinate neigbourPosition : neighbours.keySet()) {
                 
                 // totalCost = cost to current node + cost of edge bewteen current node and neighbour
                 // TODO: Maybe implement A* here
-                if (!visitedPositions.contains(neigbour.getPosition())) {
-                    double totalCost = currentPathNode.getCost() + neighbours.get(neigbour);
-                    PathNode newPathNode = new PathNode(neigbour.getPosition(), totalCost);
+                if (!visitedPositions.contains(neigbourPosition)) {
+                    double totalCost = currentPathNode.getCost() + neighbours.get(neigbourPosition);
+                    PathNode newPathNode = new PathNode(neigbourPosition, totalCost);
                     newPathNode.setCheapestPreviousNode(currentPathNode);
                     unsettledNodes.add(newPathNode);
                 }
@@ -199,5 +205,19 @@ public class Graph {
         }
 
         return result;
+    }
+
+    //////////
+    // JSON //
+    //////////
+
+    public String toJson() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
+    }
+
+    public static Graph fromJson(String graphString) {
+        // TODO
+        return null; 
     }
 }

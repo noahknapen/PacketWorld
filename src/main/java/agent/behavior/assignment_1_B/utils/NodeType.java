@@ -6,7 +6,7 @@ package agent.behavior.assignment_1_B.utils;
  *  - PACKET: Node is a packet node
  *  - DESTINATION: Node is a destination node
  */
-public enum NodeState {
+public enum NodeType {
     FREE,
     PACKET,
     DESTINATION

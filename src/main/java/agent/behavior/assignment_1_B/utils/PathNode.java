@@ -22,9 +22,9 @@ class PathNode implements Comparable<PathNode> {
         this.cost = cost;
     }
 
-    //////////////////////
-    // GETTERS & SETTERS//
-    //////////////////////
+    ///////////////////////
+    // GETTERS & SETTERS //
+    ///////////////////////
 
     public Coordinate getPosition() {
         return position;

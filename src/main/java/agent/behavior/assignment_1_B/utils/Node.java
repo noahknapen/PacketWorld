@@ -3,20 +3,27 @@ package agent.behavior.assignment_1_B.utils;
 import environment.Coordinate;
 
 import java.util.*;
+import com.google.gson.Gson;
 
 public class Node {
     
     private Coordinate position;
-    private NodeState state;
-    private HashMap<Node, Double> edges;
+    private NodeType type;
+    private HashMap<Coordinate, Double> edges;
 
     //////////////////
     // CONSTRUCTORS //
     //////////////////
-    
-    public Node(Coordinate position, NodeState state) {
+
+    public Node(Coordinate position, NodeType type, HashMap<Coordinate, Double> edges) {
         this.position = position;
-        this.state = state;
+        this.type = type;
+        this.edges = edges;
+    }
+
+    public Node(Coordinate position, NodeType type) {
+        this.position = position;
+        this.type = type;
         this.edges = new HashMap<>();
     }
 
@@ -28,16 +35,16 @@ public class Node {
         return this.position;
     }
 
-    public NodeState getState() {
-        return state;
+    public NodeType getState() {
+        return type;
     }
 
-    public HashMap<Node, Double> getEdges() {
+    public HashMap<Coordinate, Double> getEdges() {
         return edges;
     }
 
-    public void setState(NodeState state) {
-        this.state = state;
+    public void setState(NodeType type) {
+        this.type = type;
     }
 
     ///////////////
@@ -60,12 +67,26 @@ public class Node {
     // METHODS //
     /////////////
 
-    public void addEdge(Node node, double cost) {
-        this.edges.put(node, cost);
+    public void addEdge(Coordinate coordinate, double cost) {
+        this.edges.put(coordinate, cost);
     }
 
-    public void deleteEdge(Node node) {
-        edges.remove(node);
+    public void deleteEdge(Coordinate coordinate) {
+        edges.remove(coordinate);
+    }
+
+    //////////
+    // JSON //
+    //////////
+
+    public String toJson() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
+    }
+
+    public static Node fromJson(String nodeString) {
+        // TODO
+        return null; 
     }
 }
 

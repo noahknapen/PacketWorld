@@ -74,7 +74,7 @@ public class ReadyToPutDown extends BehaviorChange{
             String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
             Task task = Task.fromJson(taskString);
 
-            // Retrieve position
+            // Retrieve positions
             int agentX = agentState.getX();
             int agentY = agentState.getY();
             int positionX = task.getDestination().getCoordinate().getX();

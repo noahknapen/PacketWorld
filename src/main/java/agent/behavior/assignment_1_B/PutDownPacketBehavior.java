@@ -37,7 +37,7 @@ public class PutDownPacketBehavior extends Behavior {
             putDownPacket(agentState, agentAction, task);
 
             // Update memory
-            updateMemory(agentState);
+            updateTaskMemory(agentState);
         }
         else agentAction.skip();
     }
@@ -70,10 +70,13 @@ public class PutDownPacketBehavior extends Behavior {
      * 
      * @param agentState Current state of the agent
      */
-    private void updateMemory(AgentState agentState) {
+    private void updateTaskMemory(AgentState agentState) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
         // Remove task from memory
-        agentState.removeMemoryFragment(MemoryKeys.TASK);
+        if(memoryFragments.contains(MemoryKeys.TASK)) agentState.removeMemoryFragment(MemoryKeys.TASK);
         
-        System.out.println("[PutDownPacketBehavior]{updateMemory} Task deleted from memory");
+        System.out.println("[PutDownPacketBehavior]{updateTaskMemory} Task deleted from memory");
     }
 }
