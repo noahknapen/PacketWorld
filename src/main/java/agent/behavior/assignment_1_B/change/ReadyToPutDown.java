@@ -52,7 +52,7 @@ public class ReadyToPutDown extends BehaviorChange{
             Task task = Task.fromJson(taskString);
 
             // Check if state is TO_DESTINATION
-            return task.getTaskState() == TaskState.TO_DESTINATION;
+            return task.getState() == TaskState.TO_DESTINATION;
         }
         else return false;
     }

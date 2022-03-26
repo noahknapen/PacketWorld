@@ -52,7 +52,7 @@ public class ReadyToPickUp extends BehaviorChange{
             Task task = Task.fromJson(taskString);
 
             // Check if state is TO_PACKET
-            return task.getTaskState() == TaskState.TO_PACKET;
+            return task.getState() == TaskState.TO_PACKET;
         }
         else return false;
     }

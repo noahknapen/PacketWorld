@@ -37,7 +37,7 @@ public class PickUpPacketBehavior extends Behavior {
             // Pick up packet
             pickUpPacket(agentState, agentAction, task);
 
-            task.setTaskState(TaskState.TO_DESTINATION);
+            task.setState(TaskState.TO_DESTINATION);
 
             // Update memory
             updateMemory(agentState, task);

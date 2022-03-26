@@ -9,16 +9,16 @@ public class Task {
 
     private Packet packet;
     private Destination destination;
-    private TaskState taskState;
+    private TaskState state;
 
     ////////////////
     // CONSTRUCTOR//
     ////////////////
 
-    public Task(Packet packet, Destination destination, TaskState taskState) {
+    public Task(Packet packet, Destination destination, TaskState state) {
         this.setPacket(packet);
         this.setDestination(destination);
-        this.setTaskState(taskState);
+        this.setState(state);
     }
 
     //////////////////////
@@ -41,12 +41,12 @@ public class Task {
         this.destination = destination;
     }
 
-    public TaskState getTaskState() {
-        return taskState;
+    public TaskState getState() {
+        return state;
     }
 
-    public void setTaskState(TaskState taskState) {
-        this.taskState = taskState;
+    public void setState(TaskState state) {
+        this.state = state;
     }
 
     //////////

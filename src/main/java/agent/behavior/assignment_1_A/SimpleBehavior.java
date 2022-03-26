@@ -164,7 +164,7 @@ public class SimpleBehavior extends Behavior {
                     // Redefine the task
                     task.setPacket(candidatepacket);
                     task.setDestination(destination);
-                    task.setTaskState(TaskState.TO_PACKET);
+                    task.setState(TaskState.TO_PACKET);
 
                     return;
                 }
@@ -185,7 +185,7 @@ public class SimpleBehavior extends Behavior {
         if(task == null) return;
 
         // Check the task state
-        switch(task.getTaskState()) {
+        switch(task.getState()) {
             case RANDOM:
                 // Move randomly
                 moveRandom(agentState, agentAction);
@@ -211,7 +211,7 @@ public class SimpleBehavior extends Behavior {
                     pickPacket(agentAction);
 
                     // Redefine task state
-                    task.setTaskState(TaskState.TO_DESTINATION);
+                    task.setState(TaskState.TO_DESTINATION);
                 }
                 // Position not reached yet, so make a step towards position
                 else moveToPosition(agentState, agentAction, packCoordinate);
