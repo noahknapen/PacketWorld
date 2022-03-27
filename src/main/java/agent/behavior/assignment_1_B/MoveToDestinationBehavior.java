@@ -51,12 +51,17 @@ public class MoveToDestinationBehavior extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         System.out.println("[MoveToDestinationBehavior]{act}");
-        
-        // Check perception
-        checkPerception(agentState);
+
+        // Update agents previous position
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+        Coordinate agentPosition = new Coordinate(agentX, agentY);
 
         // Handle graph
         handleGraph(agentState);
+
+        // Check perception
+        checkPerception(agentState);
 
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
@@ -72,10 +77,6 @@ public class MoveToDestinationBehavior extends Behavior {
         }
         else moveRandom(agentState, agentAction);
 
-        // Update agents previous position
-        int agentX = agentState.getX();
-        int agentY = agentState.getY();
-        Coordinate agentPosition = new Coordinate(agentX, agentY);
         updateMappingMemory(agentState, null, null, agentPosition, null, null);
     }
 
@@ -161,7 +162,7 @@ public class MoveToDestinationBehavior extends Behavior {
      *     agentPos -> destinationPos
      * 
      * @param agentState Current state of agent
-     * @param dest New destination to be added to the graph
+     * @param destination New destination to be added to the graph
      */
     private void addDestinationToGraph(AgentState agentState, Destination destination) {
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
@@ -235,7 +236,8 @@ public class MoveToDestinationBehavior extends Behavior {
         Graph graph = getGraph(agentState);
         Coordinate previousPosition = getPreviousPosition(agentState);
         Coordinate edgeStartPosition = getEdgeStartPosition(agentState);
-
+        System.out.println("EdgeStart: "+edgeStartPosition);
+        System.out.println("PrePosition: "+previousPosition);
         if (!edgeStartPosition.equals(previousPosition) && !previousPosition.equals(agentPosition)) {
             if (!graph.onTheLine(edgeStartPosition, agentPosition, previousPosition)) {
                 if (!graph.nodeExists(previousPosition)) graph.addNode(previousPosition, NodeType.FREE);
@@ -248,9 +250,9 @@ public class MoveToDestinationBehavior extends Behavior {
         updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null);
     }
 
-        /**
+    /**
      * Move towards a specific position
-     * 
+     *
      * @param agentState Current state of agent
      * @param agentAction Perform an action with agent
      * @param position Position to move towards
@@ -281,7 +283,7 @@ public class MoveToDestinationBehavior extends Behavior {
                 int newPositionX = agentX + relativePositionX;
                 int newPositionY = agentY + relativePositionY;
 
-                // Perform a step 
+                // Perform a step
                 agentAction.step(newPositionX, newPositionY);
 
                 System.out.println("[MoveToPacketBehavior]{moveToPosition} Agent: (" + agentX + ", " + agentY + ") Position: (" + positionX + ", " + positionY + ")");
@@ -309,7 +311,7 @@ public class MoveToDestinationBehavior extends Behavior {
 
                 agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
 
-                updateMappingMemory(agentState, null, null, null, null, shouldBeHerePosition);
+                updateMappingMemory(agentState, null, path, null, null, shouldBeHerePosition);
             }
 
             // If agent position outside the graph -> Move to the closest node first.
@@ -331,7 +333,7 @@ public class MoveToDestinationBehavior extends Behavior {
                     shouldBeHerePosition = nextCoordinate;
                     agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
 
-                    updateMappingMemory(agentState, null, null, null, null, shouldBeHerePosition);
+                    updateMappingMemory(agentState, null, path, null, null, shouldBeHerePosition);
                 }
                 else
                 {
@@ -343,7 +345,7 @@ public class MoveToDestinationBehavior extends Behavior {
 
     /**
      * Move randomly
-     * 
+     *
      * @param agentState Current state of agent
      * @param agentAction Perform an action with agent
      */
@@ -353,11 +355,25 @@ public class MoveToDestinationBehavior extends Behavior {
         int agentX = agentState.getX();
         int agentY = agentState.getY();
 
-        // Shuffle relative positions
-        Collections.shuffle(RELATIVE_POSITIONS);
+
+        List<Coordinate> positions = RELATIVE_POSITIONS;
+
+        // Prioritize going straight first
+        Coordinate previousPosition = getPreviousPosition(agentState);
+        int vecX = agentState.getX() - previousPosition.getX();
+        int vecY = agentState.getY() - previousPosition.getY();
+        int dx = Integer.signum(vecX);
+        int dy = Integer.signum(vecY);
+
+        Coordinate inFront = new Coordinate(dx, dy);
+        positions.remove(inFront);
+
+        // Shuffle relative positions and add the coordinate for going straight in the front
+        Collections.shuffle(positions);
+        positions.add(0, inFront);
 
         // Loop over all relative positions
-        for (Coordinate relativePosition : RELATIVE_POSITIONS) {
+        for (Coordinate relativePosition : positions) {
             // Calculate move
             int relativePositionX = relativePosition.getX();
             int relativePositionY = relativePosition.getY();
@@ -367,12 +383,12 @@ public class MoveToDestinationBehavior extends Behavior {
             if (cellPerception != null && cellPerception.isWalkable()) {
                 int newPositionX = agentX + relativePositionX;
                 int newPositionY = agentY + relativePositionY;
-                
+
                 // Perform a step
                 agentAction.step(newPositionX, newPositionY);
 
-                System.out.println("[MoveToDestinationBehavior]{moveRandom} Random move");
-                
+                System.out.println("[MoveToPacketBehavior]{moveRandom} Random move");
+
                 return;
             }
         }

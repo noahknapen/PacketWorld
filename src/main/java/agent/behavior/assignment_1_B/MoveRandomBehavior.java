@@ -51,19 +51,20 @@ public class MoveRandomBehavior extends Behavior {
     public void act(AgentState agentState, AgentAction agentAction) {
         System.out.println("[MoveRandomBehavior]{act}");
 
-        // Check perception
-        checkPerception(agentState);
-
-        // Handle graph
-        handleGraph(agentState);
-        
-        // Move randomly
-        moveRandom(agentState, agentAction);
-
         // Update agents previous position
         int agentX = agentState.getX();
         int agentY = agentState.getY();
         Coordinate agentPosition = new Coordinate(agentX, agentY);
+
+        // Handle graph
+        handleGraph(agentState);
+
+        // Check perception
+        checkPerception(agentState);
+
+        // Move randomly
+        moveRandom(agentState, agentAction);
+
         updateMappingMemory(agentState, null, null, agentPosition, null, null);
     }
 
@@ -237,7 +238,7 @@ public class MoveRandomBehavior extends Behavior {
 
     /**
      * Move randomly
-     * 
+     *
      * @param agentState Current state of agent
      * @param agentAction Perform an action with agent
      */
@@ -247,11 +248,25 @@ public class MoveRandomBehavior extends Behavior {
         int agentX = agentState.getX();
         int agentY = agentState.getY();
 
-        // Shuffle relative positions
-        Collections.shuffle(RELATIVE_POSITIONS);
+
+        List<Coordinate> positions = RELATIVE_POSITIONS;
+
+        // Prioritize going straight first
+        Coordinate previousPosition = getPreviousPosition(agentState);
+        int vecX = agentState.getX() - previousPosition.getX();
+        int vecY = agentState.getY() - previousPosition.getY();
+        int dx = Integer.signum(vecX);
+        int dy = Integer.signum(vecY);
+
+        Coordinate inFront = new Coordinate(dx, dy);
+        positions.remove(inFront);
+
+        // Shuffle relative positions and add the coordinate for going straight in the front
+        Collections.shuffle(positions);
+        positions.add(0, inFront);
 
         // Loop over all relative positions
-        for (Coordinate relativePosition : RELATIVE_POSITIONS) {
+        for (Coordinate relativePosition : positions) {
             // Calculate move
             int relativePositionX = relativePosition.getX();
             int relativePositionY = relativePosition.getY();
@@ -261,12 +276,12 @@ public class MoveRandomBehavior extends Behavior {
             if (cellPerception != null && cellPerception.isWalkable()) {
                 int newPositionX = agentX + relativePositionX;
                 int newPositionY = agentY + relativePositionY;
-                
+
                 // Perform a step
                 agentAction.step(newPositionX, newPositionY);
 
-                System.out.println("[MoveRandomBehavior]{moveRandom} Random move");
-                
+                System.out.println("[MoveToPacketBehavior]{moveRandom} Random move");
+
                 return;
             }
         }

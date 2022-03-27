@@ -51,12 +51,17 @@ public class MoveToPacketBehavior extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         System.out.println("[MoveToPacketBehavior]{act}");
-        
-        // Check perception
-        checkPerception(agentState);
+
+        // Update agents previous position
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+        Coordinate agentPosition = new Coordinate(agentX, agentY);
 
         // Handle graph
         handleGraph(agentState);
+
+        // Check perception
+        checkPerception(agentState);
 
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
@@ -72,10 +77,6 @@ public class MoveToPacketBehavior extends Behavior {
         }
         else moveRandom(agentState, agentAction);
 
-        // Update agents previous position
-        int agentX = agentState.getX();
-        int agentY = agentState.getY();
-        Coordinate agentPosition = new Coordinate(agentX, agentY);
         updateMappingMemory(agentState, null, null, agentPosition, null, null);
     }
 
@@ -160,7 +161,7 @@ public class MoveToPacketBehavior extends Behavior {
      *     agentPos -> destinationPos
      * 
      * @param agentState Current state of agent
-     * @param dest New destination to be added to the graph
+     * @param destination New destination to be added to the graph
      */
     private void addDestinationToGraph(AgentState agentState, Destination destination) {
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
@@ -299,7 +300,10 @@ public class MoveToPacketBehavior extends Behavior {
 
                 // If previous movement failed for some reason -> Try again.
                 if (!agentPosition.equals(shouldBeHerePosition)) {
-                    moveToPosition(agentState, agentAction, shouldBeHerePosition);
+                    if (shouldBeHerePosition != null)
+                        moveToPosition(agentState, agentAction, shouldBeHerePosition);
+                    else
+                        moveRandom(agentState, agentAction);
                     return;
                 }
 
@@ -308,14 +312,17 @@ public class MoveToPacketBehavior extends Behavior {
 
                 agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
 
-                updateMappingMemory(agentState, null, null, null, null, shouldBeHerePosition);
+                updateMappingMemory(agentState, null, path, null, null, shouldBeHerePosition);
             }
 
             // If agent position outside the graph -> Move to the closest node first.
             else if (!graph.nodeExists(agentPosition))
             {
                 Coordinate closestNodeCoordinate = graph.closestFreeNodeCoordinate(agentState.getPerception(), agentPosition);
-                moveToPosition(agentState, agentAction, closestNodeCoordinate);
+                if (closestNodeCoordinate != null)
+                    moveToPosition(agentState, agentAction, closestNodeCoordinate);
+                else
+                    moveRandom(agentState, agentAction);
             }
 
             // Search for path from current position to the desired position.
@@ -330,7 +337,7 @@ public class MoveToPacketBehavior extends Behavior {
                     shouldBeHerePosition = nextCoordinate;
                     agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
 
-                    updateMappingMemory(agentState, null, null, null, null, shouldBeHerePosition);
+                    updateMappingMemory(agentState, null, path, null, null, shouldBeHerePosition);
                 }
                 else
                 {
@@ -352,11 +359,25 @@ public class MoveToPacketBehavior extends Behavior {
         int agentX = agentState.getX();
         int agentY = agentState.getY();
 
-        // Shuffle relative positions
-        Collections.shuffle(RELATIVE_POSITIONS);
+
+        List<Coordinate> positions = RELATIVE_POSITIONS;
+
+        // Prioritize going straight first
+        Coordinate previousPosition = getPreviousPosition(agentState);
+        int vecX = agentState.getX() - previousPosition.getX();
+        int vecY = agentState.getY() - previousPosition.getY();
+        int dx = Integer.signum(vecX);
+        int dy = Integer.signum(vecY);
+
+        Coordinate inFront = new Coordinate(dx, dy);
+        positions.remove(inFront);
+
+        // Shuffle relative positions and add the coordinate for going straight in the front
+        Collections.shuffle(positions);
+        positions.add(0, inFront);
 
         // Loop over all relative positions
-        for (Coordinate relativePosition : RELATIVE_POSITIONS) {
+        for (Coordinate relativePosition : positions) {
             // Calculate move
             int relativePositionX = relativePosition.getX();
             int relativePositionY = relativePosition.getY();

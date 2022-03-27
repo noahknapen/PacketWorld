@@ -32,7 +32,7 @@ public class PacketAlreadyHandled extends BehaviorChange{
             Graph graph = getGraph(agentState);
             Task task = getTask(agentState);
 
-            graph.removeNode(task.getPacket().getCoordinate());
+            // graph.removeNode(task.getPacket().getCoordinate());
 
             updateMappingMemory(agentState, graph);
         }

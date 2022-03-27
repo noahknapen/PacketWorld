@@ -63,6 +63,15 @@ public class Node {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "Node{" +
+                "position=" + position +
+                ", type=" + type +
+                ", edges=" + edges +
+                '}';
+    }
+
     /////////////
     // METHODS //
     /////////////
