@@ -1,5 +1,6 @@
 package agent.behavior.assignment_1_B.utils;
 
+import com.google.gson.GsonBuilder;
 import environment.Coordinate;
 import environment.Perception;
 
@@ -26,6 +27,8 @@ public class Graph {
     public Graph(HashMap<Coordinate, Node> nodes) {
         this.nodes = nodes;
     }
+
+    public Graph() {}
 
     public Graph(int initialX, int initialY) {
         this.nodes = new HashMap<>();
@@ -212,12 +215,13 @@ public class Graph {
     //////////
 
     public String toJson() {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         return gson.toJson(this);
     }
 
     public static Graph fromJson(String graphString) {
         // TODO
-        return null; 
+        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        return gson.fromJson(graphString, Graph.class);
     }
 }
