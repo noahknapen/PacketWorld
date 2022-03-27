@@ -1,0 +1,20 @@
+description "Simple delivery"
+
+
+# ------------------------------------------------
+# The amount of the behavior states the agent has
+# ------------------------------------------------
+nbStates 1
+
+
+# Enumeration of the behavior agent states
+1 agent.behavior.assignment_1_A.SimpleBehavior    
+nbArgs 0
+
+
+
+# ---------------------------------------------------------------
+# The amount of behavior changes for the agent
+#  (only necessary when more than 1 agent behavior is specified)
+# ---------------------------------------------------------------
+nbChanges 0

@@ -1,0 +1,72 @@
+description "Delivery with different behaviors"
+
+
+# ------------------------------------------------
+# The amount of the behavior states the agent has
+# ------------------------------------------------
+nbStates 5
+
+1 agent.behavior.assignment_1_B.MoveRandomBehavior    
+nbArgs 0
+
+2 agent.behavior.assignment_1_B.MoveToPacketBehavior    
+nbArgs 0
+
+3 agent.behavior.assignment_1_B.PickUpPacketBehavior    
+nbArgs 0
+
+4 agent.behavior.assignment_1_B.MoveToDestinationBehavior    
+nbArgs 0
+
+5 agent.behavior.assignment_1_B.PutDownPacketBehavior    
+nbArgs 0
+
+
+
+# ---------------------------------------------------------------
+# The amount of behavior changes for the agent
+#  (only necessary when more than 1 agent behavior is specified)
+# ---------------------------------------------------------------
+nbChanges 7
+
+agent.behavior.assignment_1_B.change.TaskDefinitionPossible
+nbArgs 0
+priority 0
+source 1
+target 2
+
+agent.behavior.assignment_1_B.change.ReadyToPickUp
+nbArgs 0
+priority 0
+source 2
+target 3
+
+agent.behavior.assignment_1_B.change.PacketAlreadyHandled
+nbArgs 0
+priority 1
+source 2
+target 1
+
+agent.behavior.assignment_1_B.change.HasCarry
+nbArgs 0
+priority 0
+source 3
+target 4
+
+agent.behavior.assignment_1_B.change.ReadyToPutDown
+nbArgs 0
+priority 0
+source 4
+target 5
+
+agent.behavior.assignment_1_B.change.TaskDefinitionNotPossible
+nbArgs 0
+priority 0
+source 5
+target 1
+
+agent.behavior.assignment_1_B.change.TaskDefinitionPossible
+nbArgs 0
+priority 0
+source 5
+target 2
