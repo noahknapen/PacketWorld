@@ -3,7 +3,6 @@ package agent.behavior.assignment_1_B.utils;
 import environment.Coordinate;
 
 import java.util.*;
-import com.google.gson.Gson;
 
 public class Node {
     
