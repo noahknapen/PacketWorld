@@ -83,19 +83,5 @@ public class Node {
     public void deleteEdge(Coordinate coordinate) {
         edges.remove(coordinate);
     }
-
-    //////////
-    // JSON //
-    //////////
-
-    public String toJson() {
-        Gson gson = new Gson();
-        return gson.toJson(this);
-    }
-
-    public static Node fromJson(String nodeString) {
-        // TODO
-        return null; 
-    }
 }
 
