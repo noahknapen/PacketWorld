@@ -47,10 +47,10 @@ Lastly, if you want to adhere to the coding style of the project, you can run th
 `mvn checkstyle:check`
 
 # Assignemnt 1 A
-The assignment_1_A solution implements a single behaviour. In this solution, the agent stores two lists: one with the discovered packages and one with the discovered destinations. Based on those lists, the agent creates and performs tasks. The movement of the agent is divided in two cases. If the goal position is in the perception, the agent moves straight to it, otherwise it will randmoly move.
+The assignment_1_A solution implements a single behaviour. In this solution, the agent stores two lists: one with the discovered packets and one with the discovered destinations. Based on those lists, the agent creates and performs tasks. The movement of the agent is divided in two cases. If the goal position is in the perception, the agent moves straight to it, otherwise it will randomly move.
 
 # Assignment 1 B
-The assignment_1_B solution extends the assignment_1_A solution. The SimpleBehaviour has been divided in five different behaviours and corresponding BehaviourChange classes have been implemented. An overview scheme can be found in the assignment_1_B folder. Furthermore, a graph-based approach was implement to optimize the movements of the agent.
+The assignment_1_B solution extends the assignment_1_A solution. The SimpleBehaviour has been divided in five different behaviours and corresponding BehaviourChange classes have been implemented. An overview scheme can be found in the assignment_1_B folder. Furthermore, a graph-based approach was implemented to optimize the movements of the agent.
 
 ## Final notes
 
