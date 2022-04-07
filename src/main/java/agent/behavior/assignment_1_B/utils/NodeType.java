@@ -9,5 +9,6 @@ package agent.behavior.assignment_1_B.utils;
 public enum NodeType {
     FREE,
     PACKET,
-    DESTINATION
+    DESTINATION,
+    BATTERYSTATION
 }
