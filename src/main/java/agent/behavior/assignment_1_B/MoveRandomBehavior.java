@@ -4,12 +4,10 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import agent.AgentAction;
@@ -25,11 +23,10 @@ import agent.behavior.assignment_1_B.utils.MemoryKeys;
 import agent.behavior.assignment_1_B.utils.NodeType;
 import environment.CellPerception;
 import environment.Coordinate;
+import environment.Mail;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
-import environment.world.energystation.EnergyStationRep;
 import environment.world.packet.PacketRep;
-import environment.Mail;
 
 public class MoveRandomBehavior extends Behavior {
 
@@ -50,7 +47,31 @@ public class MoveRandomBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // TODO Auto-generated method stub
+        // TODO Optimization could be that the agent holds a list to what agents it has sent the message and stops sending it if everyone has it
+        Gson gson = new Gson();
+
+        // Get messages from other agents
+        Collection<Mail> messages = agentCommunication.getMessages();
+        ArrayList<BatteryStation> receivedBatteryStations = new ArrayList<>();
+
+        for (Mail message : messages)
+        {
+            ArrayList<BatteryStation> newBatteryStations = gson.fromJson(message.getMessage(), new TypeToken<ArrayList<BatteryStation>>(){}.getType());
+            receivedBatteryStations.addAll(newBatteryStations);
+        }
+
+        if (receivedBatteryStations.size() > 0)
+            updateTaskMemory(agentState, null, null, receivedBatteryStations);
+
+
+        // Broadcast found destinations to other agents
+        ArrayList<BatteryStation> discoveredBatteryStations = getDiscoveredBatteryStations(agentState);
+
+        if (discoveredBatteryStations.size() > 0)
+        {
+        String batteryStationsString = gson.toJson(discoveredBatteryStations);
+        agentCommunication.broadcastMessage(batteryStationsString);
+        }
     }
 
     @Override
