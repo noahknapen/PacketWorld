@@ -18,7 +18,6 @@ public class HasCarry extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[HasCarry]{updateChange}");
 
         AgentState agentState = this.getAgentState();
 

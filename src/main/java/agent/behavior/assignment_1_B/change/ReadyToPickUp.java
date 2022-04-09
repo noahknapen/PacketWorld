@@ -19,7 +19,6 @@ public class ReadyToPickUp extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[ReadyToPickUp] updateChange");
 
         AgentState agentState = this.getAgentState();
         
@@ -163,6 +162,5 @@ public class ReadyToPickUp extends BehaviorChange{
         String graphString = graph.toJson();
         agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
 
-        System.out.println("[ReadyToPickUp]{updateMappingMemory} Graph updated in memory");
     }    
 }

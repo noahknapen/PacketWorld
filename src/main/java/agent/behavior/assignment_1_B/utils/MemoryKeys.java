@@ -6,6 +6,7 @@ public class MemoryKeys {
     public static final String DISCOVERED_DESTINATIONS = "DISCOVERED_DESTINATIONS";
     public static final String DISCOVERED_PACKETS = "DISCOVERED_PACKETS";
     public static final String DISCOVERED_BATTERY_STATIONS = "DISCOVERED_BATTERY_STATIONS";
+    public static final String NON_BROADCASTED_BATTERY_STATIONS = "NON_BROADCASTED_BATTERY_STATIONS";
 
     // Mapping
     public static final String GRAPH = "GRAPH";

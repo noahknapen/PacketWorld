@@ -24,7 +24,6 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[TaskDefinitionNotPossible] updateChange");
 
         AgentState agentState = this.getAgentState();
 

@@ -18,7 +18,6 @@ public class ReadyToPutDown extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[ReadyToPutDown]{updateChange}");
 
         AgentState agentState = this.getAgentState();
         

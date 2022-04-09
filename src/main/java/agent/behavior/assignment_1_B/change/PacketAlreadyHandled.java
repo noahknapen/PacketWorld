@@ -21,7 +21,6 @@ public class PacketAlreadyHandled extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[PacketAlreadyHandled]{updateChange}");
 
         AgentState agentState = this.getAgentState();
         
@@ -155,6 +154,5 @@ public class PacketAlreadyHandled extends BehaviorChange{
         String graphString = graph.toJson();
         agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
 
-        System.out.println("[PacketAlreadyHandled]{updateMappingMemory} Graph updated in memory");
     }    
 }

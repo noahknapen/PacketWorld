@@ -38,7 +38,7 @@ public class BatteryStation {
         if (object instanceof BatteryStation)
         {
             BatteryStation batteryObject = (BatteryStation) object;
-            result = this.coordinate == batteryObject.getCoordinate();
+            result = this.coordinate.equals(batteryObject.getCoordinate());
         }
 
         return result;

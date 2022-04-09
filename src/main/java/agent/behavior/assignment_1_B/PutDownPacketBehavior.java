@@ -27,7 +27,6 @@ public class PutDownPacketBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        System.out.println("[PutDownPacketBehavior]{act}");
 
         // Update agents previous position
         int agentX = agentState.getX();
@@ -82,8 +81,6 @@ public class PutDownPacketBehavior extends Behavior {
         Graph graph = getGraph(agentState);
         Coordinate previousPosition = getPreviousPosition(agentState);
         Coordinate edgeStartPosition = getEdgeStartPosition(agentState);
-        System.out.println("EdgeStart: "+edgeStartPosition);
-        System.out.println("PrePosition: "+previousPosition);
         if (!edgeStartPosition.equals(previousPosition) && !previousPosition.equals(agentPosition)) {
             if (!graph.onTheLine(edgeStartPosition, agentPosition, previousPosition)) {
                 if (!graph.nodeExists(previousPosition)) graph.addNode(previousPosition, NodeType.FREE);
@@ -212,7 +209,6 @@ public class PutDownPacketBehavior extends Behavior {
             String graphString = graph.toJson();
             agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
 
-            System.out.println("[MoveToDestinationBehavior]{updateMappingMemory} Graph updated in memory");
         }
 
         if(path != null) {
@@ -223,7 +219,6 @@ public class PutDownPacketBehavior extends Behavior {
             String pathString = gson.toJson(path);
             agentState.addMemoryFragment(MemoryKeys.PATH, pathString);
 
-            System.out.println("[MoveToDestinationBehavior]{updateMappingMemory} Path updated in memory");
         }
 
         if(previousPosition != null) {
@@ -234,7 +229,6 @@ public class PutDownPacketBehavior extends Behavior {
             String previousPositionString = gson.toJson(previousPosition);
             agentState.addMemoryFragment(MemoryKeys.PREVIOUS_POSITION, previousPositionString);
 
-            System.out.println("[MoveToDestinationBehavior]{updateMappingMemory} Previous position updated in memory");
         }
 
         if(edgeStartPosition != null) {
@@ -245,7 +239,6 @@ public class PutDownPacketBehavior extends Behavior {
             String edgeStartPositionString = gson.toJson(edgeStartPosition);
             agentState.addMemoryFragment(MemoryKeys.EDGE_START_POSITION, edgeStartPositionString);
 
-            System.out.println("[MoveToDestinationBehavior]{updateMappingMemory} Edge start position updated in memory");
         }
 
         if(shouldBeHerePosition != null) {
@@ -256,7 +249,6 @@ public class PutDownPacketBehavior extends Behavior {
             String shouldBeHerePositionString = gson.toJson(shouldBeHerePosition);
             agentState.addMemoryFragment(MemoryKeys.SHOULD_BE_HERE_POSITION, shouldBeHerePositionString);
 
-            System.out.println("[MoveToDestinationBehavior]{updateMappingMemory} Should be here position updated in memory");
         }
     }
 
@@ -277,7 +269,6 @@ public class PutDownPacketBehavior extends Behavior {
         // Put down packet
         agentAction.putPacket(positionX, positionY);
         
-        System.out.println("[PutDownPacketBehavior]{putDownPacket} Packet put down (" + task.getPacket().getColor() + ")");
     }
 
     /**
@@ -292,6 +283,5 @@ public class PutDownPacketBehavior extends Behavior {
         // Remove task from memory
         if(memoryFragments.contains(MemoryKeys.TASK)) agentState.removeMemoryFragment(MemoryKeys.TASK);
         
-        System.out.println("[PutDownPacketBehavior]{updateTaskMemory} Task deleted from memory");
     }
 }

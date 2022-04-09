@@ -47,36 +47,41 @@ public class MoveRandomBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // TODO Optimization could be that the agent holds a list to what agents it has sent the message and stops sending it if everyone has it
         Gson gson = new Gson();
+
+        // Broadcast found destinations to other agents
+        ArrayList<BatteryStation> nonBroadcastedBatteryStations = getNonBroadcastedBatteryStations(agentState);
+
+        if (nonBroadcastedBatteryStations.size() > 0)
+        {
+        String batteryStationsString = gson.toJson(nonBroadcastedBatteryStations);
+        agentCommunication.broadcastMessage(batteryStationsString);
+        System.out.println(String.format("Agent on coordinate (%d,%d) has broadcasted a message", agentState.getX(), agentState.getY()));
+        }
 
         // Get messages from other agents
         Collection<Mail> messages = agentCommunication.getMessages();
-        ArrayList<BatteryStation> receivedBatteryStations = new ArrayList<>();
+        ArrayList<BatteryStation> discoveredBatteryStations = getDiscoveredBatteryStations(agentState);
 
         for (Mail message : messages)
         {
+            System.out.println(String.format("Agent on coordinate (%d,%d) has received a message", agentState.getX(), agentState.getY()));
             ArrayList<BatteryStation> newBatteryStations = gson.fromJson(message.getMessage(), new TypeToken<ArrayList<BatteryStation>>(){}.getType());
-            receivedBatteryStations.addAll(newBatteryStations);
+            
+            for (BatteryStation batteryStation : newBatteryStations)
+            {
+                if (!discoveredBatteryStations.contains(batteryStation))
+                {
+                    discoveredBatteryStations.add(batteryStation);
+                }
+            }
         }
 
-        if (receivedBatteryStations.size() > 0)
-            updateTaskMemory(agentState, null, null, receivedBatteryStations);
-
-
-        // Broadcast found destinations to other agents
-        ArrayList<BatteryStation> discoveredBatteryStations = getDiscoveredBatteryStations(agentState);
-
-        if (discoveredBatteryStations.size() > 0)
-        {
-        String batteryStationsString = gson.toJson(discoveredBatteryStations);
-        agentCommunication.broadcastMessage(batteryStationsString);
-        }
+        updateTaskMemory(agentState, null, null, discoveredBatteryStations, new ArrayList<BatteryStation>());
     }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        System.out.println("[MoveRandomBehavior]{act}");
 
         // Update agents previous position
         int agentX = agentState.getX();
@@ -110,6 +115,7 @@ public class MoveRandomBehavior extends Behavior {
         ArrayList<Packet> discoveredPackets = getDiscoveredPackets(agentState);
         ArrayList<Destination> discoveredDestinations = getDiscoveredDestinations(agentState);
         ArrayList<BatteryStation> discoveredBatteryStations = getDiscoveredBatteryStations(agentState);
+        ArrayList<BatteryStation> nonBroadcastedBatteryStations = getNonBroadcastedBatteryStations(agentState);
         Task task = getTask(agentState);
         Graph graph = getGraph(agentState);
 
@@ -171,7 +177,8 @@ public class MoveRandomBehavior extends Behavior {
                     else
                     {
                         discoveredBatteryStations.add(batteryStation);
-                        System.out.println("[MoveRandomBehavior]{checkPerception} New battery station discovered (" + discoveredBatteryStations.size() + ")");
+                        nonBroadcastedBatteryStations.add(batteryStation);
+                        System.out.println(String.format("[MoveRandomBehavior]{checkPerception} Agent on location (%d,%d) has discovered a new battery station (" + discoveredBatteryStations.size() + ")", agentState.getX(), agentState.getY()));
                     }
 
                     if (!graph.nodeExists(cell.getX(), cell.getY()))
@@ -183,7 +190,7 @@ public class MoveRandomBehavior extends Behavior {
         }
 
         // Update memory
-        updateTaskMemory(agentState, discoveredPackets, discoveredDestinations, discoveredBatteryStations);        
+        updateTaskMemory(agentState, discoveredPackets, discoveredDestinations, discoveredBatteryStations, nonBroadcastedBatteryStations);        
     }
 
     /**
@@ -344,7 +351,6 @@ public class MoveRandomBehavior extends Behavior {
                 // Perform a step
                 agentAction.step(newPositionX, newPositionY);
 
-                System.out.println("[MoveToPacketBehavior]{moveRandom} Random move");
 
                 return;
             }
@@ -435,6 +441,31 @@ public class MoveRandomBehavior extends Behavior {
 
             return discoveredBatteryStations;
         }
+    }
+
+    private ArrayList<BatteryStation> getNonBroadcastedBatteryStations(AgentState agentState)
+    {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
+        Gson gson = new Gson();
+        // Check if list of discovered battery stations exists in memory
+        if(memoryFragments.contains(MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS)) {
+            // Retrieve list of discovered battery stations 
+            String nonBroadcastedBatteryStationsString = agentState.getMemoryFragment(MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS);
+            return gson.fromJson(nonBroadcastedBatteryStationsString, new TypeToken<ArrayList<BatteryStation>>(){}.getType());
+        }
+        else {
+            // Create list of discovered battery stations
+            ArrayList<BatteryStation> nonBroadcastedBatteryStations = new ArrayList<BatteryStation>();
+
+            // Add list of discovered battery stations to memory
+            String nonBroadcastedBatteryStationsString = gson.toJson(nonBroadcastedBatteryStations);
+            agentState.addMemoryFragment(MemoryKeys.DISCOVERED_BATTERY_STATIONS, nonBroadcastedBatteryStationsString);
+
+            return nonBroadcastedBatteryStations;
+        }
+
     }
 
     /**
@@ -556,28 +587,48 @@ public class MoveRandomBehavior extends Behavior {
      * @param discoveredPackets List of discovered packets
      * @param discoveredDestinations List of discovered destinations
      */
-    private void updateTaskMemory(AgentState agentState, ArrayList<Packet> discoveredPackets, ArrayList<Destination> discoveredDestinations, ArrayList<BatteryStation> discoveredBatteryStations) {
+    private void updateTaskMemory(AgentState agentState, ArrayList<Packet> discoveredPackets, ArrayList<Destination> discoveredDestinations, ArrayList<BatteryStation> discoveredBatteryStations, ArrayList<BatteryStation> nonBroadcastedBatteryStations) 
+    {
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-        
-        // Remove discovered packets and discovered destinations from memory
-        if(memoryFragments.contains(MemoryKeys.DISCOVERED_PACKETS)) 
-            agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
-        if(memoryFragments.contains(MemoryKeys.DISCOVERED_DESTINATIONS)) 
-            agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
-        if (memoryFragments.contains(MemoryKeys.DISCOVERED_BATTERY_STATIONS))
-            agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_BATTERY_STATIONS);
-
-        // Add updated discovered packets and updated discovered destinations to memory
         Gson gson = new Gson();
-        String discoveredPacketsString = gson.toJson(discoveredPackets);
-        String discoveredDestinationsString = gson.toJson(discoveredDestinations);
-        String discoveredBatteryStationsString = gson.toJson(discoveredBatteryStations);
-        agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
-        agentState.addMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinationsString);
-        agentState.addMemoryFragment(MemoryKeys.DISCOVERED_BATTERY_STATIONS, discoveredBatteryStationsString);
-        
-        System.out.println("[MoveRandomBehavior]{updateTaskMemory} Discovered packets and discovered destinations updated in memory");
+
+        if (discoveredPackets != null)
+        {
+            if(memoryFragments.contains(MemoryKeys.DISCOVERED_PACKETS)) 
+                agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
+         
+            String discoveredPacketsString = gson.toJson(discoveredPackets);
+            agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
+        }
+
+        if (discoveredDestinations != null) 
+        {
+            if(memoryFragments.contains(MemoryKeys.DISCOVERED_DESTINATIONS)) 
+                agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
+
+            String discoveredDestinationsString = gson.toJson(discoveredDestinations);
+            agentState.addMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinationsString);
+        }
+
+        if (discoveredBatteryStations != null)
+        {
+            if (memoryFragments.contains(MemoryKeys.DISCOVERED_BATTERY_STATIONS))
+                agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_BATTERY_STATIONS);
+
+            String discoveredBatteryStationsString = gson.toJson(discoveredBatteryStations);
+            agentState.addMemoryFragment(MemoryKeys.DISCOVERED_BATTERY_STATIONS, discoveredBatteryStationsString);
+        }
+
+        if (nonBroadcastedBatteryStations != null) 
+        {
+            if (memoryFragments.contains(MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS))
+                agentState.removeMemoryFragment(MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS);
+
+            String nonBroadcastedBatteryStationsString = gson.toJson(nonBroadcastedBatteryStations);
+            agentState.addMemoryFragment(MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS, nonBroadcastedBatteryStationsString);
+
+        }
     }
     
     /**
@@ -603,7 +654,6 @@ public class MoveRandomBehavior extends Behavior {
             String graphString = graph.toJson();
             agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
 
-            System.out.println("[MoveRandomBehavior]{updateMappingMemory} Graph updated in memory");
         }
 
         if(path != null) {
@@ -614,7 +664,6 @@ public class MoveRandomBehavior extends Behavior {
             String pathString = gson.toJson(path);
             agentState.addMemoryFragment(MemoryKeys.PATH, pathString);
 
-            System.out.println("[MoveRandomBehavior]{updateMappingMemory} Path updated in memory");
         }
 
         if(previousPosition != null) {
@@ -625,7 +674,6 @@ public class MoveRandomBehavior extends Behavior {
             String previousPositionString = gson.toJson(previousPosition);
             agentState.addMemoryFragment(MemoryKeys.PREVIOUS_POSITION, previousPositionString);
 
-            System.out.println("[MoveRandomBehavior]{updateMappingMemory} Previous position updated in memory");
         }
 
         if(edgeStartPosition != null) {
@@ -636,7 +684,6 @@ public class MoveRandomBehavior extends Behavior {
             String edgeStartPositionString = gson.toJson(edgeStartPosition);
             agentState.addMemoryFragment(MemoryKeys.EDGE_START_POSITION, edgeStartPositionString);
 
-            System.out.println("[MoveRandomBehavior]{updateMappingMemory} Edge start position updated in memory");
         }
         
         if(shouldBeHerePosition != null) {
@@ -647,7 +694,6 @@ public class MoveRandomBehavior extends Behavior {
             String shouldBeHerePositionString = gson.toJson(shouldBeHerePosition);
             agentState.addMemoryFragment(MemoryKeys.SHOULD_BE_HERE_POSITION, shouldBeHerePositionString);
 
-            System.out.println("[MoveRandomBehavior]{updateMappingMemory} Should be here position updated in memory");
         }
     }    
 }

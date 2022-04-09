@@ -244,7 +244,6 @@ public class SimpleBehavior extends Behavior {
      * @param agentAction Perform an action with the agent
      */
     private void pickPacket(AgentAction agentAction) {
-        System.out.println("[pickPacket] Packet picked up (" + task.getPacket().getColor() + ")");
 
         agentAction.pickPacket(task.getPacket().getCoordinate().getX(), task.getPacket().getCoordinate().getY());
     }
@@ -254,7 +253,6 @@ public class SimpleBehavior extends Behavior {
     * @param agentAction Perform an action with the agent
     */
     private void putPacket(AgentAction agentAction) {
-        System.out.println("[pickPacket] Packet put down (" + task.getPacket().getColor() + ")");
 
         agentAction.putPacket(task.getDestination().getCoordinate().getX(), task.getDestination().getCoordinate().getY());
     }
@@ -273,7 +271,6 @@ public class SimpleBehavior extends Behavior {
         int positionX = position.getX();
         int positionY = position.getY();
 
-        System.out.println("[moveToPosition] Agent: (" + agentX + ", " + agentY + ") Position: (" + positionX + ", " + positionY + ")");
 
         // Check if position is in current perception
         if(positionInPerception(agentState, position)) {
@@ -286,20 +283,17 @@ public class SimpleBehavior extends Behavior {
                 int newPositionX = agentX + dxStep;
                 int newPositionY = agentY + dyStep;
                 
-                System.out.println("\t\t Agent: (" + newPositionX + ", " + newPositionY + ")");
 
                 // Make a step towards position
                 agentAction.step(newPositionX, newPositionY);
             }
             else {
-                System.out.println("\t\t Random move");
 
                 // Make a random step
                 moveRandom(agentState, agentAction);  
             }
         }
         else {
-            System.out.println("\t\t Random move");
 
             // Make a random step
             moveRandom(agentState, agentAction);

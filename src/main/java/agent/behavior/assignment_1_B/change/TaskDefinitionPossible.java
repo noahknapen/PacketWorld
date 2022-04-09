@@ -27,7 +27,6 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[TasksAvailable] updateChange");
 
         AgentState agentState = this.getAgentState();
 
@@ -169,6 +168,5 @@ public class TaskDefinitionPossible extends BehaviorChange{
         agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
         agentState.addMemoryFragment(MemoryKeys.TASK, taskString);
         
-        System.out.println("[TaskDefinitionPossible]{updateTaskMemory} Discovered packets and task updated in memory");
     }
 }

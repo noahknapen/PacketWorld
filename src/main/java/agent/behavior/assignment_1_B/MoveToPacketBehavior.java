@@ -50,7 +50,6 @@ public class MoveToPacketBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        System.out.println("[MoveToPacketBehavior]{act}");
 
         // Update agents previous position
         int agentX = agentState.getX();
@@ -284,7 +283,6 @@ public class MoveToPacketBehavior extends Behavior {
                 // Perform a step 
                 agentAction.step(newPositionX, newPositionY);
 
-                System.out.println("[MoveToPacketBehavior]{moveToPosition} Agent: (" + agentX + ", " + agentY + ") Position: (" + positionX + ", " + positionY + ")");
             }
             else moveRandom(agentState, agentAction);
 
@@ -391,7 +389,6 @@ public class MoveToPacketBehavior extends Behavior {
                 // Perform a step
                 agentAction.step(newPositionX, newPositionY);
 
-                System.out.println("[MoveToPacketBehavior]{moveRandom} Random move");
                 
                 return;
             }
@@ -675,7 +672,6 @@ public class MoveToPacketBehavior extends Behavior {
         agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
         agentState.addMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinationsString);
         
-        System.out.println("[MoveToPacketBehavior]{updateTaskMemory} Discovered packets and discovered destinations updated in memory");
     }
 
     /**
@@ -701,7 +697,6 @@ public class MoveToPacketBehavior extends Behavior {
             String graphString = graph.toJson();
             agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
 
-            System.out.println("[MoveToPacketBehavior]{updateMappingMemory} Graph updated in memory");
         }
 
         if(path != null) {
@@ -712,7 +707,6 @@ public class MoveToPacketBehavior extends Behavior {
             String pathString = gson.toJson(path);
             agentState.addMemoryFragment(MemoryKeys.PATH, pathString);
 
-            System.out.println("[MoveToPacketBehavior]{updateMappingMemory} Path updated in memory");
         }
 
         if(previousPosition != null) {
@@ -723,7 +717,6 @@ public class MoveToPacketBehavior extends Behavior {
             String previousPositionString = gson.toJson(previousPosition);
             agentState.addMemoryFragment(MemoryKeys.PREVIOUS_POSITION, previousPositionString);
 
-            System.out.println("[MoveToPacketBehavior]{updateMappingMemory} Previous position updated in memory");
         }
 
         if(edgeStartPosition != null) {
@@ -734,7 +727,6 @@ public class MoveToPacketBehavior extends Behavior {
             String edgeStartPositionString = gson.toJson(edgeStartPosition);
             agentState.addMemoryFragment(MemoryKeys.EDGE_START_POSITION, edgeStartPositionString);
 
-            System.out.println("[MoveToPacketBehavior]{updateMappingMemory} Edge start position updated in memory");
         }
         
         if(shouldBeHerePosition != null) {
@@ -745,7 +737,6 @@ public class MoveToPacketBehavior extends Behavior {
             String shouldBeHerePositionString = gson.toJson(shouldBeHerePosition);
             agentState.addMemoryFragment(MemoryKeys.SHOULD_BE_HERE_POSITION, shouldBeHerePositionString);
 
-            System.out.println("[MoveToPacketBehavior]{updateMappingMemory} Should be here position updated in memory");
         }
     }
 }
