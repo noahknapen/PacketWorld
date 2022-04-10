@@ -2,11 +2,14 @@ package util;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import agent.AgentAction;
 import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
@@ -23,7 +26,72 @@ import util.task.AgentTaskInteraction;
 import util.task.Task;
 
 public class AgentGeneralNecessities {
+
+    private final static ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
+        new Coordinate(1, 1), 
+        new Coordinate(-1, -1),
+        new Coordinate(1, 0), 
+        new Coordinate(-1, 0),
+        new Coordinate(0, 1), 
+        new Coordinate(0, -1),
+        new Coordinate(1, -1), 
+        new Coordinate(-1, 1)
+    ));
+
     
+    /**
+     * Move randomly
+     *
+     * @param agentState Current state of agent
+     * @param agentAction Perform an action with agent
+     */
+    public static void moveRandom(AgentState agentState, AgentAction agentAction) {
+        // Retrieve position
+        Perception perception = agentState.getPerception();
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+
+
+        List<Coordinate> positions = AgentGeneralNecessities.RELATIVE_POSITIONS;
+
+        // Prioritize going straight first
+        Coordinate previousPosition = AgentGraphInteraction.getPreviousPosition(agentState);
+        int vecX = agentState.getX() - previousPosition.getX();
+        int vecY = agentState.getY() - previousPosition.getY();
+        int dx = Integer.signum(vecX);
+        int dy = Integer.signum(vecY);
+
+        Coordinate inFront = new Coordinate(dx, dy);
+        positions.remove(inFront);
+
+        // Shuffle relative positions and add the coordinate for going straight in the front
+        Collections.shuffle(positions);
+        positions.add(0, inFront);
+
+        // Loop over all relative positions
+        for (Coordinate relativePosition : positions) {
+            // Calculate move
+            int relativePositionX = relativePosition.getX();
+            int relativePositionY = relativePosition.getY();
+            CellPerception cellPerception = perception.getCellPerceptionOnRelPos(relativePositionX, relativePositionY);
+
+            //Check if cell is walkable
+            if (cellPerception != null && cellPerception.isWalkable()) {
+                int newPositionX = agentX + relativePositionX;
+                int newPositionY = agentY + relativePositionY;
+
+                // Perform a step
+                agentAction.step(newPositionX, newPositionY);
+
+
+                return;
+            }
+        }
+
+        agentAction.skip();
+    }
+
+
     /**
      * Check perception of agent
      *  
@@ -59,7 +127,7 @@ public class AgentGeneralNecessities {
                     else {
                         discoveredDestinations.add(destination);
 
-                        System.out.println("[MoveRandomBehavior]{checkPerception} New destination discovered (" + discoveredDestinations.size() + ")");
+                        System.out.println("[AgentGeneralNecessities]{checkPerception} New destination discovered (" + discoveredDestinations.size() + ")");
                     }
 
                     // Update graph if unknown destination in cell
@@ -81,7 +149,7 @@ public class AgentGeneralNecessities {
                     else {
                         discoveredPackets.add(packet);
 
-                        System.out.println("[MoveRandomBehavior]{checkPerception} New packet discovered (" + discoveredPackets.size() + ")");
+                        System.out.println("[AgentGeneralNecessities]{checkPerception} New packet discovered (" + discoveredPackets.size() + ")");
                     }
 
                     // Add node of agent position that says that agent can see packet from position.
@@ -98,7 +166,7 @@ public class AgentGeneralNecessities {
                     {
                         discoveredBatteryStations.add(batteryStation);
                         nonBroadcastedBatteryStations.add(batteryStation);
-                        System.out.println(String.format("[MoveRandomBehavior]{checkPerception} Agent on location (%d,%d) has discovered a new battery station (" + discoveredBatteryStations.size() + ")", agentState.getX(), agentState.getY()));
+                        System.out.println(String.format("[AgentGeneralNecessities]{checkPerception} Agent on location (%d,%d) has discovered a new battery station (" + discoveredBatteryStations.size() + ")", agentState.getX(), agentState.getY()));
                     }
 
                     if (!graph.nodeExists(cell.getX(), cell.getY()))
