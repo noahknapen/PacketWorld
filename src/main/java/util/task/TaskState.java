@@ -1,4 +1,4 @@
-package agent.behavior.assignment_1_A.utils;
+package util.task;
 
 /**
  *  A class representing a task state

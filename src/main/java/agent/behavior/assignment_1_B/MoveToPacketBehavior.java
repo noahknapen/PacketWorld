@@ -14,17 +14,17 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
-import agent.behavior.assignment_1_A.utils.Destination;
-import agent.behavior.assignment_1_A.utils.Packet;
-import agent.behavior.assignment_1_A.utils.Task;
-import agent.behavior.assignment_1_B.utils.Graph;
-import agent.behavior.assignment_1_B.utils.MemoryKeys;
-import agent.behavior.assignment_1_B.utils.NodeType;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
+import util.MemoryKeys;
+import util.graph.Graph;
+import util.graph.NodeType;
+import util.target.Destination;
+import util.target.Packet;
+import util.task.Task;
 
 public class MoveToPacketBehavior extends Behavior {
 

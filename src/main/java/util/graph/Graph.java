@@ -1,4 +1,4 @@
-package agent.behavior.assignment_1_B.utils;
+package util.graph;
 
 import com.google.gson.GsonBuilder;
 import environment.Coordinate;

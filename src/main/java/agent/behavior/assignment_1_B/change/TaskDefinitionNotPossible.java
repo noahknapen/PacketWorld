@@ -10,9 +10,9 @@ import com.google.gson.Gson;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import agent.behavior.assignment_1_A.utils.Destination;
-import agent.behavior.assignment_1_A.utils.Packet;
-import agent.behavior.assignment_1_B.utils.MemoryKeys;
+import util.MemoryKeys;
+import util.target.Destination;
+import util.target.Packet;
 
 public class TaskDefinitionNotPossible extends BehaviorChange{
 

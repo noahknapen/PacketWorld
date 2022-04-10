@@ -4,12 +4,12 @@ import java.util.Set;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import agent.behavior.assignment_1_A.utils.Packet;
-import agent.behavior.assignment_1_A.utils.Task;
-import agent.behavior.assignment_1_B.utils.Graph;
-import agent.behavior.assignment_1_B.utils.MemoryKeys;
 import environment.CellPerception;
 import environment.Perception;
+import util.MemoryKeys;
+import util.graph.Graph;
+import util.target.Packet;
+import util.task.Task;
 
 public class PacketAlreadyHandled extends BehaviorChange{
 

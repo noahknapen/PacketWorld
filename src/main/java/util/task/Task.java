@@ -1,6 +1,9 @@
-package agent.behavior.assignment_1_A.utils;
+package util.task;
 
 import com.google.gson.Gson;
+
+import util.target.Destination;
+import util.target.Packet;
 
 /**
  *  A class representing a task

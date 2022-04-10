@@ -4,9 +4,9 @@ import java.util.Set;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import agent.behavior.assignment_1_A.utils.Task;
-import agent.behavior.assignment_1_A.utils.TaskState;
-import agent.behavior.assignment_1_B.utils.MemoryKeys;
+import util.MemoryKeys;
+import util.task.Task;
+import util.task.TaskState;
 
 public class HasCarry extends BehaviorChange{
 

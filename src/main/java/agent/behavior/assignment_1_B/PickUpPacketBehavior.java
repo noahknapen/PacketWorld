@@ -7,13 +7,14 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
-import agent.behavior.assignment_1_A.utils.Task;
-import agent.behavior.assignment_1_A.utils.TaskState;
-import agent.behavior.assignment_1_B.utils.Graph;
-import agent.behavior.assignment_1_B.utils.MemoryKeys;
-import agent.behavior.assignment_1_B.utils.NodeType;
+
 import com.google.gson.Gson;
 import environment.Coordinate;
+import util.MemoryKeys;
+import util.graph.Graph;
+import util.graph.NodeType;
+import util.task.Task;
+import util.task.TaskState;
 
 public class PickUpPacketBehavior extends Behavior {
 

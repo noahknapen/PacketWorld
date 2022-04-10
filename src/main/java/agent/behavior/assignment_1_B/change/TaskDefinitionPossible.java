@@ -10,12 +10,12 @@ import com.google.gson.Gson;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import agent.behavior.assignment_1_A.utils.Destination;
-import agent.behavior.assignment_1_A.utils.Packet;
-import agent.behavior.assignment_1_A.utils.PacketComparator;
-import agent.behavior.assignment_1_A.utils.Task;
-import agent.behavior.assignment_1_A.utils.TaskState;
-import agent.behavior.assignment_1_B.utils.MemoryKeys;
+import util.MemoryKeys;
+import util.target.Destination;
+import util.target.Packet;
+import util.target.PacketComparator;
+import util.task.Task;
+import util.task.TaskState;
 
 public class TaskDefinitionPossible extends BehaviorChange{
 
