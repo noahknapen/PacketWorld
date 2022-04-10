@@ -3,6 +3,7 @@ package util;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -91,6 +92,103 @@ public class AgentGeneralNecessities {
         agentAction.skip();
     }
 
+    /**
+     * Move towards a specific position
+     * 
+     * @param agentState Current state of agent
+     * @param agentAction Perform an action with agent
+     * @param position Position to move towards
+     */
+    public static void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate position) {
+        // Retrieve positions
+        Perception perception = agentState.getPerception();
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+        Coordinate agentPosition = new Coordinate(agentX, agentY);
+        int positionX = position.getX();
+        int positionY = position.getY();
+
+        // Retrieve path
+        List<Coordinate> path = AgentGeneralNecessities.getPath(agentState);
+
+        // Check if position is in current perception
+        if(AgentGeneralNecessities.positionInPerception(agentState, position)) {
+            // Calculate move
+            int dX = positionX - agentX;
+            int dY = positionY - agentY;
+            int relativePositionX = (dX > 0) ? 1 : ((dX < 0) ? -1 : 0);
+            int relativePositionY = (dY > 0) ? 1 : ((dY < 0) ? -1 : 0);
+            CellPerception cellPerception = perception.getCellPerceptionOnRelPos(relativePositionX, relativePositionY);
+
+            // Check if cell is walkable
+            if (cellPerception != null && cellPerception.isWalkable()) {
+                int newPositionX = agentX + relativePositionX;
+                int newPositionY = agentY + relativePositionY;
+
+                // Perform a step 
+                agentAction.step(newPositionX, newPositionY);
+
+            }
+            else AgentGeneralNecessities.moveRandom(agentState, agentAction);
+
+            path.clear();
+            AgentGraphInteraction.updateMappingMemory(agentState, null, path, null, null, null);
+        }
+        else {
+            Graph graph = AgentGraphInteraction.getGraph(agentState);
+            Coordinate shouldBeHerePosition = getShouldBeHerePosition(agentState);
+
+            // If path exists -> Just follow the path.
+            if (!path.isEmpty()) {
+
+                // If previous movement failed for some reason -> Try again.
+                if (!agentPosition.equals(shouldBeHerePosition)) {
+                    if (shouldBeHerePosition != null)
+                        moveToPosition(agentState, agentAction, shouldBeHerePosition);
+                    else
+                        AgentGeneralNecessities.moveRandom(agentState, agentAction);
+                    return;
+                }
+
+                Coordinate nextCoordinate = path.remove(0); // TODO: Maybe path should not be linked list. (Stack?)
+                shouldBeHerePosition = nextCoordinate;
+
+                agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
+
+                AgentGraphInteraction.updateMappingMemory(agentState, null, path, null, null, shouldBeHerePosition);
+            }
+
+            // If agent position outside the graph -> Move to the closest node first.
+            else if (!graph.nodeExists(agentPosition))
+            {
+                Coordinate closestNodeCoordinate = graph.closestFreeNodeCoordinate(agentState.getPerception(), agentPosition);
+                if (closestNodeCoordinate != null)
+                    moveToPosition(agentState, agentAction, closestNodeCoordinate);
+                else
+                    AgentGeneralNecessities.moveRandom(agentState, agentAction);
+            }
+
+            // Search for path from current position to the desired position.
+            else
+            {
+                // Perform Dijkstra's algorithm
+                path = graph.doSearch(agentPosition, position);
+
+                if (!path.isEmpty())
+                {
+                    Coordinate nextCoordinate = path.remove(0); // TODO: Maybe path should not be linked list. (Stack?)
+                    shouldBeHerePosition = nextCoordinate;
+                    agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
+
+                    AgentGraphInteraction.updateMappingMemory(agentState, null, path, null, null, shouldBeHerePosition);
+                }
+                else
+                {
+                    AgentGeneralNecessities.moveRandom(agentState, agentAction);
+                }
+            }
+        }
+    }
 
     /**
      * Check perception of agent
@@ -180,6 +278,88 @@ public class AgentGeneralNecessities {
         // Update memory
         AgentTaskInteraction.updateTaskMemory(agentState, discoveredPackets, discoveredDestinations, discoveredBatteryStations, nonBroadcastedBatteryStations);        
     } 
+
+    /**
+     * Check if position is in current perception
+     *
+     * @param agentState Current state of agent
+     * @param position Position to check
+     * @return True if position is in current perception
+     */
+    private static boolean positionInPerception(AgentState agentState, Coordinate position) {
+        // Retrieve position
+        Perception perception = agentState.getPerception();
+        int positionX = position.getX();
+        int positionY = position.getY();
+
+        // Loop over whole perception
+        for (int x = 0; x < perception.getWidth(); x++) {
+            for (int y = 0; y < perception.getHeight(); y++) {
+                CellPerception cell = perception.getCellAt(x,y);
+
+                if(cell == null) continue;
+
+                int cellX = cell.getX();
+                int cellY = cell.getY();
+
+                // Check if coordinates correspond
+                if(cellX == positionX && cellY == positionY) return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Retrieve should be here position from memory
+     * 
+     * @param agentState Current state of agent
+     * @return Should be here position
+     */ 
+    private static Coordinate getShouldBeHerePosition(AgentState agentState) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
+        // Check if should be here position exists in memory
+        if(memoryFragments.contains(MemoryKeys.SHOULD_BE_HERE_POSITION)) {
+            // Retrieve should be here position
+            Gson gson = new Gson();
+            String shouldBeHereString = agentState.getMemoryFragment(MemoryKeys.SHOULD_BE_HERE_POSITION);
+            return gson.fromJson(shouldBeHereString, Coordinate.class);
+        }
+        else return null;
+    }
+
+    /**
+     * Retrieve path from memory
+     * Create path if not yet created
+     * 
+     * @param agentState Current state of agent
+     * @return Path: List of coordinate
+     */ 
+    private static List<Coordinate> getPath(AgentState agentState) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
+        Gson gson = new Gson();
+        // Check if path exists in memory
+        if(memoryFragments.contains(MemoryKeys.PATH)) {
+            // Retrieve path
+            String pathString = agentState.getMemoryFragment(MemoryKeys.PATH);
+            return gson.fromJson(pathString, new TypeToken<List<Coordinate>>(){}.getType());
+        }
+        else {
+            // Create path
+            List<Coordinate> path = new LinkedList<>();
+
+            // Add path to memory
+            String pathString = gson.toJson(path);
+            agentState.addMemoryFragment(MemoryKeys.PATH, pathString);
+
+            return path;
+        }
+    }
+ 
 
     /** Retrieve specified type of targets from memory
      * Create a list if this type of targets has not yet been created

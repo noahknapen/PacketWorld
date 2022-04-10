@@ -2,7 +2,6 @@ package agent.behavior.assignment_1_B;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -20,18 +19,7 @@ import util.targets.BatteryStation;
 import util.targets.Target;
 import util.task.AgentTaskInteraction;
 
-public class MoveRandomBehavior extends Behavior {
-
-    final ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
-        new Coordinate(1, 1), 
-        new Coordinate(-1, -1),
-        new Coordinate(1, 0), 
-        new Coordinate(-1, 0),
-        new Coordinate(0, 1), 
-        new Coordinate(0, -1),
-        new Coordinate(1, -1), 
-        new Coordinate(-1, 1)
-    ));
+public class MoveRandomBehavior extends Behavior { 
 
     ///////////////
     // OVERRIDES //
