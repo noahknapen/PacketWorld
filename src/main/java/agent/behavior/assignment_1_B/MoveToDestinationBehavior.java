@@ -22,8 +22,8 @@ import environment.world.packet.PacketRep;
 import util.MemoryKeys;
 import util.graph.Graph;
 import util.graph.NodeType;
-import util.target.Destination;
-import util.target.Packet;
+import util.targets.Destination;
+import util.targets.Packet;
 import util.task.Task;
 
 public class MoveToDestinationBehavior extends Behavior {

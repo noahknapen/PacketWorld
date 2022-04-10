@@ -9,9 +9,9 @@ import environment.Coordinate;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
-import util.target.Destination;
-import util.target.Packet;
-import util.target.PacketComparator;
+import util.targets.Destination;
+import util.targets.Packet;
+import util.targets.PacketComparator;
 import util.task.Task;
 import util.task.TaskState;
 
