@@ -27,6 +27,7 @@ import util.targets.BatteryStation;
 import util.targets.Destination;
 import util.targets.Packet;
 import util.targets.Target;
+import util.task.AgentTaskInteraction;
 import util.task.Task;
 
 public class MoveRandomBehavior extends Behavior {
@@ -78,7 +79,7 @@ public class MoveRandomBehavior extends Behavior {
             }
         }
 
-        updateTaskMemory(agentState, null, null, discoveredBatteryStations, new ArrayList<Target>());
+        AgentTaskInteraction.updateTaskMemory(agentState, null, null, discoveredBatteryStations, new ArrayList<Target>());
     }
 
     @Override
@@ -117,7 +118,7 @@ public class MoveRandomBehavior extends Behavior {
         ArrayList<Target> discoveredDestinations = getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.DISCOVERED_DESTINATIONS);
         ArrayList<Target> discoveredBatteryStations = getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.DISCOVERED_BATTERY_STATIONS);
         ArrayList<Target> nonBroadcastedBatteryStations = getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS);
-        Task task = getTask(agentState);
+        Task task = AgentTaskInteraction.getTask(agentState);
         Graph graph = AgentGraphInteraction.getGraph(agentState);
 
         // Loop over whole perception
@@ -191,7 +192,7 @@ public class MoveRandomBehavior extends Behavior {
         }
 
         // Update memory
-        updateTaskMemory(agentState, discoveredPackets, discoveredDestinations, discoveredBatteryStations, nonBroadcastedBatteryStations);        
+        AgentTaskInteraction.updateTaskMemory(agentState, discoveredPackets, discoveredDestinations, discoveredBatteryStations, nonBroadcastedBatteryStations);        
     } 
  
     /**
@@ -276,77 +277,5 @@ public class MoveRandomBehavior extends Behavior {
             return discoveredTargets;
         }
 
-    } 
-
-    /**
-     * Retrieve task from memory
-     * 
-     * @param agentState Current state of agent
-     * @return Task
-     */
-    private Task getTask(AgentState agentState) {
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
-        // Check if task exists in memory
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            // Retrieve task
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            return Task.fromJson(taskString);
-        }
-        else return null;
-    } 
-
-    /**
-     * Update task memory of agent
-     * 
-     * @param agentState Current state of the agent
-     * @param discoveredPackets List of discovered packets
-     * @param discoveredDestinations List of discovered destinations
-     * @param discoveredBatteryStations List of discovered battery stations
-     * @param nonBroadCastedBatteryStations List of non-broadcasted battery stations
-     */
-    private void updateTaskMemory(AgentState agentState, ArrayList<Target> discoveredPackets, ArrayList<Target> discoveredDestinations, ArrayList<Target> discoveredBatteryStations, ArrayList<Target> nonBroadcastedBatteryStations) 
-    {
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-        Gson gson = new Gson();
-
-        if (discoveredPackets != null)
-        {
-            if(memoryFragments.contains(MemoryKeys.DISCOVERED_PACKETS)) 
-                agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
-         
-            String discoveredPacketsString = gson.toJson(discoveredPackets);
-            agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
-        }
-
-        if (discoveredDestinations != null) 
-        {
-            if(memoryFragments.contains(MemoryKeys.DISCOVERED_DESTINATIONS)) 
-                agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
-
-            String discoveredDestinationsString = gson.toJson(discoveredDestinations);
-            agentState.addMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinationsString);
-        }
-
-        if (discoveredBatteryStations != null)
-        {
-            if (memoryFragments.contains(MemoryKeys.DISCOVERED_BATTERY_STATIONS))
-                agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_BATTERY_STATIONS);
-
-            String discoveredBatteryStationsString = gson.toJson(discoveredBatteryStations);
-            agentState.addMemoryFragment(MemoryKeys.DISCOVERED_BATTERY_STATIONS, discoveredBatteryStationsString);
-        }
-
-        if (nonBroadcastedBatteryStations != null) 
-        {
-            if (memoryFragments.contains(MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS))
-                agentState.removeMemoryFragment(MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS);
-
-            String nonBroadcastedBatteryStationsString = gson.toJson(nonBroadcastedBatteryStations);
-            agentState.addMemoryFragment(MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS, nonBroadcastedBatteryStationsString);
-
-        }
-    }
+    }  
 }
