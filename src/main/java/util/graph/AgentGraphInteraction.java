@@ -21,7 +21,7 @@ public class AgentGraphInteraction {
      * @param agentState Current state of the agent
      * @param target
      */
-    public void addTargetToGraph(AgentState agentState, Target target)
+    public static void addTargetToGraph(AgentState agentState, Target target)
     {
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
         Graph graph = AgentGraphInteraction.getGraph(agentState);
@@ -64,7 +64,7 @@ public class AgentGraphInteraction {
      *
      * @param agentState Current state of agent
      */
-    public void handleGraph(AgentState agentState) {
+    public static void handleGraph(AgentState agentState) {
         // Retrieve positions
         int agentX = agentState.getX();
         int agentY = agentState.getY();
@@ -93,7 +93,7 @@ public class AgentGraphInteraction {
      * @param agentState Current state of agent
      * @return Graph
      */
-    private static Graph getGraph(AgentState agentState) {
+    public static Graph getGraph(AgentState agentState) {
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
 
@@ -154,7 +154,7 @@ public class AgentGraphInteraction {
      * @param agentState Current state of agent
      * @return Edge start position
      */ 
-    public static Coordinate getEdgeStartPosition(AgentState agentState) {
+    private static Coordinate getEdgeStartPosition(AgentState agentState) {
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
 
