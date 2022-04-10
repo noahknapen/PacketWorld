@@ -20,7 +20,7 @@ public class PutDownPacketBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // TODO Auto-generated method stub
+        // No communication necessary as the agent does not move to a new location when putting down a packet
     }
 
     @Override
