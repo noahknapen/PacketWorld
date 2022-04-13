@@ -72,6 +72,8 @@ public class MoveRandomBehavior extends Behavior {
         // Check perception
         AgentGeneralNecessities.checkPerception(agentState);
 
+        // Check battery levels
+
         // Move randomly
         AgentGeneralNecessities.moveRandom(agentState, agentAction);
 

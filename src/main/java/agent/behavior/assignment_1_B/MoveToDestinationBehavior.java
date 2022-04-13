@@ -59,7 +59,7 @@ public class MoveToDestinationBehavior extends Behavior {
             }
         }
 
-        AgentTaskInteraction.updateTaskMemory(agentState, null, null, discoveredBatteryStations, new ArrayList<Target>());
+        AgentTaskInteraction.updateTaskMemory(agentState, null, null, discoveredBatteryStations, new ArrayList<>());
     }
 
     @Override
