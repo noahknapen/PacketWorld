@@ -53,7 +53,7 @@ public class AgentGeneralNecessities {
         int agentY = agentState.getY();
 
 
-        List<Coordinate> positions = AgentGeneralNecessities.RELATIVE_POSITIONS;
+        List<Coordinate> positions = new ArrayList<>(AgentGeneralNecessities.RELATIVE_POSITIONS);
 
         // Prioritize going straight first
         Coordinate previousPosition = AgentGraphInteraction.getPreviousPosition(agentState);
