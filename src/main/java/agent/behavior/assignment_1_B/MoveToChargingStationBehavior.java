@@ -1,15 +1,11 @@
 package agent.behavior.assignment_1_B;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import environment.Coordinate;
 import environment.Mail;
 import util.AgentGeneralNecessities;
@@ -18,8 +14,13 @@ import util.graph.AgentGraphInteraction;
 import util.targets.BatteryStation;
 import util.targets.Target;
 import util.task.AgentTaskInteraction;
+import util.task.Task;
 
-public class MoveRandomBehavior extends Behavior { 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+
+public class MoveToChargingStationBehavior extends Behavior {
 
     ///////////////
     // OVERRIDES //
@@ -45,7 +46,7 @@ public class MoveRandomBehavior extends Behavior {
         for (Mail message : messages) {
             System.out.printf("Agent on coordinate (%d,%d) has received a message%n", agentState.getX(), agentState.getY());
             ArrayList<BatteryStation> newBatteryStations = gson.fromJson(message.getMessage(), new TypeToken<ArrayList<BatteryStation>>(){}.getType());
-            
+
             for (BatteryStation batteryStation : newBatteryStations)
             {
                 if (!discoveredBatteryStations.contains(batteryStation))
@@ -72,9 +73,28 @@ public class MoveRandomBehavior extends Behavior {
         // Check perception
         AgentGeneralNecessities.checkPerception(agentState);
 
-        // Move randomly
-        AgentGeneralNecessities.moveRandom(agentState, agentAction);
+        // Move to battery station
+        // Retrieve the list of all discoveredBatteryStations
+        ArrayList<Target> discoveredBatteryStations = AgentGeneralNecessities.getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.DISCOVERED_BATTERY_STATIONS);
+        ArrayList<Target> usedBatteryStations = AgentGeneralNecessities.getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.USED_BATTERY_STATIONS);
 
+        for (Target station : discoveredBatteryStations) {
+            System.out.printf("Station:%s for agent:%s\n", station.getCoordinate() ,agentState.getName() );
+
+            if (usedBatteryStations.contains(station)) continue;
+
+            // Find coordinates of charging station
+            int batteryX = station.getCoordinate().getX();
+            int batteryY = station.getCoordinate().getY() + 1;
+            Coordinate chargingCoordinates = new Coordinate(batteryX, batteryY);
+
+            // Move to the battery station
+            AgentGeneralNecessities.moveToPosition(agentState, agentAction, chargingCoordinates);
+            AgentGraphInteraction.updateMappingMemory(agentState, null, null, agentPosition, null, null);
+            return;
+        }
+
+        AgentGeneralNecessities.moveRandom(agentState, agentAction);
         AgentGraphInteraction.updateMappingMemory(agentState, null, null, agentPosition, null, null);
-    } 
+    }
 }

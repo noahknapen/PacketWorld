@@ -103,6 +103,7 @@ public class AgentGeneralNecessities {
         Perception perception = agentState.getPerception();
         int agentX = agentState.getX();
         int agentY = agentState.getY();
+
         Coordinate agentPosition = new Coordinate(agentX, agentY);
         int positionX = position.getX();
         int positionY = position.getY();
@@ -390,5 +391,5 @@ public class AgentGeneralNecessities {
             return discoveredTargets;
         }
 
-    }  
+    }
 }
