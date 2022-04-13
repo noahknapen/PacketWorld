@@ -38,7 +38,7 @@ public class MoveToDestinationBehavior extends Behavior {
         {
         String batteryStationsString = gson.toJson(nonBroadcastedBatteryStations);
         agentCommunication.broadcastMessage(batteryStationsString);
-        System.out.println(String.format("Agent on coordinate (%d,%d) has broadcasted a message", agentState.getX(), agentState.getY()));
+        System.out.printf("Agent on coordinate (%d,%d) has broadcasted a message%n", agentState.getX(), agentState.getY());
         }
 
         // Get messages from other agents
@@ -47,7 +47,7 @@ public class MoveToDestinationBehavior extends Behavior {
 
         for (Mail message : messages)
         {
-            System.out.println(String.format("Agent on coordinate (%d,%d) has received a message", agentState.getX(), agentState.getY()));
+            System.out.printf("Agent on coordinate (%d,%d) has received a message%n", agentState.getX(), agentState.getY());
             ArrayList<BatteryStation> newBatteryStations = gson.fromJson(message.getMessage(), new TypeToken<ArrayList<BatteryStation>>(){}.getType());
             
             for (BatteryStation batteryStation : newBatteryStations)

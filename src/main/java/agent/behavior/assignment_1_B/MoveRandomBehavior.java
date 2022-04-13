@@ -32,20 +32,18 @@ public class MoveRandomBehavior extends Behavior {
         // Broadcast found destinations to other agents
         ArrayList<Target> nonBroadcastedBatteryStations = AgentGeneralNecessities.getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS);
 
-        if (nonBroadcastedBatteryStations.size() > 0)
-        {
-        String batteryStationsString = gson.toJson(nonBroadcastedBatteryStations);
-        agentCommunication.broadcastMessage(batteryStationsString);
-        System.out.println(String.format("Agent on coordinate (%d,%d) has broadcasted a message", agentState.getX(), agentState.getY()));
+        if (nonBroadcastedBatteryStations.size() > 0) {
+            String batteryStationsString = gson.toJson(nonBroadcastedBatteryStations);
+            agentCommunication.broadcastMessage(batteryStationsString);
+            System.out.printf("Agent on coordinate (%d,%d) has broadcasted a message%n", agentState.getX(), agentState.getY());
         }
 
         // Get messages from other agents
         Collection<Mail> messages = agentCommunication.getMessages();
         ArrayList<Target> discoveredBatteryStations = AgentGeneralNecessities.getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.DISCOVERED_BATTERY_STATIONS);
 
-        for (Mail message : messages)
-        {
-            System.out.println(String.format("Agent on coordinate (%d,%d) has received a message", agentState.getX(), agentState.getY()));
+        for (Mail message : messages) {
+            System.out.printf("Agent on coordinate (%d,%d) has received a message%n", agentState.getX(), agentState.getY());
             ArrayList<BatteryStation> newBatteryStations = gson.fromJson(message.getMessage(), new TypeToken<ArrayList<BatteryStation>>(){}.getType());
             
             for (BatteryStation batteryStation : newBatteryStations)
