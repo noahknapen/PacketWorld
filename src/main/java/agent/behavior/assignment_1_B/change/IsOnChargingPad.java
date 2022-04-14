@@ -28,7 +28,13 @@ public class IsOnChargingPad extends BehaviorChange {
 
         for (Target station : discoveredBatteryStations) {
             System.out.printf("Coordinates charging station: %s, coordinates agent: %s %s\n", station.getCoordinate(), agentState.getName(), agentPosition);
-            if (station.getCoordinate().equals(agentPosition)) {
+
+            int stationX = station.getCoordinate().getX();
+            int stationY = station.getCoordinate().getY() - 1;
+            Coordinate stationPosition = new Coordinate(stationX, stationY);
+
+            if (stationPosition.equals(agentPosition) && agentState.getBatteryState() < 750) {
+                System.out.println("On chargingpad");
                 isOnChargingPad = true;
                 break;
             }

@@ -85,7 +85,7 @@ public class MoveToChargingStationBehavior extends Behavior {
 
             // Find coordinates of charging station
             int batteryX = station.getCoordinate().getX();
-            int batteryY = station.getCoordinate().getY() + 1;
+            int batteryY = station.getCoordinate().getY() - 1;
             Coordinate chargingCoordinates = new Coordinate(batteryX, batteryY);
 
             // Move to the battery station
