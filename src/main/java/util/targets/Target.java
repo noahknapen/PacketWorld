@@ -16,7 +16,11 @@ public class Target {
     public Target(Coordinate coordinate, Color color)
     {
         this.coordinate = coordinate;
-        this.colorRGB = color.getRGB();
+
+        if (color != null)
+            this.colorRGB = color.getRGB();
+        else
+            this.colorRGB = 0;
     }
 
     /////////////

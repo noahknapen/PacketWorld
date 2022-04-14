@@ -28,7 +28,7 @@ import util.task.Task;
 
 public class AgentGeneralNecessities {
 
-    private final static ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<>(List.of(
+    private final static ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
         new Coordinate(1, 1), 
         new Coordinate(-1, -1),
         new Coordinate(1, 0), 
@@ -52,7 +52,8 @@ public class AgentGeneralNecessities {
         int agentX = agentState.getX();
         int agentY = agentState.getY();
 
-        List<Coordinate> Positions = new ArrayList<>(AgentGeneralNecessities.RELATIVE_POSITIONS);
+
+        List<Coordinate> positions = new ArrayList<>(AgentGeneralNecessities.RELATIVE_POSITIONS);
 
         // Prioritize going straight first
         Coordinate previousPosition = AgentGraphInteraction.getPreviousPosition(agentState);
@@ -62,14 +63,14 @@ public class AgentGeneralNecessities {
         int dy = Integer.signum(vecY);
 
         Coordinate inFront = new Coordinate(dx, dy);
-        Positions.remove(inFront);
+        positions.remove(inFront);
 
         // Shuffle relative positions and add the coordinate for going straight in the front
-        Collections.shuffle(Positions);
-        Positions.add(0, inFront);
+        Collections.shuffle(positions);
+        positions.add(0, inFront);
 
         // Loop over all relative positions
-        for (Coordinate relativePosition : Positions) {
+        for (Coordinate relativePosition : positions) {
             // Calculate move
             int relativePositionX = relativePosition.getX();
             int relativePositionY = relativePosition.getY();
@@ -103,7 +104,6 @@ public class AgentGeneralNecessities {
         Perception perception = agentState.getPerception();
         int agentX = agentState.getX();
         int agentY = agentState.getY();
-
         Coordinate agentPosition = new Coordinate(agentX, agentY);
         int positionX = position.getX();
         int positionY = position.getY();
@@ -264,7 +264,7 @@ public class AgentGeneralNecessities {
                     {
                         discoveredBatteryStations.add(batteryStation);
                         nonBroadcastedBatteryStations.add(batteryStation);
-                        System.out.printf("[AgentGeneralNecessities]{checkPerception} Agent on location (%d,%d) has discovered a new battery station (" + discoveredBatteryStations.size() + ")%n", agentState.getX(), agentState.getY());
+                        System.out.println(String.format("[AgentGeneralNecessities]{checkPerception} Agent on location (%d,%d) has discovered a new battery station (" + discoveredBatteryStations.size() + ")", agentState.getX(), agentState.getY()));
                     }
 
                     if (!graph.nodeExists(cell.getX(), cell.getY()))
@@ -391,5 +391,5 @@ public class AgentGeneralNecessities {
             return discoveredTargets;
         }
 
-    }
+    }  
 }
