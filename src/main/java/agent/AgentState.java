@@ -107,11 +107,6 @@ public interface AgentState {
      * Get the current Behavior.
      */
     Behavior getCurrentBehavior();
-    
-
-    
-
-
 
     /**
      * Adds a memory fragment to this agent (if its memory is not full).
@@ -147,8 +142,6 @@ public interface AgentState {
      * Get the maximum number of memory fragments for this agent.
      */
     int getMaxNbMemoryFragments();
-
-
 
     /**
      * Set the behavior state of this agent. This method should, generally speaking, not be used by developers.
