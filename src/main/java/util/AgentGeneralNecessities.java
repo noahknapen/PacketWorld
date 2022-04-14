@@ -24,6 +24,7 @@ import util.task.Task;
 
 public class AgentGeneralNecessities {
 
+
     private final static ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<>(List.of(
         new Coordinate(1, 1), 
         new Coordinate(-1, -1),
@@ -37,7 +38,8 @@ public class AgentGeneralNecessities {
 
     
     /**
-     * Move randomly
+     * A function that moves the agent randomly. It accomplishes this by shuffling the relative positions to the agent
+     * and checking in order if they are walkable and if so, walk on that position otherwise go to the next in line.
      *
      * @param agentState Current state of agent
      * @param agentAction Perform an action with agent

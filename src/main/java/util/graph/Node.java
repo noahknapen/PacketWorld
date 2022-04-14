@@ -4,11 +4,14 @@ import environment.Coordinate;
 
 import java.util.*;
 
+/**
+ * A class representing a node with coordinates, a type and some edges
+ */
 public class Node {
     
-    private Coordinate position;
+    private final Coordinate position;
     private NodeType type;
-    private HashMap<Coordinate, Double> edges;
+    private final HashMap<Coordinate, Double> edges;
 
     //////////////////
     // CONSTRUCTORS //

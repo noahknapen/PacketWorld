@@ -15,16 +15,20 @@ import util.targets.Target;
 
 public class AgentGraphInteraction {
     
-    /** Adds new target to graph
+    /**
+     * Adds new target to graph
      * Draws an edge connecting this target to the relevant positions
      * 
-     * @param agentState Current state of the agent
-     * @param target
+     * @param agentState: The current state of the agent
+     * @param target: The target position we want to add to the graph
      */
-    public static void addTargetToGraph(AgentState agentState, Target target)
-    {
+    public static void addTargetToGraph(AgentState agentState, Target target) {
+        // Create a Coordinate of the agent's position
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
+
+        // Retrieve the graph stored in the agent's memory
         Graph graph = AgentGraphInteraction.getGraph(agentState);
+
         Coordinate edgeStartPosition = AgentGraphInteraction.getEdgeStartPosition(agentState);
 
         // If agent position is not in the graph -> Add the position and an edge from edgeStartPos.
@@ -34,20 +38,20 @@ public class AgentGraphInteraction {
             edgeStartPosition = agentPosition;
         }
 
-        NodeType nodeType = null;
+        // Determine the right type of target
+        NodeType nodeType;
+        if (target instanceof Packet) nodeType = NodeType.PACKET;
+        else if (target instanceof Destination) nodeType = NodeType.DESTINATION;
+        else if (target instanceof BatteryStation) nodeType = NodeType.BATTERYSTATION;
+        else nodeType = NodeType.FREE;
 
-        if (target instanceof Packet)
-            nodeType = NodeType.PACKET;
-        else if (target instanceof Destination)
-            nodeType = NodeType.DESTINATION;
-        else if (target instanceof BatteryStation)
-            nodeType = NodeType.BATTERYSTATION;
-
+        // Add the target to the graph
         graph.addNode(target.getCoordinate(), nodeType);
 
         // TODO: Check if path is free from obstacles (It should be but not sure)
-        graph.addEdge(agentPosition, target.getCoordinate(), nodeType);
+        graph.addEdge(agentPosition, target.getCoordinate());
 
+        // Update memory
         AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null);
     }
 
@@ -65,19 +69,26 @@ public class AgentGraphInteraction {
      * @param agentState Current state of agent
      */
     public static void handleGraph(AgentState agentState) {
-        // Retrieve positions
-        int agentX = agentState.getX();
-        int agentY = agentState.getY();
-        Coordinate agentPosition = new Coordinate(agentX, agentY);
+        // Create a Coordination object for the agent's position
+        Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
 
+        // Get the graph in the memory of the agent
         Graph graph = AgentGraphInteraction.getGraph(agentState);
-        Coordinate previousPosition = getPreviousPosition(agentState);
-        Coordinate edgeStartPosition = getEdgeStartPosition(agentState);
 
+        // Retrieve the previous and start position from the graph
+        Coordinate previousPosition = AgentGraphInteraction.getPreviousPosition(agentState);
+        Coordinate edgeStartPosition = AgentGraphInteraction.getEdgeStartPosition(agentState);
+
+        // Add edge between previous and current position
         if (!edgeStartPosition.equals(previousPosition) && !previousPosition.equals(agentPosition)) {
             if (!graph.onTheLine(edgeStartPosition, agentPosition, previousPosition)) {
+                // Guard clause to ensure the previous position is a node in the graph
                 if (!graph.nodeExists(previousPosition)) graph.addNode(previousPosition, NodeType.FREE);
+
+                // Add an edge between the two
                 graph.addEdge(edgeStartPosition, previousPosition);
+
+                // Reset the edge start position
                 edgeStartPosition = previousPosition;
             }
         }
@@ -87,11 +98,10 @@ public class AgentGraphInteraction {
     }
 
     /**
-     * Retrieve graph from memory
-     * Create graph if not yet created
+     * Retrieves the graph from memory or creates a new graph if not yet created
      * 
-     * @param agentState Current state of agent
-     * @return Graph
+     * @param agentState: The current state of agent
+     * @return The graph in the agents memory
      */
     public static Graph getGraph(AgentState agentState) {
         // Retrieve memory of agent
@@ -100,27 +110,24 @@ public class AgentGraphInteraction {
         // Check if graph exists in memory
         if(memoryFragments.contains(MemoryKeys.GRAPH)) {
             // Retrieve graph
-            String graphString = agentState.getMemoryFragment(MemoryKeys.GRAPH);
-            return Graph.fromJson(graphString);
-        }
-        else {
-            // Create graph
+            return Graph.fromJson(agentState.getMemoryFragment(MemoryKeys.GRAPH));
+        } else {
+            // Create graph with the agents position as initial node
             Graph graph = new Graph(agentState.getX(), agentState.getY());
         
             // Add graph to memory
-            String graphString = graph.toJson();
-            agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
+            agentState.addMemoryFragment(MemoryKeys.GRAPH, graph.toJson());
 
+            // return the created graph
             return graph;
         }
     }
 
     /**
-     * Retrieve previous position from memory
-     * Create previous position if not yet created
+     * Retrieves the previous position from memory or creates a new previous position if not yet created
      * 
-     * @param agentState Current state of agent
-     * @return Previous position
+     * @param agentState: The current state of agent
+     * @return The previous position
      */ 
     public static Coordinate getPreviousPosition(AgentState agentState) {
         // Retrieve memory of agent
@@ -148,10 +155,9 @@ public class AgentGraphInteraction {
     }
 
     /**
-     * Retrieve edge start position from memory
-     * Create edge start position if not yet created
+     * Retrieve edge start position from memory or creates a new edge start position if not yet created
      * 
-     * @param agentState Current state of agent
+     * @param agentState: Current state of agent
      * @return Edge start position
      */ 
     private static Coordinate getEdgeStartPosition(AgentState agentState) {
