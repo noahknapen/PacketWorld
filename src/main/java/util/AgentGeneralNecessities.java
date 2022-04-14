@@ -126,14 +126,25 @@ public class AgentGeneralNecessities {
 
         // If path exists -> Just follow the path.
         if (!path.isEmpty()) {
+            Coordinate shouldBeHerePosition = getShouldBeHerePosition(agentState);
+
+            // If previous movement failed for some reason -> Try again.
+            if (!agentPosition.equals(shouldBeHerePosition)) {
+                if (shouldBeHerePosition != null)
+                    moveToPosition(agentState, agentAction, shouldBeHerePosition);
+                else
+                    AgentGeneralNecessities.moveRandom(agentState, agentAction);
+                return;
+            }
             // Take the nextCoordinate and remove it from the path
             Coordinate nextCoordinate = path.remove(0);
+            shouldBeHerePosition = nextCoordinate;
 
             // Go to the nextCoordinate
             agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
 
             // Update memory
-            AgentGraphInteraction.updateMappingMemory(agentState, null, path, null, null, nextCoordinate);
+            AgentGraphInteraction.updateMappingMemory(agentState, null, path, null, null, shouldBeHerePosition);
         }
         // If agent position outside the graph -> Move to the closest node first.
         else if (!graph.nodeExists(agentPosition)) {
