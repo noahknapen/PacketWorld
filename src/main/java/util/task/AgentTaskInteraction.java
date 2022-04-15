@@ -37,7 +37,7 @@ public class AgentTaskInteraction {
      * @param discoveredPackets List of discovered packets
      * @param discoveredDestinations List of discovered destinations
      * @param discoveredBatteryStations List of discovered battery stations
-     * @param nonBroadCastedBatteryStations List of non-broadcasted battery stations
+     * @param nonBroadcastedBatteryStations List of non-broadcasted battery stations
      */
     public static void updateTaskMemory(AgentState agentState, ArrayList<Target> discoveredPackets, ArrayList<Target> discoveredDestinations, ArrayList<Target> discoveredBatteryStations, ArrayList<Target> nonBroadcastedBatteryStations) 
     {

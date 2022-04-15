@@ -5,12 +5,12 @@ import com.google.gson.Gson;
 import environment.Coordinate;
 
 /**
- * A class representing a path node
+ * A class representing a node in a path.
  */
 class PathNode implements Comparable<PathNode> {
 
-    private Coordinate position;
-    private double cost;
+    private final Coordinate position;
+    private final double cost;
     private PathNode cheapestPreviousNode;
 
     ////////////////

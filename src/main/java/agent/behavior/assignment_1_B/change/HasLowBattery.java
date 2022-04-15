@@ -2,6 +2,11 @@ package agent.behavior.assignment_1_B.change;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
+import util.AgentGeneralNecessities;
+import util.MemoryKeys;
+import util.targets.Target;
+
+import java.util.ArrayList;
 
 public class HasLowBattery extends BehaviorChange {
     private boolean hasLowBattery = false;
@@ -13,7 +18,17 @@ public class HasLowBattery extends BehaviorChange {
     @Override
     public void updateChange() {
         AgentState agentState = this.getAgentState();
-        hasLowBattery = agentState.getBatteryState() < 250;
+        ArrayList<Target> discoveredBatteryStations = AgentGeneralNecessities.getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.DISCOVERED_BATTERY_STATIONS);
+        ArrayList<Target> usedBatteryStations = AgentGeneralNecessities.getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.USED_BATTERY_STATIONS);
+
+        for (Target station : discoveredBatteryStations) {
+
+            if (!usedBatteryStations.contains(station)) {
+                hasLowBattery = agentState.getBatteryState() < 350;
+            } else {
+                hasLowBattery = false;
+            }
+        }
     }
 
     @Override
