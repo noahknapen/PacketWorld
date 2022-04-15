@@ -14,6 +14,7 @@ import agent.AgentState;
 import agent.behavior.Behavior;
 import environment.Coordinate;
 import environment.Mail;
+import util.AgentComNecessities;
 import util.AgentGeneralNecessities;
 import util.MemoryKeys;
 import util.Message;
@@ -30,56 +31,9 @@ public class MoveRandomBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        Gson gson = new Gson();
-
-        // Retrieve al the non-broadcasted battery Stations
-        ArrayList<Target> nonBroadcastedBatteryStations = AgentGeneralNecessities.getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS);
-
-        // If this list is bigger than zero broadcast the locations
-        if (nonBroadcastedBatteryStations.size() > 0) {
-            Message msg = new Message(gson.toJson(nonBroadcastedBatteryStations),"Battery");
-            agentCommunication.broadcastMessage(gson.toJson(msg));
-        }
-
-        // Get all the messages from other agents
-        ArrayList<Mail> messages = new ArrayList<>(agentCommunication.getMessages());
-
-        // Iterate through all the messages
-        for (int i=0; i < messages.size(); i++) {
-            // Create a mail object to further inspect
-            Mail mail = messages.get(i);
-            Message msg = gson.fromJson(mail.getMessage(), new TypeToken<Message>(){}.getType());
-
-            // If the type of the mail is Battery then we need to handle that kind of message
-            if (Objects.equals(msg.getType(), "Battery")) handleBatteryMessages(agentState, msg);
-
-
-
-            // Remove the message once it is processed
-            agentCommunication.removeMessage(i);
-        }
-
-        // Update memory
-        AgentTaskInteraction.updateTaskMemory(agentState, null, null, null, new ArrayList<>());
+        AgentComNecessities.handleBatteryStations(agentState, agentCommunication);
     }
 
-    private void handleBatteryMessages(AgentState agentState, Message msg) {
-        Gson gson = new Gson();
-
-        // Retrieve all the already discovered battery stations
-        ArrayList<Target> discoveredBatteryStations = AgentGeneralNecessities.getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.DISCOVERED_BATTERY_STATIONS);
-
-        // Retrieve the list of batteryStations from the received message
-        ArrayList<BatteryStation> newBatteryStations = gson.fromJson(msg.getMessage(), new TypeToken<ArrayList<BatteryStation>>(){}.getType());
-
-        // Check if the battery station is already discovered else add it to the discovered
-        for (BatteryStation batteryStation : newBatteryStations) {
-            if (!discoveredBatteryStations.contains(batteryStation)) discoveredBatteryStations.add(batteryStation);
-        }
-
-        // Update memory
-        AgentTaskInteraction.updateTaskMemory(agentState, null, null, discoveredBatteryStations, null);
-    }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
