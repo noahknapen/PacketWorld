@@ -50,7 +50,7 @@ public class PutDownPacketBehavior extends Behavior {
         }
         else agentAction.skip();
 
-        AgentGraphInteraction.updateMappingMemory(agentState, null, null, agentPosition, null, null);
+        AgentGraphInteraction.updateMappingMemory(agentState, null, null, agentPosition, null, null, null);
     }
 
     /////////////

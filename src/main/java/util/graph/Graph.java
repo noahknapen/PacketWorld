@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 public class Graph {
 
     private HashMap<Coordinate, Node> nodes;
+    private List<Coordinate> currentPath = new ArrayList<>();
 
     /////////////////
     // CONSTRUCTOR //
@@ -76,7 +77,7 @@ public class Graph {
      *
      * @return The requested node
      */
-    private Node retrieveNode(Coordinate coordinate) {
+    public Node retrieveNode(Coordinate coordinate) {
         // A guard clause to ensure the node exists, otherwise create a new node
         if(!nodeExists(coordinate)) addNode(coordinate, NodeType.FREE);
 
@@ -248,7 +249,7 @@ public class Graph {
      * A search algorithm, don't understand it fully so matbe someone else? TODO: document because hard to understand
      *
      */
-    private List<Coordinate> generatePathPoints(Coordinate startPosition, Coordinate endPosition) {
+    public List<Coordinate> generatePathPoints(Coordinate startPosition, Coordinate endPosition) {
         int dX = endPosition.getX() - startPosition.getX();
         int dY = endPosition.getY() - startPosition.getY();
         int numDiagSteps = Math.min(Math.abs(dX), Math.abs(dY));
@@ -285,5 +286,13 @@ public class Graph {
     public static Graph fromJson(String graphString) {
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         return gson.fromJson(graphString, Graph.class);
+    }
+
+    public List<Coordinate> getCurrentPath() {
+        return currentPath;
+    }
+
+    public void setCurrentPath(List<Coordinate> currentPath) {
+        this.currentPath = currentPath;
     }
 }

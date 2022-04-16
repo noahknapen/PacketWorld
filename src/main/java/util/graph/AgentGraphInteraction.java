@@ -1,11 +1,14 @@
 package util.graph;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import com.google.gson.Gson;
 
 import agent.AgentState;
+import com.google.gson.reflect.TypeToken;
 import environment.Coordinate;
 import util.MemoryKeys;
 import util.targets.BatteryStation;
@@ -52,7 +55,7 @@ public class AgentGraphInteraction {
         graph.addEdge(agentPosition, target.getCoordinate());
 
         // Update memory
-        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null);
+        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null, null);
     }
 
     /**
@@ -94,7 +97,7 @@ public class AgentGraphInteraction {
         }
 
         // Update mapping memory
-        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null);
+        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null, null);
     }
 
     /**
@@ -122,6 +125,7 @@ public class AgentGraphInteraction {
             return graph;
         }
     }
+
 
     /**
      * Retrieves the previous position from memory or creates a new previous position if not yet created
@@ -160,7 +164,7 @@ public class AgentGraphInteraction {
      * @param agentState: Current state of agent
      * @return Edge start position
      */ 
-    private static Coordinate getEdgeStartPosition(AgentState agentState) {
+    public static Coordinate getEdgeStartPosition(AgentState agentState) {
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
 
@@ -185,6 +189,7 @@ public class AgentGraphInteraction {
         }
     }
 
+
     /**
      * Update mapping memory of agent
      * 
@@ -195,7 +200,7 @@ public class AgentGraphInteraction {
      * @param edgeStartPosition Edge start position
      * @param shouldBeHerePosition Should be here position
      */
-    public static void updateMappingMemory(AgentState agentState, Graph graph, List<Coordinate> path, Coordinate previousPosition, Coordinate edgeStartPosition, Coordinate shouldBeHerePosition) {
+    public static void updateMappingMemory(AgentState agentState, Graph graph, List<Coordinate> path, Coordinate previousPosition, Coordinate edgeStartPosition, Coordinate shouldBeHerePosition, List<Coordinate> visitedNodes) {
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
         
@@ -217,6 +222,16 @@ public class AgentGraphInteraction {
             // Add updated path to memory
             String pathString = gson.toJson(path);
             agentState.addMemoryFragment(MemoryKeys.PATH, pathString);
+
+        }
+
+        if(visitedNodes != null) {
+            // Remove path from memory
+            if(memoryFragments.contains(MemoryKeys.VISITED_NODES)) agentState.removeMemoryFragment(MemoryKeys.VISITED_NODES);
+
+            // Add updated path to memory
+            String visitedString = gson.toJson(visitedNodes);
+            agentState.addMemoryFragment(MemoryKeys.VISITED_NODES, visitedString);
 
         }
 

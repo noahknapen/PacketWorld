@@ -4,6 +4,7 @@ import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import util.AgentGeneralNecessities;
 import util.MemoryKeys;
+import util.graph.AgentGraphInteraction;
 import util.targets.Target;
 
 import java.util.ArrayList;
@@ -24,7 +25,10 @@ public class HasLowBattery extends BehaviorChange {
         for (Target station : discoveredBatteryStations) {
 
             if (!usedBatteryStations.contains(station)) {
-                hasLowBattery = agentState.getBatteryState() < 350;
+                hasLowBattery = agentState.getBatteryState() < 500;
+                if (hasLowBattery) {
+                    AgentGraphInteraction.updateMappingMemory(agentState, null, new ArrayList<>(), null, null, null, new ArrayList<>());
+                }
             } else {
                 hasLowBattery = false;
             }

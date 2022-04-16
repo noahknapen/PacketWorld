@@ -5,7 +5,10 @@ import java.util.Set;
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import util.MemoryKeys;
+import util.graph.AgentGraphInteraction;
 import util.graph.Graph;
+import util.graph.Node;
+import util.graph.NodeType;
 import util.task.Task;
 import util.task.TaskState;
 
@@ -29,7 +32,9 @@ public class ReadyToPickUp extends BehaviorChange{
             Graph graph = getGraph(agentState);
             Task task = getTask(agentState);
 
-            graph.removeNode(task.getPacket().getCoordinate());
+            Node node = graph.retrieveNode(task.getPacket().getCoordinate());
+            if (node.getState().equals(NodeType.PACKET))
+                graph.removeNode(task.getPacket().getCoordinate());
 
             updateMappingMemory(agentState, graph);
         }
