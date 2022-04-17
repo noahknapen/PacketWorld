@@ -77,7 +77,22 @@ public class AgentComNecessities {
 
         // Check if the battery station is already discovered else add it to the discovered
         for (BatteryStation batteryStation : newBatteryStations) {
-            if (!discoveredBatteryStations.contains(batteryStation)) discoveredBatteryStations.add(batteryStation);
+            if (!discoveredBatteryStations.contains(batteryStation)) {
+                discoveredBatteryStations.add(batteryStation);
+
+                // TODO: Simplify this
+                // Retrieve the graph stored in the agent's memory
+                Graph graph = AgentGraphInteraction.getGraph(agentState);
+
+                // If this battery station is not already in the graph -> add it
+                int batteryChargeX = batteryStation.getCoordinate().getX();
+                int batteryChargeY = batteryStation.getCoordinate().getY() - 1;
+                Coordinate batteryChargingCoordinate = new Coordinate(batteryChargeX, batteryChargeY);
+
+                // Create a batterStation object from the given coordinates
+                BatteryStation batteryChargeStation = new BatteryStation(batteryChargingCoordinate);
+                if (!graph.nodeExists(batteryChargingCoordinate)) AgentGraphInteraction.addTargetToGraph(agentState, batteryChargeStation);
+            }
         }
 
         // Update memory

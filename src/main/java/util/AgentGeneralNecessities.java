@@ -143,7 +143,7 @@ public class AgentGeneralNecessities {
         List<Coordinate> path = new ArrayList<>(AgentGeneralNecessities.getPath(agentState));
 
         // If path exists -> Just follow the path.
-        if (!path.isEmpty()) {
+        if (!path.isEmpty() && path.get(path.size()-1).equals(position)) {
             followPath(agentState, agentAction, path);
         }
 
@@ -267,8 +267,8 @@ public class AgentGeneralNecessities {
 
         // Sort the moves based on the distance to the target position
         Positions.sort(
-                (c1, c2) -> (int) (graph.calculateDistance(c2, position)
-                        - graph.calculateDistance(c1, position)));
+                (c1, c2) -> (int) (graph.calculateDistance(c1, position, agentState)
+                        - graph.calculateDistance(c2, position, agentState)));
 
         // Update visited nodes
         List<Coordinate> visitedNodes = new ArrayList<>(AgentGeneralNecessities.getVisited(agentState));

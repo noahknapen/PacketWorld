@@ -1,5 +1,6 @@
 package util.graph;
 
+import agent.AgentState;
 import com.google.gson.GsonBuilder;
 import environment.Coordinate;
 import environment.Perception;
@@ -110,6 +111,19 @@ public class Graph {
 
         // Diagonal distance (minDistance) plus the rest (if distanceX or distanceY is larger than the other)
         return minDistance + Math.abs(distanceX - distanceY);
+    }
+
+    /**
+     * A function to calculate the distance between two positions
+     *
+     * @param position1: The first position
+     * @param position2: The second position
+     *
+     * @return A double representing the distance
+     */
+    public double calculateDistance(Coordinate position1, Coordinate position2, AgentState agentState) {
+        Coordinate startCoordinate = new Coordinate(agentState.getX() + position1.getX(), agentState.getY() + position1.getY());
+        return calculateDistance(startCoordinate, position2);
     }
 
     // TODO: Check if edge is free bewteen start and end node.
