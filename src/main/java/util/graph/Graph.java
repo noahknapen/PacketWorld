@@ -1,5 +1,6 @@
 package util.graph;
 
+import agent.AgentState;
 import com.google.gson.GsonBuilder;
 import environment.Coordinate;
 import environment.Perception;
@@ -19,6 +20,7 @@ import com.google.gson.Gson;
 public class Graph {
 
     private HashMap<Coordinate, Node> nodes;
+    private List<Coordinate> currentPath = new ArrayList<>();
 
     /////////////////
     // CONSTRUCTOR //
@@ -76,12 +78,17 @@ public class Graph {
      *
      * @return The requested node
      */
-    private Node retrieveNode(Coordinate coordinate) {
+    public Node retrieveNode(Coordinate coordinate) {
+
         // A guard clause to ensure the node exists, otherwise create a new node
-        if(!nodeExists(coordinate)) addNode(coordinate, NodeType.FREE);
+        if(!nodeExists(coordinate)) return null;
 
         // Return the requested node, cannot be null
         return nodes.get(coordinate);
+    }
+
+    public HashMap<Coordinate, Node> getNodes() {
+        return nodes;
     }
 
     /**
@@ -104,6 +111,19 @@ public class Graph {
 
         // Diagonal distance (minDistance) plus the rest (if distanceX or distanceY is larger than the other)
         return minDistance + Math.abs(distanceX - distanceY);
+    }
+
+    /**
+     * A function to calculate the distance between two positions
+     *
+     * @param position1: The first position
+     * @param position2: The second position
+     *
+     * @return A double representing the distance
+     */
+    public double calculateDistance(Coordinate position1, Coordinate position2, AgentState agentState) {
+        Coordinate startCoordinate = new Coordinate(agentState.getX() + position1.getX(), agentState.getY() + position1.getY());
+        return calculateDistance(startCoordinate, position2);
     }
 
     // TODO: Check if edge is free bewteen start and end node.
@@ -248,7 +268,7 @@ public class Graph {
      * A search algorithm, don't understand it fully so matbe someone else? TODO: document because hard to understand
      *
      */
-    private List<Coordinate> generatePathPoints(Coordinate startPosition, Coordinate endPosition) {
+    public List<Coordinate> generatePathPoints(Coordinate startPosition, Coordinate endPosition) {
         int dX = endPosition.getX() - startPosition.getX();
         int dY = endPosition.getY() - startPosition.getY();
         int numDiagSteps = Math.min(Math.abs(dX), Math.abs(dY));
@@ -285,5 +305,13 @@ public class Graph {
     public static Graph fromJson(String graphString) {
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         return gson.fromJson(graphString, Graph.class);
+    }
+
+    public List<Coordinate> getCurrentPath() {
+        return currentPath;
+    }
+
+    public void setCurrentPath(List<Coordinate> currentPath) {
+        this.currentPath = currentPath;
     }
 }

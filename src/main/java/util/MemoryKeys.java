@@ -12,6 +12,7 @@ public class MemoryKeys {
     // Mapping
     public static final String GRAPH = "GRAPH";
     public static final String PATH = "PATH";
+    public static final String VISITED_NODES = "VISITED_NODES";
     public static final String PREVIOUS_POSITION = "PREVIOUS_POSITION";
     public static final String EDGE_START_POSITION = "EDGE_START_POSITION";
     public static final String SHOULD_BE_HERE_POSITION = "SHOULD_BE_HERE_POSITION";
