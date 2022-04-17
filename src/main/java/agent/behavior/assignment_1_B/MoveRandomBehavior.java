@@ -39,5 +39,6 @@ public class MoveRandomBehavior extends Behavior {
         AgentGeneralNecessities.moveRandom(agentState, agentAction);
 
         AgentGraphInteraction.updateMappingMemory(agentState, null, null, agentPosition, null, null, null);
-    } 
+        AgentGraphInteraction.checkNodes(agentState);
+    }
 }

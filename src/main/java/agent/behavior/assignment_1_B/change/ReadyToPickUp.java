@@ -33,7 +33,7 @@ public class ReadyToPickUp extends BehaviorChange{
             Task task = getTask(agentState);
 
             Node node = graph.retrieveNode(task.getPacket().getCoordinate());
-            if (node.getState().equals(NodeType.PACKET))
+            if (node  != null && node.getState().equals(NodeType.PACKET))
                 graph.removeNode(task.getPacket().getCoordinate());
 
             updateMappingMemory(agentState, graph);
@@ -75,7 +75,6 @@ public class ReadyToPickUp extends BehaviorChange{
      * Check if position is reached
      * 
      * @param agentState Current state of agent
-     * @param position Position to reach
      * @return True if agent is next to position
      */
     private boolean positionReached(AgentState agentState) {

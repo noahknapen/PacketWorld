@@ -54,7 +54,10 @@ public class PickUpPacketBehavior extends Behavior {
 
             AgentGraphInteraction.updateMappingMemory(agentState, null, null, agentPosition, null, null, null);
         }
-        else agentAction.skip();   
+        else agentAction.skip();
+
+        AgentGraphInteraction.checkNodes(agentState);
+
     }
 
     /////////////

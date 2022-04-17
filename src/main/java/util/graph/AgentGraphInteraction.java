@@ -58,6 +58,17 @@ public class AgentGraphInteraction {
         AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null, null);
     }
 
+    public static boolean checkNodes(AgentState agentState) {
+        Graph graph = AgentGraphInteraction.getGraph(agentState);
+
+        for (Node node : graph.getNodes().values()) {
+            if (node.getEdges().isEmpty()){
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Dynamically builds the graph
      * Agent saves potential starts of edges in edgeStartPos.

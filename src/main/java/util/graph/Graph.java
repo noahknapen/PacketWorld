@@ -78,11 +78,16 @@ public class Graph {
      * @return The requested node
      */
     public Node retrieveNode(Coordinate coordinate) {
+
         // A guard clause to ensure the node exists, otherwise create a new node
-        if(!nodeExists(coordinate)) addNode(coordinate, NodeType.FREE);
+        if(!nodeExists(coordinate)) return null;
 
         // Return the requested node, cannot be null
         return nodes.get(coordinate);
+    }
+
+    public HashMap<Coordinate, Node> getNodes() {
+        return nodes;
     }
 
     /**
