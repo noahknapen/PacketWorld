@@ -2,14 +2,12 @@ package agent.behavior.assignment_1_B.change;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import agent.behavior.assignment_1_B.MoveToChargingStationBehavior;
 import environment.Coordinate;
 import util.AgentGeneralNecessities;
 import util.MemoryKeys;
 import util.targets.Target;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class IsOnChargingPad extends BehaviorChange {
     private boolean isOnChargingPad = false;

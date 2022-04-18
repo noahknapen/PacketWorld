@@ -5,7 +5,6 @@ import java.util.Set;
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import util.MemoryKeys;
-import util.graph.AgentGraphInteraction;
 import util.graph.Graph;
 import util.graph.Node;
 import util.graph.NodeType;

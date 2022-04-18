@@ -1,6 +1,5 @@
 package agent.behavior.assignment_1_B.change;
 
-import agent.AgentState;
 import agent.behavior.BehaviorChange;
 
 public class HasEnoughBattery extends BehaviorChange {
