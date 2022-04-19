@@ -32,11 +32,13 @@ public class AgentGraphInteraction {
         Coordinate edgeStartPosition = AgentGraphInteraction.getEdgeStartPosition(agentState);
 
         // If agent position is not in the graph -> Add the position and an edge from edgeStartPos.
+        /*
         if (!graph.nodeExists(agentPosition)) {
             graph.addNode(agentPosition, NodeType.FREE);
             graph.addEdge(edgeStartPosition, agentPosition);
             edgeStartPosition = agentPosition;
         }
+         */
 
         // Determine the right type of target
         NodeType nodeType;
@@ -45,11 +47,11 @@ public class AgentGraphInteraction {
         else if (target instanceof BatteryStation) nodeType = NodeType.BATTERYSTATION;
         else nodeType = NodeType.FREE;
 
-        // Add the target to the graph
-        graph.addNode(target.getCoordinate(), nodeType);
+        // Change the type of the target node in the graph
+        graph.changeType(target.getCoordinate(), nodeType);
 
         // TODO: Check if path is free from obstacles (It should be but not sure)
-        graph.addEdge(agentPosition, target.getCoordinate());
+        // graph.addEdge(agentPosition, target.getCoordinate());
 
         // Update memory
         AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null, null);
@@ -86,22 +88,29 @@ public class AgentGraphInteraction {
         // Get the graph in the memory of the agent
         Graph graph = AgentGraphInteraction.getGraph(agentState);
 
-        checkIfExpandGraph(agentState, agentPosition, graph);
+        checkIfExpandGraph(agentState, agentPosition);
 
         // Update mapping memory
         AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, null, null, null);
     }
 
-    private static void checkIfExpandGraph(AgentState agentState, Coordinate agentPosition, Graph graph) {
+    public static void checkIfExpandGraph(AgentState agentState, Coordinate position) {
+        // Retrieve graph
+        Graph graph = AgentGraphInteraction.getGraph(agentState);
+
         // Check if map width needs increasing
-        if (agentPosition.getX() + 1 > graph.getMapWidth()) {
-            graph.addColumns(agentPosition.getX());
+        if (position.getX() + 1 > graph.getMapWidth()) {
+            graph.addColumns(position.getX());
         }
 
         // Check if map height needs increasing
-        if (agentPosition.getY() + 1 > graph.getMapHeight()) {
-            graph.addRows(agentPosition.getY());
+        if (position.getY() + 1 > graph.getMapHeight()) {
+            graph.addRows(position.getY());
         }
+
+        // Update mapping memory
+        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, null, null, null);
+
     }
 
     /**

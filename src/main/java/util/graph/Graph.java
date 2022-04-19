@@ -138,7 +138,7 @@ public class Graph {
 
             if (perception.getCellPerceptionOnAbsPos(candidatePosition.getX(), candidatePosition.getY()) != null
                 && candidateDistance < minDistance
-                && nodes.get(candidatePosition).getState() == NodeType.FREE) {
+                && nodes.get(candidatePosition).getType() == NodeType.FREE) {
 
                 minDistance = candidateDistance;
                 result = candidatePosition;
@@ -208,6 +208,19 @@ public class Graph {
         // Finally, remove the node from the graph
         nodes.remove(position);
     }
+
+    public void removeEdge(Coordinate position1, Coordinate position2) {
+        // Remove the edge from the first to the second node
+        retrieveNode(position1).deleteEdge(position2);
+
+        // Remove the edge from the second to the first node
+        retrieveNode(position2).deleteEdge(position1);
+    }
+
+    public void changeType(Coordinate coordinate, NodeType type) {
+        retrieveNode(coordinate).setType(type);
+    }
+
 
     /**
      * A search algorithm, don't understand it fully so matbe someone else? TODO: document because hard to understand

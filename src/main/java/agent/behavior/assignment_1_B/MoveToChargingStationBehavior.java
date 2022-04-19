@@ -33,7 +33,7 @@ public class MoveToChargingStationBehavior extends Behavior {
         Coordinate agentPosition = new Coordinate(agentX, agentY);
 
         // Handle graph
-        AgentGraphInteraction.handleGraph(agentState);
+        //AgentGraphInteraction.handleGraph(agentState);
 
         // Check perception
         AgentGeneralNecessities.checkPerception(agentState);

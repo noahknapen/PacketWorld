@@ -37,7 +37,7 @@ public class Node {
         return this.position;
     }
 
-    public NodeType getState() {
+    public NodeType getType() {
         return type;
     }
 
@@ -45,7 +45,7 @@ public class Node {
         return edges;
     }
 
-    public void setState(NodeType type) {
+    public void setType(NodeType type) {
         this.type = type;
     }
 

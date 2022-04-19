@@ -32,8 +32,8 @@ public class ReadyToPickUp extends BehaviorChange{
             Task task = getTask(agentState);
 
             Node node = graph.retrieveNode(task.getPacket().getCoordinate());
-            if (node  != null && node.getState().equals(NodeType.PACKET))
-                graph.removeNode(task.getPacket().getCoordinate());
+            if (node  != null && node.getType().equals(NodeType.PACKET))
+                graph.changeType(task.getPacket().getCoordinate(), NodeType.FREE);
 
             updateMappingMemory(agentState, graph);
         }

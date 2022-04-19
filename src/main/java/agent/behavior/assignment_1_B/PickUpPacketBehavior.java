@@ -33,7 +33,7 @@ public class PickUpPacketBehavior extends Behavior {
         Coordinate agentPosition = new Coordinate(agentX, agentY);
 
         // Handle graph
-        AgentGraphInteraction.handleGraph(agentState);
+        //AgentGraphInteraction.handleGraph(agentState);
 
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
