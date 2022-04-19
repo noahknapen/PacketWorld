@@ -1,14 +1,11 @@
 package util.graph;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import com.google.gson.Gson;
 
 import agent.AgentState;
-import com.google.gson.reflect.TypeToken;
 import environment.Coordinate;
 import util.MemoryKeys;
 import util.targets.BatteryStation;
@@ -89,26 +86,22 @@ public class AgentGraphInteraction {
         // Get the graph in the memory of the agent
         Graph graph = AgentGraphInteraction.getGraph(agentState);
 
-        // Retrieve the previous and start position from the graph
-        Coordinate previousPosition = AgentGraphInteraction.getPreviousPosition(agentState);
-        Coordinate edgeStartPosition = AgentGraphInteraction.getEdgeStartPosition(agentState);
-
-        // Add edge between previous and current position
-        if (!edgeStartPosition.equals(previousPosition) && !previousPosition.equals(agentPosition)) {
-            if (!graph.onTheLine(edgeStartPosition, agentPosition, previousPosition)) {
-                // Guard clause to ensure the previous position is a node in the graph
-                if (!graph.nodeExists(previousPosition)) graph.addNode(previousPosition, NodeType.FREE);
-
-                // Add an edge between the two
-                graph.addEdge(edgeStartPosition, previousPosition);
-
-                // Reset the edge start position
-                edgeStartPosition = previousPosition;
-            }
-        }
+        checkIfExpandGraph(agentState, agentPosition, graph);
 
         // Update mapping memory
-        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null, null);
+        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, null, null, null);
+    }
+
+    private static void checkIfExpandGraph(AgentState agentState, Coordinate agentPosition, Graph graph) {
+        // Check if map width needs increasing
+        if (agentPosition.getX() + 1 > graph.getMapWidth()) {
+            graph.addColumns(agentPosition.getX());
+        }
+
+        // Check if map height needs increasing
+        if (agentPosition.getY() + 1 > graph.getMapHeight()) {
+            graph.addRows(agentPosition.getY());
+        }
     }
 
     /**

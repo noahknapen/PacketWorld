@@ -21,6 +21,8 @@ public class Graph {
 
     private HashMap<Coordinate, Node> nodes;
     private List<Coordinate> currentPath = new ArrayList<>();
+    private int mapWidth = 1;
+    private int mapHeight = 1;
 
     /////////////////
     // CONSTRUCTOR //
@@ -37,7 +39,7 @@ public class Graph {
         this.nodes = new HashMap<>();
 
         // Creating and adding the initial node
-        Coordinate initialCoordinate = new Coordinate(initialX, initialY);
+        Coordinate initialCoordinate = new Coordinate(0, 0);
         this.addNode(initialCoordinate, NodeType.FREE);
     }
 
@@ -293,6 +295,85 @@ public class Graph {
         return result;
     }
 
+    private void addColumn(int x) {
+
+        // Add a node on each row located in column x
+        for (int y = 0; y <= this.getMapHeight() - 1; y++) {
+            this.addNode(new Coordinate(x, y), NodeType.FREE);
+        }
+
+        // Add edges between the nodes in column x
+        for (int y = 0; y < this.getMapHeight() - 1; y++) {
+            this.addEdge(new Coordinate(x, y), new Coordinate(x, y + 1));
+        }
+
+        // Check in column x - 1 if some nodes can be connected by an edge
+        for (int y = 0; y <= this.getMapHeight() - 1; y++) {
+            if (this.nodeExists(x - 1, y)) {
+                this.addEdge(new Coordinate(x - 1, y), new Coordinate(x, y));
+            }
+        }
+    }
+
+    public void addColumns(int agentX) {
+        int start = this.getMapWidth();
+        int end = agentX;
+
+        for (int x = start; x <= end; x++) {
+            addColumn(x);
+        }
+
+        this.setMapWidth(agentX+1);
+    }
+
+    public void addRow(int y) {
+
+        // Add a node in each column located on row y
+        for (int x = 0; x <= this.getMapWidth() - 1; x++) {
+            this.addNode(new Coordinate(x, y), NodeType.FREE);
+        }
+
+        // Add edges between the nodes on row y
+        for (int x = 0; x < this.getMapWidth() - 1; x++) {
+            if (this.nodeExists(x + 1, y)) {
+                this.addEdge(new Coordinate(x, y), new Coordinate(x + 1, y));
+            }
+        }
+
+        // Check on row y - 1 if some nodes can be connected by an edge
+        for (int x = 0; x <= this.getMapWidth() - 1; x++) {
+            if (this.nodeExists(x, y - 1)) {
+                this.addEdge(new Coordinate(x, y - 1), new Coordinate(x, y));
+            }
+        }
+    }
+
+    public void addRows(int agentY) {
+        int start = this.getMapHeight();
+        int end = agentY;
+
+        for (int y = start; y <= end; y++) {
+            addRow(y);
+        }
+        this.setMapHeight(agentY+1);
+    }
+
+    public int getMapWidth() {
+        return mapWidth;
+    }
+
+    public void setMapWidth(int mapWidth) {
+        this.mapWidth = mapWidth;
+    }
+
+    public int getMapHeight() {
+        return mapHeight;
+    }
+
+    public void setMapHeight(int mapHeight) {
+        this.mapHeight = mapHeight;
+    }
+
     //////////
     // JSON //
     //////////
@@ -314,4 +395,6 @@ public class Graph {
     public void setCurrentPath(List<Coordinate> currentPath) {
         this.currentPath = currentPath;
     }
+
+
 }
