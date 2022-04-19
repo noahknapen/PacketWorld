@@ -25,7 +25,7 @@ public class HasLowBattery extends BehaviorChange {
         for (Target station : discoveredBatteryStations) {
 
             if (!usedBatteryStations.contains(station)) {
-                hasLowBattery = agentState.getBatteryState() < 500;
+                hasLowBattery = agentState.getBatteryState() < 400;
                 if (hasLowBattery) {
                     AgentGraphInteraction.updateMappingMemory(agentState, null, new ArrayList<>(), null, null, null, new ArrayList<>());
                 }

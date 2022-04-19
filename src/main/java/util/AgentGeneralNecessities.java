@@ -129,9 +129,7 @@ public class AgentGeneralNecessities {
 
         // Search for path from current position to the desired position.
         else {
-            //generateNewPathAndMove(agentState, agentAction, position);
-            moveToUnknownPosition(agentState, agentAction, position);
-
+            generateNewPath(agentState, agentAction, position);
         }
     }
 
@@ -208,7 +206,7 @@ public class AgentGeneralNecessities {
      * @param position The target position
 
      */
-    private static void generateNewPathAndMove(AgentState agentState, AgentAction agentAction, Coordinate position) {
+    private static void generateNewPath(AgentState agentState, AgentAction agentAction, Coordinate position) {
         // Retrieve the graph object and agent position
         Graph graph = AgentGraphInteraction.getGraph(agentState);
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
