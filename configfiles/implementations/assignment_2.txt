@@ -6,7 +6,7 @@ description "Delivery with different behaviors"
 # ------------------------------------------------
 nbStates 4
 
-1 agent.behavior.assignment_2.behaviors.MoveRandomBehavior    
+1 agent.behavior.assignment_2.behaviors.MoveRandomlyBehavior    
 nbArgs 0
 
 2 agent.behavior.assignment_2.behaviors.MoveToTargetBehavior    
