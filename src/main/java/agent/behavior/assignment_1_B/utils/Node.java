@@ -1,17 +1,14 @@
-package util.graph;
+package agent.behavior.assignment_1_B.utils;
 
 import environment.Coordinate;
 
 import java.util.*;
 
-/**
- * A class representing a node with coordinates, a type and some edges
- */
 public class Node {
     
-    private final Coordinate position;
+    private Coordinate position;
     private NodeType type;
-    private final HashMap<Coordinate, Double> edges;
+    private HashMap<Coordinate, Double> edges;
 
     //////////////////
     // CONSTRUCTORS //

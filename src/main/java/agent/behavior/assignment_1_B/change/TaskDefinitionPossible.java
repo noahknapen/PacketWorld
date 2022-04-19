@@ -10,12 +10,12 @@ import com.google.gson.Gson;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import util.MemoryKeys;
-import util.targets.Destination;
-import util.targets.Packet;
-import util.targets.PacketComparator;
-import util.task.Task;
-import util.task.TaskState;
+import agent.behavior.assignment_1_A.utils.Destination;
+import agent.behavior.assignment_1_A.utils.Packet;
+import agent.behavior.assignment_1_A.utils.PacketComparator;
+import agent.behavior.assignment_1_A.utils.Task;
+import agent.behavior.assignment_1_A.utils.TaskState;
+import agent.behavior.assignment_1_B.utils.MemoryKeys;
 
 public class TaskDefinitionPossible extends BehaviorChange{
 
@@ -27,6 +27,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
     @Override
     public void updateChange() {
+        System.out.println("[TasksAvailable] updateChange");
 
         AgentState agentState = this.getAgentState();
 
@@ -168,5 +169,6 @@ public class TaskDefinitionPossible extends BehaviorChange{
         agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
         agentState.addMemoryFragment(MemoryKeys.TASK, taskString);
         
+        System.out.println("[TaskDefinitionPossible]{updateTaskMemory} Discovered packets and task updated in memory");
     }
 }

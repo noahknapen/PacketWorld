@@ -1,4 +1,4 @@
-package agent.behavior.assignment_1_B.change;
+package agent.behavior.assignment_2.changes;
 
 import java.awt.Color;
 import java.util.ArrayList;

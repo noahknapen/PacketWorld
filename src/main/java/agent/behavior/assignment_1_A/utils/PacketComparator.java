@@ -1,4 +1,4 @@
-package util.targets;
+package agent.behavior.assignment_1_A.utils;
 
 import java.awt.Color;
 import java.util.ArrayList;

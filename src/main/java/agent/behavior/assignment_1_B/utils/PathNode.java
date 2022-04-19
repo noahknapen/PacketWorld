@@ -1,16 +1,16 @@
-package util.graph;
+package agent.behavior.assignment_1_B.utils;
 
 import com.google.gson.Gson;
 
 import environment.Coordinate;
 
 /**
- * A class representing a node in a path.
+ * A class representing a path node
  */
 class PathNode implements Comparable<PathNode> {
 
-    private final Coordinate position;
-    private final double cost;
+    private Coordinate position;
+    private double cost;
     private PathNode cheapestPreviousNode;
 
     ////////////////

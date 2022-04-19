@@ -4,12 +4,10 @@ import java.util.Set;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import util.MemoryKeys;
-import util.graph.Graph;
-import util.graph.Node;
-import util.graph.NodeType;
-import util.task.Task;
-import util.task.TaskState;
+import agent.behavior.assignment_1_A.utils.Task;
+import agent.behavior.assignment_1_A.utils.TaskState;
+import agent.behavior.assignment_1_B.utils.Graph;
+import agent.behavior.assignment_1_B.utils.MemoryKeys;
 
 public class ReadyToPickUp extends BehaviorChange{
 
@@ -21,6 +19,7 @@ public class ReadyToPickUp extends BehaviorChange{
 
     @Override
     public void updateChange() {
+        System.out.println("[ReadyToPickUp] updateChange");
 
         AgentState agentState = this.getAgentState();
         
@@ -31,9 +30,7 @@ public class ReadyToPickUp extends BehaviorChange{
             Graph graph = getGraph(agentState);
             Task task = getTask(agentState);
 
-            Node node = graph.retrieveNode(task.getPacket().getCoordinate());
-            if (node  != null && node.getState().equals(NodeType.PACKET))
-                graph.removeNode(task.getPacket().getCoordinate());
+            graph.removeNode(task.getPacket().getCoordinate());
 
             updateMappingMemory(agentState, graph);
         }
@@ -74,6 +71,7 @@ public class ReadyToPickUp extends BehaviorChange{
      * Check if position is reached
      * 
      * @param agentState Current state of agent
+     * @param position Position to reach
      * @return True if agent is next to position
      */
     private boolean positionReached(AgentState agentState) {
@@ -165,5 +163,6 @@ public class ReadyToPickUp extends BehaviorChange{
         String graphString = graph.toJson();
         agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
 
+        System.out.println("[ReadyToPickUp]{updateMappingMemory} Graph updated in memory");
     }    
 }

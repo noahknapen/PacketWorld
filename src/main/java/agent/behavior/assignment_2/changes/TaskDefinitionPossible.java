@@ -1,9 +1,9 @@
-package agent.behavior.assignment_1_B.change;
+package agent.behavior.assignment_2.changes;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -12,11 +12,14 @@ import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import agent.behavior.assignment_1_A.utils.Destination;
 import agent.behavior.assignment_1_A.utils.Packet;
+import agent.behavior.assignment_1_A.utils.PacketComparator;
+import agent.behavior.assignment_1_A.utils.Task;
+import agent.behavior.assignment_1_A.utils.TaskState;
 import agent.behavior.assignment_1_B.utils.MemoryKeys;
 
-public class TaskDefinitionNotPossible extends BehaviorChange{
+public class TaskDefinitionPossible extends BehaviorChange{
 
-    private boolean taskDefinitionNotPossible = false;
+    private boolean taskDefinitionPossible = false;
 
     ///////////////
     // OVERRIDES //
@@ -24,17 +27,16 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[TaskDefinitionNotPossible] updateChange");
+        System.out.println("[TasksAvailable] updateChange");
 
         AgentState agentState = this.getAgentState();
 
-        // Task definition is not possible
-        taskDefinitionNotPossible = checkNoTaskDefinition(agentState);    
+        taskDefinitionPossible = checkTaskDefinition(agentState);    
     }
 
     @Override
     public boolean isSatisfied() {
-        return taskDefinitionNotPossible;
+        return taskDefinitionPossible;
     }
 
     /////////////
@@ -42,24 +44,46 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
     /////////////
 
     /**
-     * Check if no task can be defined
+     * Check if a task can be defined, and do so if yes
      * 
-     * @param agentState Current state of agent
-     * @return True is task defintion is not possible
+     * @param agentState The current state of the agent
+     * @param True if task definition is possible
      */
-    private boolean checkNoTaskDefinition(AgentState agentState) {
-        // Check if not discovered packets
+    private boolean checkTaskDefinition(AgentState agentState) {
         ArrayList<Packet> discoveredPackets = getDiscoveredPackets(agentState);
-        if(discoveredPackets.isEmpty()) return true;
-
-        // Check if no discovered destinations
         ArrayList<Destination> discoveredDestinations = getDiscoveredDestinations(agentState);
-        if(discoveredDestinations.isEmpty()) return true;
+    
+        // Sort the packets in the discovered packets list
+        PacketComparator packComparator = new PacketComparator(agentState, discoveredDestinations);
+        Collections.sort(discoveredPackets, packComparator);
 
-        // Check if there are no destinations for the packets in the discovered packets list
-        ArrayList<Color> discoveredPacketColors = (ArrayList<Color>) discoveredPackets.stream().map(Packet::getColor).collect(Collectors.toList());
-        ArrayList<Color> discoveredDestinationColors = (ArrayList<Color>) discoveredDestinations.stream().map(Destination::getColor).collect(Collectors.toList());
-        if(discoveredPacketColors.stream().noneMatch(e -> discoveredDestinationColors.contains(e))) return true;
+        // Loop through the sorted list of packets to be delivered
+        for(int i = 0; i < discoveredPackets.size(); i++) {
+            // Define a candidate packet
+            Packet candidatepacket= discoveredPackets.get(i);
+            Color candidatePackColor = candidatepacket.getColor();
+            
+            // Loop through the list of discovered destinations
+            for(int j = 0; j < discoveredDestinations.size(); j++) {
+                Color destinationColor = discoveredDestinations.get(j).getColor();
+                
+                // Check if a corresponding (color) destination was already discovered
+                if(candidatePackColor.equals(destinationColor)) {
+                    Destination destination = discoveredDestinations.get(j);
+
+                    // Remove the packet from the list
+                    candidatepacket= discoveredPackets.remove(i);
+
+                    // Define the task
+                    Task task = new Task(candidatepacket, destination, TaskState.TO_PACKET);
+
+                    // Update memory
+                    updateTaskMemory(agentState, discoveredPackets, task);
+
+                    return true;
+                }
+            }
+        }
 
         return false;
     }   
@@ -122,5 +146,29 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
 
             return discoveredDestinations;
         }
+    }
+
+    /**
+     * Update memory of agent
+     * 
+     * @param agentState Current state of the agent
+     * @param task Current task
+     * @param discoveredPackets List of discovered packets
+     */
+    private void updateTaskMemory(AgentState agentState, ArrayList<Packet> discoveredPackets, Task task) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
+        // Remove discovered packets from memory
+        if(memoryFragments.contains(MemoryKeys.DISCOVERED_PACKETS)) agentState.removeMemoryFragment(MemoryKeys.DISCOVERED_PACKETS);
+
+        // Add updated discovered packets and updated task to memory
+        Gson gson = new Gson();
+        String discoveredPacketsString = gson.toJson(discoveredPackets);
+        String taskString = task.toJson();
+        agentState.addMemoryFragment(MemoryKeys.DISCOVERED_PACKETS, discoveredPacketsString);
+        agentState.addMemoryFragment(MemoryKeys.TASK, taskString);
+        
+        System.out.println("[TaskDefinitionPossible]{updateTaskMemory} Discovered packets and task updated in memory");
     }
 }
