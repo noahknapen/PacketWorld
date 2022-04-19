@@ -32,9 +32,6 @@ public class MoveToPacketBehavior extends Behavior {
         int agentY = agentState.getY();
         Coordinate agentPosition = new Coordinate(agentX, agentY);
 
-        // Handle graph
-        AgentGraphInteraction.handleGraph(agentState);
-
         // Check perception
         AgentGeneralNecessities.checkPerception(agentState);
 

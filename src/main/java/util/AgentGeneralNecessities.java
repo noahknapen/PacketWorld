@@ -52,33 +52,8 @@ public class AgentGeneralNecessities {
         // Retrieve a list of relative positions
         List<Coordinate> Positions = new ArrayList<>(AgentGeneralNecessities.RELATIVE_POSITIONS);
 
-        //if (targetPosition == null) {
-        // Prioritize going straight first by removing it from the list and later adding it as the first element
-        Coordinate previousPosition = AgentGraphInteraction.getPreviousPosition(agentState);
-        int vecX = agentState.getX() - previousPosition.getX();
-        int vecY = agentState.getY() - previousPosition.getY();
-        int dx = Integer.signum(vecX);
-        int dy = Integer.signum(vecY);
-
-        Coordinate inFront = new Coordinate(dx, dy);
-        Positions.remove(inFront);
-
-        // Shuffle relative positions and add the coordinate for going straight in the front
+        // Shuffle relative positions
         Collections.shuffle(Positions);
-        Positions.add(0, inFront);
-        /*}
-        else
-        {
-            Positions.sort(
-                    (c1, c2) -> (int) (AgentGraphInteraction.getGraph(agentState).calculateDistance(c2, targetPosition)
-                    - AgentGraphInteraction.getGraph(agentState).calculateDistance(c1, targetPosition)));
-
-            // Update visited node
-            List<Coordinate> visitedNodes = AgentGraphInteraction.getVisited(agentState);
-            visitedNodes.add(new Coordinate(agentX, agentY));
-            AgentGraphInteraction.updateMappingMemory(agentState, null, null, null, null, null, visitedNodes);
-        }
-        */
 
         // Loop over all relative positions
         for (Coordinate relativePosition : Positions) {
@@ -154,7 +129,9 @@ public class AgentGeneralNecessities {
 
         // Search for path from current position to the desired position.
         else {
-            generateNewPathAndMove(agentState, agentAction, position);
+            //generateNewPathAndMove(agentState, agentAction, position);
+            moveToUnknownPosition(agentState, agentAction, position);
+
         }
     }
 
@@ -183,13 +160,30 @@ public class AgentGeneralNecessities {
 
         // Take the nextCoordinate and remove it from the path
         Coordinate nextCoordinate = path.remove(0);
+        Perception perception = agentState.getPerception();
 
+        // Detect wall
+        if (perception.getCellPerceptionOnAbsPos(nextCoordinate.getX(), nextCoordinate.getY()) == null) {
+            graph.removeNode(nextCoordinate);
+            graph.setCurrentPath(new ArrayList<>());
+            AgentGeneralNecessities.moveRandom(agentState, agentAction);
 
-        // Check if nextCoordinate is valid
-        if (nextCoordinate.equals(agentPosition) || Math.abs(nextCoordinate.getX() - agentPosition.getX()) > 1 || Math.abs(nextCoordinate.getY() - agentPosition.getY()) > 1) {
+        }
+
+        // Detect obstacle
+        else if (!perception.getCellPerceptionOnAbsPos(nextCoordinate.getX(), nextCoordinate.getY()).isWalkable() &&
+                 !perception.getCellPerceptionOnAbsPos(nextCoordinate.getX(), nextCoordinate.getY()).containsAgent()) {
+            graph.removeEdge(agentPosition, nextCoordinate);
+            graph.setCurrentPath(new ArrayList<>());
+            AgentGeneralNecessities.moveRandom(agentState, agentAction);
+        }
+
+        // Check if nextCoordinate can be reached
+        else if (nextCoordinate.equals(agentPosition) || Math.abs(nextCoordinate.getX() - agentPosition.getX()) > 1 || Math.abs(nextCoordinate.getY() - agentPosition.getY()) > 1) {
             // If illegal path point -> Delete the path to recompute it.
             graph.setCurrentPath(new ArrayList<>());
-            agentAction.skip();
+            AgentGeneralNecessities.moveRandom(agentState, agentAction);
+
         }
         else
         {
@@ -223,23 +217,23 @@ public class AgentGeneralNecessities {
         Coordinate edgeStartPosition = AgentGraphInteraction.getEdgeStartPosition(agentState);
 
         // Perform Dijkstra's algorithm
-        List<Coordinate> graphPath = new ArrayList<>(graph.doSearch(edgeStartPosition, position));
+        List<Coordinate> path = new ArrayList<>(graph.doSearch(agentPosition, position));
 
-        if (!graphPath.isEmpty()) {
+        if (!path.isEmpty()) {
 
             // Add path points from agentPosition to the edgeStartPosition and then add the graph path
-            List<Coordinate> path = new ArrayList<>(graph.generatePathPoints(agentPosition, edgeStartPosition));
-            path.addAll(graphPath);
+            //List<Coordinate> path = new ArrayList<>(graph.generatePathPoints(agentPosition, edgeStartPosition));
+            // path.addAll(graphPath);
 
             // Retrieve the next coordinate from the path
-            Coordinate nextCoordinate = path.remove(0);
+            //Coordinate nextCoordinate = path.remove(0);
 
             // Take a step towards the next coordinate
-            agentAction.step(nextCoordinate.getX(), nextCoordinate.getY());
+            agentAction.skip();
 
             // Update memory
             graph.setCurrentPath(path);
-            AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, null, nextCoordinate, new ArrayList<>());
+            AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, null, null, new ArrayList<>());
         } else {
 
             // Should never come in here
@@ -366,7 +360,6 @@ public class AgentGeneralNecessities {
     public static void checkPerception(AgentState agentState) {
         // Retrieve perception and the graph
         Perception perception = agentState.getPerception();
-        Graph graph = AgentGraphInteraction.getGraph(agentState);
 
         // Loop over whole perception
         for (int x = 0; x < perception.getWidth(); x++) {
@@ -379,12 +372,15 @@ public class AgentGeneralNecessities {
                 // Create a coordinate object
                 Coordinate cellCoordinate = new Coordinate(cell.getX(), cell.getY());
 
+                // Check if graph should be expanded
+                AgentGraphInteraction.checkIfExpandGraph(agentState, cellCoordinate);
+
                 // Check if current cell contains a destination
-                if(cell.containsAnyDestination()) AgentGeneralNecessities.destinationDiscovered(cell, cellCoordinate, graph, agentState);
+                if(cell.containsAnyDestination()) AgentGeneralNecessities.destinationDiscovered(cell, cellCoordinate, agentState);
                 // Check if current cell contains a packet
-                else if(cell.containsPacket()) AgentGeneralNecessities.packetDiscovered(cell, cellCoordinate, graph, agentState);
+                else if(cell.containsPacket()) AgentGeneralNecessities.packetDiscovered(cell, cellCoordinate, agentState);
                 // Check if cell contains an energy station
-                else if (cell.containsEnergyStation()) AgentGeneralNecessities.chargingStationDiscovered(cell, cellCoordinate, graph, agentState);
+                else if (cell.containsEnergyStation()) AgentGeneralNecessities.chargingStationDiscovered(cell, cellCoordinate, agentState);
             }
         }
     }
@@ -392,13 +388,11 @@ public class AgentGeneralNecessities {
     /**
      * A function that helps with the checking of the pereception. If it sees a new destination, it will add this to
      * the graph and to the discovered destination.
-     *
-     * @param cellPerception: A perception of the cell, used to get information about that cell
-     * @param cellCoordinate: The coordinates of the cell
-     * @param graph: The graph of the agent
-     * @param agentState: The state of the agent
+     *  @param cellPerception : A perception of the cell, used to get information about that cell
+     * @param cellCoordinate : The coordinates of the cell
+     * @param agentState : The state of the agent
      */
-    private static void destinationDiscovered(CellPerception cellPerception, Coordinate cellCoordinate, Graph graph, AgentState agentState) {
+    private static void destinationDiscovered(CellPerception cellPerception, Coordinate cellCoordinate, AgentState agentState) {
         // Retrieve the list of already discovered Destinations
         ArrayList<Target> discoveredDestinations = getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.DISCOVERED_DESTINATIONS);
 
@@ -416,7 +410,7 @@ public class AgentGeneralNecessities {
         System.out.println("[AgentGeneralNecessities]{checkPerception} New destination discovered (" + discoveredDestinations.size() + ")");
 
         // If this destination is not already in the graph -> add it
-        if(!graph.nodeExists(cellPerception.getX(), cellPerception.getY())) AgentGraphInteraction.addTargetToGraph(agentState, destination);
+        AgentGraphInteraction.addTargetToGraph(agentState, destination);
 
         // Update the memory
         AgentTaskInteraction.updateTaskMemory(agentState, null, discoveredDestinations, null, null);
@@ -425,13 +419,11 @@ public class AgentGeneralNecessities {
     /**
      * A function that helps with the checking of the perception. If it sees a new packet, it will add this to
      * the graph and to the discovered packet.
-     *
-     * @param cellPerception: A perception of the cell, used to get information about that cell
-     * @param cellCoordinate: The coordinates of the cell
-     * @param graph: The graph of the agent
-     * @param agentState: The state of the agent
+     *  @param cellPerception : A perception of the cell, used to get information about that cell
+     * @param cellCoordinate : The coordinates of the cell
+     * @param agentState : The state of the agent
      */
-    private static void packetDiscovered(CellPerception cellPerception, Coordinate cellCoordinate, Graph graph, AgentState agentState) {
+    private static void packetDiscovered(CellPerception cellPerception, Coordinate cellCoordinate, AgentState agentState) {
         // Retrieve the current task of the agent
         Task task = AgentTaskInteraction.getTask(agentState);
 
@@ -453,7 +445,7 @@ public class AgentGeneralNecessities {
         System.out.println("[AgentGeneralNecessities]{checkPerception} New packet discovered (" + discoveredPackets.size() + ")");
 
         // If this packet is not already in the graph -> add it
-        if (!graph.nodeExists(cellPerception.getX(), cellPerception.getY())) AgentGraphInteraction.addTargetToGraph(agentState, packet);
+        AgentGraphInteraction.addTargetToGraph(agentState, packet);
 
         // Update memory
         AgentTaskInteraction.updateTaskMemory(agentState, discoveredPackets, null, null, null);
@@ -463,13 +455,11 @@ public class AgentGeneralNecessities {
     /**
      * A function that helps with the checking of the perception. If it sees a new charging station, it will add this to
      * the graph and to the discovered charging stations and non-broadcasted charging stations.
-     *
-     * @param cellPerception: A perception of the cell, used to get information about that cell
-     * @param cellCoordinate: The coordinates of the cell
-     * @param graph: The graph of the agent
-     * @param agentState: The state of the agent
+     *  @param cellPerception : A perception of the cell, used to get information about that cell
+     * @param cellCoordinate : The coordinates of the cell
+     * @param agentState : The state of the agent
      */
-    private static void chargingStationDiscovered(CellPerception cellPerception, Coordinate cellCoordinate, Graph graph, AgentState agentState) {
+    private static void chargingStationDiscovered(CellPerception cellPerception, Coordinate cellCoordinate, AgentState agentState) {
         // Retrieve the list of already discovered battery stations and non-broadcasted battery stations
         ArrayList<Target> discoveredBatteryStations = getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.DISCOVERED_BATTERY_STATIONS);
         ArrayList<Target> nonBroadcastedBatteryStations = getDiscoveredTargetsOfSpecifiedType(agentState, MemoryKeys.NON_BROADCASTED_BATTERY_STATIONS);
@@ -494,7 +484,7 @@ public class AgentGeneralNecessities {
 
         // Create a batterStation object from the given coordinates
         BatteryStation batteryChargeStation = new BatteryStation(batteryChargingCoordinate);
-        if (!graph.nodeExists(batteryChargingCoordinate)) AgentGraphInteraction.addTargetToGraph(agentState, batteryChargeStation);
+        AgentGraphInteraction.addTargetToGraph(agentState, batteryChargeStation);
 
         // Update memory
         AgentTaskInteraction.updateTaskMemory(agentState, null, null, discoveredBatteryStations, nonBroadcastedBatteryStations);

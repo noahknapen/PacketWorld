@@ -1,14 +1,11 @@
 package util.graph;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import com.google.gson.Gson;
 
 import agent.AgentState;
-import com.google.gson.reflect.TypeToken;
 import environment.Coordinate;
 import util.MemoryKeys;
 import util.targets.BatteryStation;
@@ -35,11 +32,13 @@ public class AgentGraphInteraction {
         Coordinate edgeStartPosition = AgentGraphInteraction.getEdgeStartPosition(agentState);
 
         // If agent position is not in the graph -> Add the position and an edge from edgeStartPos.
+        /*
         if (!graph.nodeExists(agentPosition)) {
             graph.addNode(agentPosition, NodeType.FREE);
             graph.addEdge(edgeStartPosition, agentPosition);
             edgeStartPosition = agentPosition;
         }
+         */
 
         // Determine the right type of target
         NodeType nodeType;
@@ -48,11 +47,11 @@ public class AgentGraphInteraction {
         else if (target instanceof BatteryStation) nodeType = NodeType.BATTERYSTATION;
         else nodeType = NodeType.FREE;
 
-        // Add the target to the graph
-        graph.addNode(target.getCoordinate(), nodeType);
+        // Change the type of the target node in the graph
+        graph.changeType(target.getCoordinate(), nodeType);
 
         // TODO: Check if path is free from obstacles (It should be but not sure)
-        graph.addEdge(agentPosition, target.getCoordinate());
+        // graph.addEdge(agentPosition, target.getCoordinate());
 
         // Update memory
         AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null, null);
@@ -89,26 +88,29 @@ public class AgentGraphInteraction {
         // Get the graph in the memory of the agent
         Graph graph = AgentGraphInteraction.getGraph(agentState);
 
-        // Retrieve the previous and start position from the graph
-        Coordinate previousPosition = AgentGraphInteraction.getPreviousPosition(agentState);
-        Coordinate edgeStartPosition = AgentGraphInteraction.getEdgeStartPosition(agentState);
+        checkIfExpandGraph(agentState, agentPosition);
 
-        // Add edge between previous and current position
-        if (!edgeStartPosition.equals(previousPosition) && !previousPosition.equals(agentPosition)) {
-            if (!graph.onTheLine(edgeStartPosition, agentPosition, previousPosition)) {
-                // Guard clause to ensure the previous position is a node in the graph
-                if (!graph.nodeExists(previousPosition)) graph.addNode(previousPosition, NodeType.FREE);
+        // Update mapping memory
+        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, null, null, null);
+    }
 
-                // Add an edge between the two
-                graph.addEdge(edgeStartPosition, previousPosition);
+    public static void checkIfExpandGraph(AgentState agentState, Coordinate position) {
+        // Retrieve graph
+        Graph graph = AgentGraphInteraction.getGraph(agentState);
 
-                // Reset the edge start position
-                edgeStartPosition = previousPosition;
-            }
+        // Check if map width needs increasing
+        if (position.getX() + 1 > graph.getMapWidth()) {
+            graph.addColumns(position.getX());
+        }
+
+        // Check if map height needs increasing
+        if (position.getY() + 1 > graph.getMapHeight()) {
+            graph.addRows(position.getY());
         }
 
         // Update mapping memory
-        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, edgeStartPosition, null, null);
+        AgentGraphInteraction.updateMappingMemory(agentState, graph, null, null, null, null, null);
+
     }
 
     /**
