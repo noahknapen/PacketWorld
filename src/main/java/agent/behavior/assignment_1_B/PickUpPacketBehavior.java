@@ -32,9 +32,6 @@ public class PickUpPacketBehavior extends Behavior {
         int agentY = agentState.getY();
         Coordinate agentPosition = new Coordinate(agentX, agentY);
 
-        // Handle graph
-        //AgentGraphInteraction.handleGraph(agentState);
-
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
         // Check if task exists in memory

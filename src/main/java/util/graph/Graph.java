@@ -128,25 +128,6 @@ public class Graph {
         return calculateDistance(startCoordinate, position2);
     }
 
-    // TODO: Check if edge is free bewteen start and end node.
-    public Coordinate closestFreeNodeCoordinate(Perception perception, Coordinate position) {
-        Coordinate result = null;
-
-        double minDistance = Double.MAX_VALUE;
-        for (Coordinate candidatePosition : nodes.keySet()) {
-            double candidateDistance = calculateDistance(position, candidatePosition);
-
-            if (perception.getCellPerceptionOnAbsPos(candidatePosition.getX(), candidatePosition.getY()) != null
-                && candidateDistance < minDistance
-                && nodes.get(candidatePosition).getType() == NodeType.FREE) {
-
-                minDistance = candidateDistance;
-                result = candidatePosition;
-            }
-        }
-
-        return result;
-    }
 
     /**
      * A function to check if the node constructed from the given coordinates exists in the graph structure
@@ -308,6 +289,10 @@ public class Graph {
         return result;
     }
 
+    /**
+     * Adds a new column to the graph and connects possible nodes.
+     * @param x The x coordinate of the new column
+     */
     private void addColumn(int x) {
 
         // Add a node on each row located in column x
@@ -328,6 +313,10 @@ public class Graph {
         }
     }
 
+    /**
+     * Adds new columns to the graph and connects possible nodes.
+     * @param agentX The x coordinate of the agent
+     */
     public void addColumns(int agentX) {
         int start = this.getMapWidth();
         int end = agentX;
@@ -339,6 +328,10 @@ public class Graph {
         this.setMapWidth(agentX+1);
     }
 
+    /**
+     * Adds a new row to the graph and connects possible nodes.
+     * @param y The y coordinate of the new column
+     */
     public void addRow(int y) {
 
         // Add a node in each column located on row y
@@ -361,6 +354,10 @@ public class Graph {
         }
     }
 
+    /**
+     * Adds new rows to the graph and connects possible nodes.
+     * @param agentY The y coordinate of the agent
+     */
     public void addRows(int agentY) {
         int start = this.getMapHeight();
         int end = agentY;
