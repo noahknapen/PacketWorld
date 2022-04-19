@@ -1,15 +1,13 @@
 package agent.behavior.assignment_2.changes;
 
-import java.util.Set;
-
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import agent.behavior.assignment_1_A.utils.Packet;
-import agent.behavior.assignment_1_A.utils.Task;
-import agent.behavior.assignment_1_B.utils.Graph;
-import agent.behavior.assignment_1_B.utils.MemoryKeys;
 import environment.CellPerception;
 import environment.Perception;
+import util.assignments.memory.MemoryKeys;
+import util.assignments.memory.MemoryUtils;
+import util.assignments.targets.Packet;
+import util.assignments.task.Task;
 
 public class PacketAlreadyHandled extends BehaviorChange{
 
@@ -21,21 +19,10 @@ public class PacketAlreadyHandled extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[PacketAlreadyHandled]{updateChange}");
-
         AgentState agentState = this.getAgentState();
         
-        // Packet already handled
+        // Check if the packet was already handled
         packetAlreadyHandled = checkPacketAlreadyHandled(agentState);
-
-        if(packetAlreadyHandled) {
-            Graph graph = getGraph(agentState);
-            Task task = getTask(agentState);
-
-            // graph.removeNode(task.getPacket().getCoordinate());
-
-            updateMappingMemory(agentState, graph);
-        }
     }
 
     @Override
@@ -48,113 +35,49 @@ public class PacketAlreadyHandled extends BehaviorChange{
     /////////////
 
     /**
-     * Check if packet was already handled by another agent
+     * Check if the packet was already handled by another agent
      * 
-     * @param agentState Current state of the agent
+     * @param agentState The current state of the agent
      * @return True is packet is not at initial place, otherwise false
      */
-    private boolean checkPacketAlreadyHandled(AgentState agentState) {       
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+    private boolean checkPacketAlreadyHandled(AgentState agentState) {
+        // Get the task
+        Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
-        // Check if task exists in memory
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            // Retrieve task
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            Task task = Task.fromJson(taskString);
+        // Check if the task is null and return false if so
+        if(task == null) return false;
 
-            // Retrieve position
-            Packet packet= task.getPacket();
-            int positionX = packet.getCoordinate().getX();
-            int positionY = packet.getCoordinate().getY();
+        // Check if the task has no packet and return false if so
+        if(!task.getPacket().isPresent()) return false;
 
-            Perception perception = agentState.getPerception();
-            for (int x = 0; x < perception.getWidth(); x++) {
-                for (int y = 0; y < perception.getHeight(); y++) {
-                    CellPerception cell = perception.getCellAt(x,y);
+        // Get the position of the packet
+        Packet packet= task.getPacket().get();
+        int packetX = packet.getCoordinate().getX();
+        int packetY = packet.getCoordinate().getY();
 
-                    if(cell == null) continue;
+        // Get the perception of the agent
+        Perception agentPerception = agentState.getPerception();
 
-                    int cellX = cell.getX();
-                    int cellY = cell.getY();
-                    
-                    // Check if positions correponds
-                    if(cellX == positionX && cellY == positionY) {
-                        return !cell.containsPacket();
-                    }
+        // Loop over the whole perception
+        for (int x = 0; x < agentPerception.getWidth(); x++) {
+            for (int y = 0; y < agentPerception.getHeight(); y++) {
+                CellPerception cellPerception = agentPerception.getCellAt(x,y);
+
+                // Check if the cell is null and continue with the next cell if so
+                if(cellPerception == null) continue;
+
+                // Get the position of the cell
+                int cellX = cellPerception.getX();
+                int cellY = cellPerception.getY();
+                
+                // Check if the positions correpond
+                if(cellX == packetX && cellY == packetY) {
+                    // Return if the cell does not contain a packet
+                    return !cellPerception.containsPacket();
                 }
             }
-
-            return false;
         }
-        else return false;
+
+        return false;
     }
-
-    /**
-     * Retrieve graph from memory
-     * Create graph if not yet created
-     * 
-     * @param agentState Current state of agent
-     * @return Graph
-     */
-    private Graph getGraph(AgentState agentState) {
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
-        // Check if graph exists in memory
-        if(memoryFragments.contains(MemoryKeys.GRAPH)) {
-            // Retrieve graph
-            String graphString = agentState.getMemoryFragment(MemoryKeys.GRAPH);
-            return Graph.fromJson(graphString);
-        }
-        else {
-            // Create graph
-            Graph graph = new Graph(agentState.getX(), agentState.getY());
-        
-            // Add graph to memory
-            String graphString = graph.toJson();
-            agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
-
-            return graph;
-        }
-    }
-
-    /**
-     * Retrieve task from memory
-     * 
-     * @param agentState Current state of agent
-     * @return Task
-     */
-    private Task getTask(AgentState agentState) {
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
-        // Check if task exists in memory
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            // Retrieve task
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            return Task.fromJson(taskString);
-        }
-        else return null;
-    }
-
-    /**
-     * Update mapping memory of agent
-     * 
-     * @param agentState Current state of the agent
-     * @param graph Graph
-     */
-    private void updateMappingMemory(AgentState agentState, Graph graph) {
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
-        // Remove graph from memory
-        if(memoryFragments.contains(MemoryKeys.GRAPH)) agentState.removeMemoryFragment(MemoryKeys.GRAPH);
-            
-        // Add updated graph to memory
-        String graphString = graph.toJson();
-        agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
-
-        System.out.println("[PacketAlreadyHandled]{updateMappingMemory} Graph updated in memory");
-    }    
 }

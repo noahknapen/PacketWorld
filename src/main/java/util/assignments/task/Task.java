@@ -2,7 +2,7 @@ package util.assignments.task;
 
 import com.google.common.base.Optional;
 
-import agent.behavior.assignment_1_A.utils.Destination;
+import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 
 /**

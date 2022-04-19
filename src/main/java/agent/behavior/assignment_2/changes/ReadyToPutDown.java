@@ -1,12 +1,13 @@
 package agent.behavior.assignment_2.changes;
 
-import java.util.Set;
-
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import agent.behavior.assignment_1_A.utils.Task;
-import agent.behavior.assignment_1_A.utils.TaskState;
-import agent.behavior.assignment_1_B.utils.MemoryKeys;
+import environment.Coordinate;
+import util.assignments.general.ActionUtils;
+import util.assignments.memory.MemoryKeys;
+import util.assignments.memory.MemoryUtils;
+import util.assignments.targets.Destination;
+import util.assignments.task.Task;
 
 public class ReadyToPutDown extends BehaviorChange{
 
@@ -18,12 +19,10 @@ public class ReadyToPutDown extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[ReadyToPutDown]{updateChange}");
-
         AgentState agentState = this.getAgentState();
         
-        // Ready to put down if task state is TO_DESTINATION and if position is reached
-        readyToPutDown = toDestinationTask(agentState) && positionReached(agentState);      
+        // Check if the position is reached
+        readyToPutDown = handlePositionReached(agentState);
     }
 
     @Override
@@ -36,55 +35,26 @@ public class ReadyToPutDown extends BehaviorChange{
     /////////////
 
     /**
-     * Check if current state of task is TO_DESTINATION
+     * Check if the position of the destination is reached by the agent
      * 
-     * @param agentState Current state of agent
-     * @return True if task state is TO_DESTINATION
+     * @param agentState The current state of the agent
+     * @return True if agent has reached the position of the destination, otherwise false
      */
-    private boolean toDestinationTask(AgentState agentState) {
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+    private boolean handlePositionReached(AgentState agentState) {
+        // Get the task
+        Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
-        // Check if task exists in memory
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            // Retrieve task
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            Task task = Task.fromJson(taskString);
+        // Check if the task is null and return false if so
+        if(task == null) return false;
 
-            // Check if state is TO_DESTINATION
-            return task.getState() == TaskState.TO_DESTINATION;
-        }
-        else return false;
-    }
+        // Check if the task has no destination and return false if so
+        if(!task.getDestination().isPresent()) return false;
 
-    /**
-     * Check if position is reached
-     * 
-     * @param agentState Current state of agent
-     * @param position Position to reach
-     * @return True if agent is next to position
-     */
-    private boolean positionReached(AgentState agentState) {
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+        // Get the coordinate of the destination
+        Destination destination= task.getDestination().get();
+        Coordinate destinationCoordinate = destination.getCoordinate();
 
-        // Check if task exists in memory
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            // Retrieve task
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            Task task = Task.fromJson(taskString);
-
-            // Retrieve positions
-            int agentX = agentState.getX();
-            int agentY = agentState.getY();
-            int positionX = task.getDestination().getCoordinate().getX();
-            int positionY = task.getDestination().getCoordinate().getY();
-    
-            int dX = Math.abs(agentX - positionX);
-            int dY = Math.abs(agentY - positionY);
-
-            return (dX <= 1) && (dY <= 1);
-        }
-        else return false;  
+        // Return if the agent has reached the position
+        return ActionUtils.hasReachedPosition(agentState, destinationCoordinate);
     }
 }

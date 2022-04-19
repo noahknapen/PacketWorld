@@ -2,6 +2,8 @@ package util.assignments.targets;
 
 import environment.Coordinate;
 
+import java.awt.Color;
+
 public class Packet extends Target {
 
     private int rgbColor;
@@ -21,6 +23,10 @@ public class Packet extends Target {
 
     public int getRgbColor() {
         return rgbColor;
+    }
+
+    public Color getColor() {
+        return new Color(rgbColor);
     }
 
     public void setRgbColor(int rgbColor) {

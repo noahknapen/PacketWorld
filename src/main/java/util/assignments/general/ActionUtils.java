@@ -90,6 +90,32 @@ public class ActionUtils {
         agentAction.skip();
     }
 
+        //////////////////////
+        // POSITION REACHED //
+        //////////////////////
+    
+    /**
+     * A function to know if the agent has reached the position
+     * 
+     * @param agentState The current state of the agent
+     * @param coordinate The coordinate of the position to reach
+     * @return True is the agent is next to the position, otherwise false
+     */
+    public static boolean hasReachedPosition(AgentState agentState, Coordinate coordinate) {
+        // Get the positions
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+        int coordinateX = coordinate.getX();
+        int coordinateY = coordinate.getY();
+
+        // Calculate the difference between the positions
+        int dX = Math.abs(agentX - coordinateX);
+        int dY = Math.abs(agentY - coordinateY);
+
+        // Return true if the distance is less than 1 for both axes
+        return (dX <= 1) && (dY <= 1);
+    }   
+
     ////////////
     // PACKET //
     ////////////
