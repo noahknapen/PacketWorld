@@ -17,6 +17,9 @@ import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 import util.assignments.task.TaskType;
 
+/**
+ * A behavior change class that checks if a new task can be defined
+ */
 public class TaskDefinitionPossible extends BehaviorChange{
 
     private boolean taskDefinitionPossible = false;
@@ -79,7 +82,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
                     candidatePacket = discoveredPackets.remove(i);
 
                     // Define the task
-                    Task task = new Task(TaskType.MOVE_TO_TARGET, Optional.of(candidatePacket), Optional.of(candidateDestination));
+                    Task task = new Task(TaskType.MOVE_TO_PACKET, Optional.of(candidatePacket), Optional.of(candidateDestination));
 
                     // Update the memory
                     MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));

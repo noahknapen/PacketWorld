@@ -7,6 +7,9 @@ import agent.behavior.Behavior;
 import util.assignments.general.GeneralUtils;
 import util.assignments.general.ActionUtils;
 
+/**
+ * A behavior where the agent moves randomly
+ */
 public class MoveRandomlyBehavior extends Behavior {
 
     @Override

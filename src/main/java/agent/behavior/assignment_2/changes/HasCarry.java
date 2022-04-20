@@ -3,6 +3,9 @@ package agent.behavior.assignment_2.changes;
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 
+/**
+ * A behavior change class that checks if the agent carries a packet
+ */
 public class HasCarry extends BehaviorChange{
 
     private boolean hasCarry = false;

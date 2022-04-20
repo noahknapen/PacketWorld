@@ -11,6 +11,9 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 
+/**
+ * A behavior change class that checks if a new task cannot be defined
+ */
 public class TaskDefinitionNotPossible extends BehaviorChange{
 
     private boolean taskDefinitionNotPossible = false;

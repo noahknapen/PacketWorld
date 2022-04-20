@@ -76,18 +76,68 @@ public class ActionUtils {
         agentAction.skip();
     }
 
-        ///////////////
-        // TO TARGET //
-        ///////////////
+        /////////////////
+        // TO POSITION //
+        /////////////////
 
     /**
-     * A function to make the agent move to a coordinate
+     * A function to make the agent move to a position
      * 
      * @param agentAction Perform an action with the agent
-     * @param coordinate The coordinate to move to
+     * @param coordinate The coordinate of the position to move to
      */
-    public static void moveToCoordinate(AgentAction agentAction, Coordinate coordinate) {
-        agentAction.skip();
+    public static void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate coordinate) {
+        if(positionInPerception(agentState, coordinate)) {
+            moveToPositionInPerception(agentState, agentAction, coordinate);
+        }
+        else {
+            // TODO
+
+        }
+    }
+
+    /**
+     * A function to make the agent move to a position in the perception
+     * 
+     * @param agentState
+     * @param agentAction
+     * @param coordinate
+     */
+    private static void moveToPositionInPerception(AgentState agentState, AgentAction agentAction, Coordinate coordinate) {
+        // Get the perception of the agent
+        Perception agentPerception = agentState.getPerception();
+
+        // Get the positions
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+        int coordinateX = coordinate.getX();
+        int coordinateY = coordinate.getY();
+
+        // Calculate the difference between the positions
+        int dX = coordinateX - agentX;
+        int dY = coordinateY - agentY;
+
+        // Calculate move
+        int relativePositionX = (dX > 0) ? 1 : ((dX < 0) ? -1 : 0);
+        int relativePositionY = (dY > 0) ? 1 : ((dY < 0) ? -1 : 0);
+
+        // Get corresponding cell
+        CellPerception cellPerception = agentPerception.getCellPerceptionOnRelPos(relativePositionX, relativePositionY);
+
+        // Check if the cell is walkable
+        if (cellPerception != null && cellPerception.isWalkable()) {
+            // Calculate the move
+            int agentNewX = agentX + relativePositionX;
+            int agentNewY = agentY + relativePositionY;
+
+            // Perform a step
+            agentAction.step(agentNewX, agentNewY);
+
+            // Inform
+            String message = String.format("%s: Moved to position in perception %s", agentState.getName(), coordinate.toString());
+            System.out.println(message);
+        }
+        else ActionUtils.moveRandomly(agentState, agentAction);
     }
 
         //////////////////////
@@ -114,7 +164,47 @@ public class ActionUtils {
 
         // Return true if the distance is less than 1 for both axes
         return (dX <= 1) && (dY <= 1);
-    }   
+    }
+
+        ////////////////////////////
+        // POSITION IN PERCEPTION //
+        ////////////////////////////
+    
+    /**
+     * A function to know if a specific position is in the perception of the agent
+     * 
+     * @param agentState The current state of the agent
+     * @param coordinate The coordinate of the position to check
+     * @return True is the position is in the perception of the agent, otherwise false
+     */
+    public static boolean positionInPerception(AgentState agentState, Coordinate coordinate) {
+        // Get the position
+        int coordinateX = coordinate.getX();
+        int coordinateY = coordinate.getY();
+
+        // Get the perception of the agent
+        Perception agentPerception = agentState.getPerception();
+
+        // Loop over the whole perception
+        for (int x = 0; x < agentPerception.getWidth(); x++) {
+            for (int y = 0; y < agentPerception.getHeight(); y++) {
+                CellPerception cellPerception = agentPerception.getCellAt(x,y);
+
+                // Check if the cell is null and continue with the next cell if so
+                if(cellPerception == null) continue;
+
+                // Get the position of the cell
+                int cellX = cellPerception.getX();
+                int cellY = cellPerception.getY();
+                
+                // Check if the positions correpond
+                if(cellX == coordinateX && cellY == coordinateY) 
+                    return true;
+            }
+        }
+
+        return false;
+    }
 
     ////////////
     // PACKET //
@@ -123,26 +213,40 @@ public class ActionUtils {
     /**
      * A function to perform the pick up
      * 
+     * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
      * @param packeCoordinate The coordinate of the packet to pick up
      */
-    public static void pickUpPacket(AgentAction agentAction, Coordinate packetCoordinate) {
+    public static void pickUpPacket(AgentState agentState, AgentAction agentAction, Coordinate packetCoordinate) {
+        // Get the position
         int packetX = packetCoordinate.getX();
         int packetY = packetCoordinate.getY();
 
+        // Perform pick up
         agentAction.pickPacket(packetX, packetY);
+
+        // Inform
+        String message = String.format("%s: Picked up packet %s", agentState.getName(), packetCoordinate.toString());
+        System.out.println(message);
     }
 
     /**
      * A function to perform the put down
      * 
+     * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
      * @param destinationCoordinate The coordinate of the destination where to put down the packet
      */
-    public static void putDownPacket(AgentAction agentAction, Coordinate destinationCoordinate) {
+    public static void putDownPacket(AgentState agentState, AgentAction agentAction, Coordinate destinationCoordinate) {
+        // Get the position
         int destinationX = destinationCoordinate.getX();
         int destinationY = destinationCoordinate.getY();
 
+        // Perfom put down
         agentAction.putPacket(destinationX, destinationY);
+
+        // Inform
+        String message = String.format("%s: Put down packet %s", agentState.getName(), destinationCoordinate.toString());
+        System.out.println(message);
     }
 }

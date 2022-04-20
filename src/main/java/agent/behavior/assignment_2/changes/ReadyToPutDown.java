@@ -9,6 +9,9 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.task.Task;
 
+/**
+ * A behavior change class that checks if the agent can put down the carried packet
+ */
 public class ReadyToPutDown extends BehaviorChange{
 
     private boolean readyToPutDown = false;
