@@ -2,6 +2,9 @@ package util.assignments.targets;
 
 import environment.Coordinate;
 
+/**
+ * A class that represents a charging station
+ */
 public class ChargingStation extends Target{
     
     //////////////////
@@ -24,5 +27,10 @@ public class ChargingStation extends Target{
     @Override
     public boolean equals(Object object) {
         return super.equals(object);
+    }
+    
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

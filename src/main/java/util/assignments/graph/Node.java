@@ -1,11 +1,11 @@
-package util.assignments.targets;
+package util.assignments.graph;
 
 import environment.Coordinate;
 
 /**
- * A class that represents a target
+ * A class that represents a node
  */
-public abstract class Target {
+public class Node {
 
     private Coordinate coordinate;
 
@@ -13,14 +13,14 @@ public abstract class Target {
     // CONSTRUCTORS //
     //////////////////
 
-    public Target(Coordinate coordinate) {
+    public Node(Coordinate coordinate) {
         this.setCoordinate(coordinate);
     }
 
     ///////////////////////
     // GETTERS & SETTERS //
     ///////////////////////
-    
+
     public Coordinate getCoordinate() {
         return coordinate;
     }
@@ -35,15 +35,15 @@ public abstract class Target {
 
     @Override
     public String toString() {
-        return this.coordinate.toString();
+        return coordinate.toString();
     }
 
     @Override
     public boolean equals(Object object) {
         boolean result = false;
 
-        if(object instanceof Target target) {
-            result = this.coordinate.equals(target.getCoordinate());
+        if(object instanceof Node node) {
+            result = this.coordinate.equals(node.getCoordinate());
         }
 
         return result;

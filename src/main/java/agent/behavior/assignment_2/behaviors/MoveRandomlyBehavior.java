@@ -5,6 +5,7 @@ import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
 import util.assignments.general.GeneralUtils;
+import util.assignments.graph.GraphUtils;
 import util.assignments.general.ActionUtils;
 
 /**
@@ -21,6 +22,9 @@ public class MoveRandomlyBehavior extends Behavior {
     public void act(AgentState agentState, AgentAction agentAction) {
         // Check the perception of the agent
         GeneralUtils.checkPerception(agentState);
+
+        // Build the graph
+        GraphUtils.build(agentState);
         
         // Move the agent randomly
         ActionUtils.moveRandomly(agentState, agentAction);

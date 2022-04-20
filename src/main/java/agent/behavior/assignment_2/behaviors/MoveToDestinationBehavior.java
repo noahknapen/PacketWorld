@@ -7,10 +7,10 @@ import agent.behavior.Behavior;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
+import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
-import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 import util.assignments.task.TaskType;
 
@@ -33,6 +33,9 @@ public class MoveToDestinationBehavior extends Behavior {
     public void act(AgentState agentState, AgentAction agentAction) {
         // Check the perception of the agent
         GeneralUtils.checkPerception(agentState);
+
+        // Build the graph
+        GraphUtils.build(agentState);
         
         // Move the agent to the target
         handleMove(agentState, agentAction);
@@ -58,24 +61,13 @@ public class MoveToDestinationBehavior extends Behavior {
         // Check if the task has task type MOVE_TO_PACKET but has no packet and raise exception if so
         if(task.getType() == TaskType.MOVE_TO_PACKET && !task.getPacket().isPresent()) throw new IllegalArgumentException("Task has no packet");
 
-        // Check if the task has task type MOVE_TO_PACKET but has no packet and raise exception if so
-        if(task.getType() == TaskType.MOVE_TO_DESTINATION && !task.getDestination().isPresent()) throw new IllegalArgumentException("Task has no destination");
+        // Check if the task has other task type than MOVE_TO_DESTINATION or has no destination and raise exception if so
+        if(task.getType() != TaskType.MOVE_TO_DESTINATION || !task.getDestination().isPresent()) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION or task has no destination");
 
-        Coordinate coordinate = null;
-        if(task.getType() == TaskType.MOVE_TO_PACKET) {
-            // Get the coordinate of the packet
-            Packet packet= task.getPacket().get();
-            coordinate = packet.getCoordinate();
-        }
-        else if(task.getType() == TaskType.MOVE_TO_DESTINATION) {
-            // Get the coordinate of the destination
-            Destination destination = task.getDestination().get();
-            coordinate = destination.getCoordinate();
-        }
+        // Get the coordinate of the destination
+        Destination destination= task.getDestination().get();
+        Coordinate destinationCoordinate = destination.getCoordinate();
 
-        // Check if the coordinate is null and raise exception if so
-        if(coordinate == null) throw new IllegalArgumentException("Task has wrong task type");
-
-        ActionUtils.moveToPosition(agentState, agentAction, coordinate);
+        ActionUtils.moveToPosition(agentState, agentAction, destinationCoordinate);
     }
 }

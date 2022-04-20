@@ -91,8 +91,9 @@ public class ActionUtils {
             moveToPositionInPerception(agentState, agentAction, coordinate);
         }
         else {
-            // TODO
+            // TODO 
 
+            agentAction.skip();
         }
     }
 

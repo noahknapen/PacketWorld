@@ -4,6 +4,9 @@ import environment.Coordinate;
 
 import java.awt.Color;
 
+/**
+ * A class that represents a destination
+ */
 public class Destination extends Target{
     
     private int rgbColor;
@@ -45,5 +48,10 @@ public class Destination extends Target{
     @Override
     public boolean equals(Object object) {
         return super.equals(object);
+    }
+    
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

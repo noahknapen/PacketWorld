@@ -4,6 +4,9 @@ import environment.Coordinate;
 
 import java.awt.Color;
 
+/**
+ * A class that represents a packet
+ */
 public class Packet extends Target {
 
     private int rgbColor;
@@ -45,6 +48,11 @@ public class Packet extends Target {
     @Override
     public boolean equals(Object object) {
         return super.equals(object);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }
 
