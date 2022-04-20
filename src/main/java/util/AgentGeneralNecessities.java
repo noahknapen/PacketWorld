@@ -211,9 +211,6 @@ public class AgentGeneralNecessities {
         Graph graph = AgentGraphInteraction.getGraph(agentState);
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
 
-        // Retrieve the closest node to the agent position
-        Coordinate edgeStartPosition = AgentGraphInteraction.getEdgeStartPosition(agentState);
-
         // Perform Dijkstra's algorithm
         List<Coordinate> path = new ArrayList<>(graph.doSearch(agentPosition, position));
 
@@ -296,17 +293,6 @@ public class AgentGeneralNecessities {
             }
         }
         AgentGeneralNecessities.moveRandom(agentState, agentAction);
-    }
-
-
-    private static boolean testPath(List<Coordinate> path) {
-        for (int i = 0; i < path.size() - 1; i++) {
-            if (Math.abs(path.get(i).getX() - path.get(i+1).getX()) > 1 ||
-                Math.abs(path.get(i).getY() - path.get(i+1).getY()) > 1) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

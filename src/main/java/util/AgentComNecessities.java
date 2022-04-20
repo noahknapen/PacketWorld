@@ -1,27 +1,14 @@
 package util;
 
-import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import environment.CellPerception;
-import environment.Coordinate;
 import environment.Mail;
-import environment.Perception;
-import environment.world.destination.DestinationRep;
-import environment.world.packet.PacketRep;
-import util.graph.AgentGraphInteraction;
-import util.graph.Graph;
 import util.targets.BatteryStation;
-import util.targets.Destination;
-import util.targets.Packet;
 import util.targets.Target;
 import util.task.AgentTaskInteraction;
-import util.task.Task;
 
-import java.awt.*;
-import java.util.List;
 import java.util.*;
 
 public class AgentComNecessities {
