@@ -3,7 +3,6 @@ package agent.behavior.assignment_2.changes;
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.Coordinate;
-import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
