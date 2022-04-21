@@ -1,9 +1,12 @@
 package agent.behavior.assignment_2.changes;
 
+import java.security.GeneralSecurityException;
+
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
+import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -58,6 +61,6 @@ public class ReadyToPutDown extends BehaviorChange{
         Coordinate destinationCoordinate = destination.getCoordinate();
 
         // Return if the agent has reached the position
-        return ActionUtils.hasReachedPosition(agentState, destinationCoordinate);
+        return GeneralUtils.hasReachedPosition(agentState, destinationCoordinate);
     }
 }

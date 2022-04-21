@@ -2,6 +2,7 @@ package util.assignments.general;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.List;
 
 import agent.AgentState;
 import environment.CellPerception;
@@ -9,6 +10,8 @@ import environment.Coordinate;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
+import util.assignments.graph.Graph;
+import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -97,4 +100,113 @@ public class GeneralUtils {
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets, MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations));        
     }
+    
+    /**
+     * A function to know if the agent has reached the position
+     * 
+     * @param agentState The current state of the agent
+     * @param coordinate The coordinate of the position to reach
+     * @return True is the agent is next to the position, otherwise false
+     */
+    public static boolean hasReachedPosition(AgentState agentState, Coordinate coordinate) {
+        // Get the positions
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+        int coordinateX = coordinate.getX();
+        int coordinateY = coordinate.getY();
+
+        // Calculate the difference between the positions
+        int dX = Math.abs(agentX - coordinateX);
+        int dY = Math.abs(agentY - coordinateY);
+
+        // Return true if the distance is less than 1 for both axes
+        return (dX <= 1) && (dY <= 1);
+    }
+    
+    /**
+     * A function to know if a specific position is in the perception of the agent
+     * 
+     * @param agentState The current state of the agent
+     * @param coordinate The coordinate of the position to check
+     * @return True is the position is in the perception of the agent, otherwise false
+     */
+    public static boolean positionInPerception(AgentState agentState, Coordinate coordinate) {
+        // Get the position
+        int coordinateX = coordinate.getX();
+        int coordinateY = coordinate.getY();
+
+        // Get the perception of the agent
+        Perception agentPerception = agentState.getPerception();
+
+        // Loop over the whole perception
+        for (int x = 0; x < agentPerception.getWidth(); x++) {
+            for (int y = 0; y < agentPerception.getHeight(); y++) {
+                CellPerception cellPerception = agentPerception.getCellAt(x,y);
+
+                // Check if the cell is null and continue with the next cell if so
+                if(cellPerception == null) continue;
+
+                // Get the position of the cell
+                int cellX = cellPerception.getX();
+                int cellY = cellPerception.getY();
+                
+                // Check if the positions correpond
+                if(cellX == coordinateX && cellY == coordinateY) 
+                    return true;
+            }
+        }
+
+        return false;
+    }
+    
+    /**
+     * A function to know if a specific position is in the graph
+     * 
+     * @param agentState The current state of the agent
+     * @param coordinate The coordinate of the position to check
+     * @return True is the position is in the graph, otherwise false
+     */
+    public static boolean positionInGraph(AgentState agentState, Coordinate coordinate) {
+        // Get the graph
+        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
+
+        // Check if the graph is null and return false turn if so
+        if(graph == null)
+            return false;
+
+        // Get the graph map
+        Map<Node, List<Node>> map = graph.getMap();
+
+        // Loop over graph nodes
+        for(Node node: map.keySet()) {
+            // Get the position of the node
+            Coordinate nodeCoordinate = node.getCoordinate();
+
+            // Check if coordinates correspond
+            if(nodeCoordinate.equals(coordinate)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * A function to calculate the Euclidean distance between two coordinates
+     * 
+     * @param coordinate1 The first coordinate
+     * @param coordinate2 The second coordinate
+     */
+    public static double calculateEuclideanDistance(Coordinate coordinate1, Coordinate coordinate2) {
+        // Get the positions
+        int coordinate1X = coordinate1.getX();
+        int coordinate1Y = coordinate1.getY();
+        int coordinate2X = coordinate2.getX();
+        int coordinate2Y = coordinate2.getY();
+
+        // Calculate the distance
+        double distance = Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
+
+        return distance;
+    } 
 }

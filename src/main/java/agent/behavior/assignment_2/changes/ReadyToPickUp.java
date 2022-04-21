@@ -4,6 +4,7 @@ import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
+import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Packet;
@@ -58,6 +59,6 @@ public class ReadyToPickUp extends BehaviorChange{
         Coordinate packetCoordinate = packet.getCoordinate();
 
         // Return if the agent has reached the position
-        return ActionUtils.hasReachedPosition(agentState, packetCoordinate);
+        return GeneralUtils.hasReachedPosition(agentState, packetCoordinate);
     }
 }
