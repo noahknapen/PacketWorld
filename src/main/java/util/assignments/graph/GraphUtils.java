@@ -45,6 +45,9 @@ public class GraphUtils {
 
                 // Check if the cell is null and continue with the next cell if so
                 if(cellPerception == null) continue;
+
+                // Check if the cell contains no packet or destination and is no walkable and continue with the next cell if so
+                if(!(cellPerception.containsPacket() || cellPerception.containsAnyDestination()) && !cellPerception.isWalkable()) continue;
         
                 // Get the position of the cell
                 int cellX = cellPerception.getX();
@@ -65,10 +68,13 @@ public class GraphUtils {
                         int neighbourCellY = cellY + j;
 
                         // Get the corresponding neighbour cell
-                        CellPerception neighbourCell = agentPerception.getCellPerceptionOnAbsPos(neighbourCellX, neighbourCellY);
+                        CellPerception neighbourCellPerception = agentPerception.getCellPerceptionOnAbsPos(neighbourCellX, neighbourCellY);
 
-                        // Check if the neightbour cell is null and continue with the next cell if so
-                        if(neighbourCell == null) continue;
+                        // Check if the neightbour cell is null or not walkable and continue with the next cell if so
+                        if(neighbourCellPerception == null || !neighbourCellPerception.isWalkable()) continue;
+                        
+                        // Check if the cell contains no packet or destination and is no walkable and continue with the next cell if so
+                        if(!(neighbourCellPerception.containsPacket() || neighbourCellPerception.containsAnyDestination()) && !neighbourCellPerception.isWalkable()) continue;
 
                         // Get the position of the neighbour cell
                         Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);

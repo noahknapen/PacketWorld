@@ -65,6 +65,7 @@ public class MoveToPacketBehavior extends Behavior {
         Packet packet= task.getPacket().get();
         Coordinate packetCoordinate = packet.getCoordinate();
 
+        // Perform move to the position of the packet
         ActionUtils.moveToPosition(agentState, agentAction, packetCoordinate);
     }
 }

@@ -68,6 +68,7 @@ public class MoveToDestinationBehavior extends Behavior {
         Destination destination= task.getDestination().get();
         Coordinate destinationCoordinate = destination.getCoordinate();
 
+        // Perform move to the position of the destination
         ActionUtils.moveToPosition(agentState, agentAction, destinationCoordinate);
     }
 }
