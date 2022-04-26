@@ -9,7 +9,6 @@ import util.assignments.targets.ChargingStation;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
-import util.assignments.task.Task;
 
 /**
  * A class that implements functions regarding the Gson library
