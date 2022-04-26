@@ -1,6 +1,6 @@
 package util.assignments.task;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
@@ -20,8 +20,8 @@ public class Task {
     
     public Task(TaskType type) {
         this.setType(type);
-        this.setPacket(Optional.absent());
-        this.setDestination(Optional.absent());
+        this.setPacket(Optional.empty());
+        this.setDestination(Optional.empty());
     }
 
     public Task(TaskType type, Optional<Packet> packet, Optional<Destination> destination) {

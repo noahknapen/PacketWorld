@@ -42,7 +42,8 @@ public class Packet extends Target {
 
     @Override
     public String toString() {
-        return super.toString();
+        String string = super.toString() + " " + rgbColor;
+        return string;
     }
 
     @Override

@@ -51,7 +51,7 @@ public class MemoryUtils {
      * @param agentState The current state of the agent
      * @param memoryKey The memory key
      * @param objectClass The class of the objects contained in the list
-     * @return The list of objects or null if no list was found
+     * @return The list of objects
      */
     public static <T> ArrayList<T> getListFromMemory(AgentState agentState, String memoryKey, Class<T> objectClass) {
         // Get the memory

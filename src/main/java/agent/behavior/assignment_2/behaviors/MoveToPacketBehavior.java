@@ -25,12 +25,12 @@ public class MoveToPacketBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // TODO Auto-generated method stub
-        
+        // Handle the charging stations
+        GeneralUtils.handleChargingStations(agentState, agentCommunication);       
     }
 
     @Override
-    public void act(AgentState agentState, AgentAction agentAction) {
+    public void act(AgentState agentState, AgentAction agentAction) { 
         // Check the perception of the agent
         GeneralUtils.checkPerception(agentState);
 

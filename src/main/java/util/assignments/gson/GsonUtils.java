@@ -1,5 +1,7 @@
 package util.assignments.gson;
 
+import java.util.Optional;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -31,7 +33,7 @@ public class GsonUtils {
             .registerSubtype(ChargingStation.class, "ChargingStation");
         gsonBuilder.registerTypeAdapterFactory(factory);
 
-        gsonBuilder.registerTypeAdapterFactory(OptionalTypeAdapter.FACTORY);
+        gsonBuilder.registerTypeAdapter(Optional.class, new OptionalDeserializer<>());
 
         // Create the Gson object and return it
         return gsonBuilder.create();   

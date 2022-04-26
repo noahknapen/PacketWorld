@@ -2,8 +2,10 @@ package util.assignments.general;
 
 import java.util.ArrayList;
 import java.util.Map;
+
 import java.util.List;
 
+import agent.AgentCommunication;
 import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
@@ -98,7 +100,7 @@ public class GeneralUtils {
                 }
 
                 // Check if the cell contains a charging station
-                if(cellPerception.containsEnergyStation()) {                   
+                if(cellPerception.containsEnergyStation()) {                    
                     // Create the corresponding chargin station
                     ChargingStation chargingStation = new ChargingStation(cellCoordinate);
 
@@ -116,7 +118,69 @@ public class GeneralUtils {
         }
 
         // Update the memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets, MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations, MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations));        
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets, MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations, MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations));
+    }
+
+    /**
+     * Handle the charging stations
+     * 
+     * @param agentState The current state of the agent
+     * @param agentCommunication Perform communication with the agent
+     */
+    public static void handleChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
+        // TEMP
+
+        // Share charging station information
+        // shareChargingStationsInformation(agentState, agentCommunication);
+
+        // Update charging station information
+        // updateChargingStationsInformation(agentState, agentCommunication);
+    }
+
+    /**
+     * Share own charging station information
+     * 
+     * @param agentState The current state of the agent
+     * @param agentCommunication Perform communication with the agent
+     */
+    private static void shareChargingStationsInformation(AgentState agentState, AgentCommunication agentCommunication) {
+        CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
+    }
+
+    /**
+     * Update own charging station information by means of message exchange with other agents
+     * 
+     * @param agentState The current state of the agent
+     * @param agentCommunication Perform communication with the agent
+     */
+    private static void updateChargingStationsInformation(AgentState agentState, AgentCommunication agentCommunication) {
+        // Get the current charging stations
+        ArrayList<ChargingStation> currentChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+
+        // Get the updated charging stations
+        ArrayList<ChargingStation> updatedChargingStations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+
+        // Loop over updated charging stations
+        for(ChargingStation updatedChargingStation: updatedChargingStations) {
+            // Check if the charging station is not included in the current list and add it if so
+            if(!currentChargingStations.contains(updatedChargingStation)) {
+                currentChargingStations.add(updatedChargingStation);
+                continue;
+            }            
+
+            // Loop over current charging stations
+            for(ChargingStation currentChargingStation: currentChargingStations) {
+                // Check if charging stations correspond
+                if(currentChargingStation.equals(updatedChargingStation)) {
+                    // Update the current chargint station is needed
+                    if(!currentChargingStation.isInUse() && updatedChargingStation.isInUse()) currentChargingStation.setInUse(true);
+                    if(!currentChargingStation.getBatteryOfUser().isPresent() && updatedChargingStation.getBatteryOfUser().isPresent()) currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
+                }
+            }
+        }
+
+        // Update the current charging stations
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, currentChargingStations));
     }
     
     /**
