@@ -14,6 +14,7 @@ import util.assignments.graph.Graph;
 import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
+import util.assignments.targets.ChargingStation;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
@@ -38,6 +39,7 @@ public class GeneralUtils {
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
         ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
         ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
+        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
 
         // Loop over the whole perception
         for (int x = 0; x < agentPerception.getWidth(); x++) {
@@ -84,7 +86,7 @@ public class GeneralUtils {
                     // Create the corresponding destination
                     Destination destination= new Destination(cellCoordinate, destinationRgbColor);
 
-                    // Check if the destination was already discoverd and continue with next cell if so
+                    // Check if the destination was already discovered and continue with next cell if so
                     if(discoveredDestinations.contains(destination)) continue;
 
                     // Add the destination to the list of discovered destinations
@@ -94,11 +96,27 @@ public class GeneralUtils {
                     String message = String.format("%s: Discovered a new destination (%d)", agentState.getName(), discoveredDestinations.size());
                     System.out.println(message);
                 }
+
+                // Check if the cell contains a charging station
+                if(cellPerception.containsEnergyStation()) {                   
+                    // Create the corresponding chargin station
+                    ChargingStation chargingStation = new ChargingStation(cellCoordinate);
+
+                    // Check if the charging station was already discovered and continue with next cell if so
+                    if(discoveredChargingStations.contains(chargingStation)) continue;
+
+                    // Add the charging station to the list of discovered charging stations
+                    discoveredChargingStations.add(chargingStation);
+
+                    // Inform
+                    String message = String.format("%s: Discovered a new charging station (%d)", agentState.getName(), discoveredChargingStations.size());
+                    System.out.println(message);
+                }
             }
         }
 
         // Update the memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets, MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations));        
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets, MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations, MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations));        
     }
     
     /**
