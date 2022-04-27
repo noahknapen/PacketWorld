@@ -5,9 +5,6 @@ import java.util.Optional;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import util.assignments.targets.ChargingStation;
-import util.assignments.targets.Destination;
-import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
 /**
@@ -26,14 +23,8 @@ public class GsonUtils {
 
         // Parametrize the Gson builder
         gsonBuilder.enableComplexMapKeySerialization();
-
+        gsonBuilder.registerTypeAdapter(Target.class, new InheritanceDeserializer());
         gsonBuilder.registerTypeAdapter(Optional.class, new OptionalDeserializer<>());
-
-        RuntimeTypeAdapterFactory<Target> factory = RuntimeTypeAdapterFactory.of(Target.class, "type")
-            .registerSubtype(Packet.class, "Packet")
-            .registerSubtype(Destination.class, "Destination")
-            .registerSubtype(ChargingStation.class, "ChargingStation");
-        gsonBuilder.registerTypeAdapterFactory(factory);
 
         // Create the Gson object and return it
         return gsonBuilder.create();   
