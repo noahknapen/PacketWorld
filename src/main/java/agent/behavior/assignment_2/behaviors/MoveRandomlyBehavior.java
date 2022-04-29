@@ -2,8 +2,6 @@ package agent.behavior.assignment_2.behaviors;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
