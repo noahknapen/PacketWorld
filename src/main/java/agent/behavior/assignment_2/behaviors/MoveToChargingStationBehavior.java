@@ -4,6 +4,7 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
+import environment.CellPerception;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
@@ -44,6 +45,7 @@ public class MoveToChargingStationBehavior extends Behavior {
 
             double minDistance = Double.MAX_VALUE;
             Coordinate bestPosition = null;
+            ChargingStation bestStation = null;
             Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
             for (ChargingStation station : discoveredChargingStations) {
 
@@ -57,10 +59,16 @@ public class MoveToChargingStationBehavior extends Behavior {
 
                 minDistance = ActionUtils.calculateDistance(agentPosition, chargingCoordinates);
                 bestPosition = chargingCoordinates;
+                bestStation = station;
             }
 
-            if (bestPosition == null) ActionUtils.moveRandomly(agentState, agentAction);
-            else ActionUtils.moveToPosition(agentState, agentAction, bestPosition);
+            // If the agent is close to the chargingStation, but it is in use skip a turn to conserve energy.
+            if (bestPosition != null) {
+                if (ActionUtils.calculateDistance(agentPosition, bestPosition) < 5 & bestStation.isInUse()) ActionUtils.skipTurn(agentAction);
+                else ActionUtils.moveToPosition(agentState, agentAction, bestPosition);
+            } else {
+                ActionUtils.moveRandomly(agentState, agentAction);
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

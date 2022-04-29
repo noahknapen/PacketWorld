@@ -3,6 +3,7 @@ package util.assignments.general;
 import java.util.ArrayList;
 import java.util.Map;
 
+import agent.behavior.assignment_2.behaviors.ChargingBehavior;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -27,6 +28,7 @@ import util.assignments.task.Task;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * A class that implements general functions
@@ -108,8 +110,8 @@ public class GeneralUtils {
                 }
 
                 // Check if the cell contains a charging station
-                if(cellPerception.containsEnergyStation()) {                    
-                    // Create the corresponding chargin station
+                if(cellPerception.containsEnergyStation()) {
+                    // Create the corresponding charging station
                     ChargingStation chargingStation = new ChargingStation(cellCoordinate);
 
                     // Check if the charging station was already discovered and continue with next cell if so
@@ -189,9 +191,9 @@ public class GeneralUtils {
             for(ChargingStation currentChargingStation: currentChargingStations) {
                 // Check if charging stations correspond
                 if(currentChargingStation.equals(updatedChargingStation)) {
-                    // Update the current chargint station is needed
+                    // Update the current charging station if needed
                     if(!currentChargingStation.isInUse() && updatedChargingStation.isInUse()) currentChargingStation.setInUse(true);
-                    if(!currentChargingStation.getBatteryOfUser().isPresent() && updatedChargingStation.getBatteryOfUser().isPresent()) currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
+                    if(currentChargingStation.getBatteryOfUser().isEmpty() && updatedChargingStation.getBatteryOfUser().isPresent()) currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
                 
                     // Inform
                     String message = String.format("%s: Updated a known charging station from communication (%s)", agentState.getName(), currentChargingStation);

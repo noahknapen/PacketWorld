@@ -1,6 +1,7 @@
 package agent.behavior.assignment_2.behaviors;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -15,6 +16,7 @@ import util.assignments.general.GeneralUtils;
 import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
+import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 import util.assignments.task.TaskType;
@@ -75,10 +77,10 @@ public class MoveToPacketBehavior extends Behavior {
         if(task == null) throw new IllegalArgumentException("Task is null");
 
         // Check if the task has other task type than MOVE_TO_PACKET or has no packet and raise exception if so
-        if(task.getType() != TaskType.MOVE_TO_PACKET || !task.getPacket().isPresent()) throw new IllegalArgumentException("Task type is not MOVE_TO_PACKET or task has no packet");
+        if(task.getType() != TaskType.MOVE_TO_PACKET || task.getPacket().isEmpty()) throw new IllegalArgumentException("Task type is not MOVE_TO_PACKET or task has no packet");
 
         // Get the coordinate of the packet
-        Packet packet= task.getPacket().get();
+        Packet packet = task.getPacket().get();
         Coordinate packetCoordinate = packet.getCoordinate();
 
         // Perform move to the position of the packet

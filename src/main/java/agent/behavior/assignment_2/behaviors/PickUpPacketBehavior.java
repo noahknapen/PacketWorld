@@ -63,7 +63,7 @@ public class PickUpPacketBehavior extends Behavior {
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
         // Check if the task has other task type than MOVE_TO_PACKET or has no packet and raise exception if so
-        if(task.getType() != TaskType.MOVE_TO_PACKET || !task.getPacket().isPresent()) throw new IllegalArgumentException("Task type is not MOVE_TO_PACKET or task has no packet");
+        if(task.getType() != TaskType.MOVE_TO_PACKET || task.getPacket().isEmpty()) throw new IllegalArgumentException("Task type is not MOVE_TO_PACKET or task has no packet");
 
         // Get the coordinate of the packet
         Packet packet= task.getPacket().get();

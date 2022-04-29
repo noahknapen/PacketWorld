@@ -12,7 +12,10 @@ import environment.Coordinate;
  */
 public class ChargingStation extends Target{
 
+    // A variable to check if the battery station is in use or not
     private boolean inUse;
+
+    // A variable to see the battery of the user currently using the charging station
     private Optional<Integer> batteryOfUser;
 
     //////////////////

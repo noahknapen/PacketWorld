@@ -13,7 +13,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
+import environment.Coordinate;
 import util.assignments.comparators.PacketComparator;
+import util.assignments.general.ActionUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -69,7 +71,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
         // Sort the discovered packets
         PacketComparator packetComparator = new PacketComparator(agentState, discoveredDestinations);
-        Collections.sort(discoveredPackets, packetComparator);
+        discoveredPackets.sort(packetComparator);
 
         // Loop over the sorted discovered packets
         for(int i = 0; i < discoveredPackets.size(); i++) {
@@ -80,29 +82,43 @@ public class TaskDefinitionPossible extends BehaviorChange{
             Color candidatePacketColor = candidatePacket.getColor();
             
             // Loop over the discovered destinations
-            for(int j = 0; j < discoveredDestinations.size(); j++) {
+            for (Destination candidateDestination : discoveredDestinations) {
                 // Get a candidate destination
-                Destination candidateDestination = discoveredDestinations.get(j);
-
                 // Get the color of the candidate destination
                 Color candidateDestinationColor = candidateDestination.getColor();
-                
+
                 // Check if the colors correspond
-                if(candidatePacketColor.equals(candidateDestinationColor)) {
-                    // Remove the packet from the discovered packets
-                    candidatePacket = discoveredPackets.remove(i);
+                if (!candidatePacketColor.equals(candidateDestinationColor)) return false;
 
-                    // Define the task
-                    Task task = new Task(TaskType.MOVE_TO_PACKET, Optional.of(candidatePacket), Optional.of(candidateDestination));
+                // If the agent doesn't have enough energy to complete the task, don't do the task
+                if (!(determineEnergyNecessaryToPickAndDeliverPacket(agentState, candidatePacket, candidateDestination) < agentState.getBatteryState() + 150)) return false;
 
-                    // Update the memory
-                    MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
+                // Remove the packet from the discovered packets
+                candidatePacket = discoveredPackets.remove(i);
 
-                    return true;
-                }
+                // Define the task
+                Task task = new Task(TaskType.MOVE_TO_PACKET, Optional.of(candidatePacket), Optional.of(candidateDestination));
+
+                // Update the memory
+                MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
+
+                return true;
             }
         }
 
         return false;
-    }   
+    }
+
+    private double determineEnergyNecessaryToPickAndDeliverPacket(AgentState agentState, Packet packet, Destination destination) {
+        Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
+
+        double distance1 = ActionUtils.calculateDistance(agentPosition, packet.getCoordinate());
+        double power1 = Math.ceil(distance1*10);
+
+
+        double distance2 = ActionUtils.calculateDistance(packet.getCoordinate(), destination.getCoordinate());
+        double power2 = Math.ceil(distance2*25);
+
+        return power1 + power2;
+    }
 }

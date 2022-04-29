@@ -1,9 +1,8 @@
 package agent.behavior.assignment_2.changes;
 
-import agent.AgentState;
 import agent.behavior.BehaviorChange;
 
-public class HasEnoughBattery extends BehaviorChange {
+public class MustLeaveChargingStation extends BehaviorChange {
     private boolean hasEnoughBattery = false;
 
     ///////////////
@@ -12,7 +11,7 @@ public class HasEnoughBattery extends BehaviorChange {
 
     @Override
     public void updateChange() {
-        hasEnoughBattery =  this.getAgentState().getBatteryState() >= 950;
+        hasEnoughBattery =  this.getAgentState().getBatteryState() >= 900;
     }
 
     @Override

@@ -63,10 +63,10 @@ public class ReadyToPickUp extends BehaviorChange{
         if(task == null) return false;
 
         // Check if the task has no packet and return false if so
-        if(!task.getPacket().isPresent()) return false;
+        if(task.getPacket().isEmpty()) return false;
 
         // Get the coordinate of the packet
-        Packet packet= task.getPacket().get();
+        Packet packet = task.getPacket().get();
         Coordinate packetCoordinate = packet.getCoordinate();
 
         // Return if the agent has reached the position

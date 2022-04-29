@@ -166,6 +166,10 @@ public class ActionUtils {
         return minDistance + Math.abs(distanceX - distanceY);
     }
 
+    public static void skipTurn(AgentAction agentAction) {
+        agentAction.skip();
+    }
+
     /**
      * A function to calculate the move (default)
      * 
