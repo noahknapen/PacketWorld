@@ -110,7 +110,60 @@ public class ActionUtils {
 
             makeMove(agentState, agentAction, move);
         }
-        else throw new IllegalArgumentException("Target not in perpcetion nor in graph");
+        // If not in the graph, move closer to the position
+        else {
+            System.out.println("Test");
+            ActionUtils.MoveRandomToPosition(agentState, agentAction, coordinate);
+        }
+    }
+
+    private static void MoveRandomToPosition(AgentState agentState, AgentAction agentAction, Coordinate targetCoordinate) {
+        Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
+
+        // Two variables for determining which is the best coordinate
+        double minDistance = Double.MAX_VALUE;
+        Coordinate bestCoordinate = agentPosition;
+
+        for (Coordinate relativePosition : RELATIVE_POSITIONS) {
+            // Calculate move
+            CellPerception cellPerception = agentState.getPerception().getCellPerceptionOnRelPos(relativePosition.getX(), relativePosition.getY());
+
+            //Check if cell is walkable
+            if (cellPerception == null || !cellPerception.isWalkable()) continue;
+
+            // Create a variable of the position to try
+            int newPositionX = agentState.getX() + relativePosition.getX();
+            int newPositionY = agentState.getY() + relativePosition.getY();
+            Coordinate position = new Coordinate(newPositionX, newPositionY);
+
+            // Check if cell is a better option
+            if (ActionUtils.calculateDistance(position, targetCoordinate) > minDistance) continue;
+
+            // It is a better option so change the min distance and the relative position
+            minDistance = ActionUtils.calculateDistance(position, targetCoordinate);
+            bestCoordinate = relativePosition;
+        }
+
+        if (agentPosition.equals(bestCoordinate)) moveRandomly(agentState, agentAction);
+        else makeMove(agentState, agentAction, bestCoordinate);
+
+    }
+
+    /**
+     * A function used to calculate the distance between two cells.
+     *
+     * @param startPosition: The startPosition
+     * @param endPosition: The endPosition
+     *
+     * @return double distance variable
+     */
+    public static double calculateDistance(Coordinate startPosition, Coordinate endPosition) {
+        int distanceX = Math.abs(startPosition.getX() - endPosition.getX());
+        int distanceY = Math.abs(startPosition.getY() - endPosition.getY());
+        int minDistance = Math.min(distanceX, distanceY);
+
+        // Diagonal distance (minDistance) plus the rest (if distanceX or distanceY is larger than the other)
+        return minDistance + Math.abs(distanceX - distanceY);
     }
 
     /**
@@ -218,7 +271,7 @@ public class ActionUtils {
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
-     * @param packeCoordinate The coordinate of the packet to pick up
+     * @param packetCoordinate The coordinate of the packet to pick up
      */
     public static void pickUpPacket(AgentState agentState, AgentAction agentAction, Coordinate packetCoordinate) {
         // Get the position

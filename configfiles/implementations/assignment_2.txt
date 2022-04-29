@@ -40,7 +40,7 @@ priority 0
 source 1
 target 2
 
-agent.behavior.assignment_1_B.change.HasEnoughBattery
+agent.behavior.assignment_2.changes.HasEnoughBattery
 nbArgs 0
 priority 1
 source 7
@@ -92,13 +92,13 @@ target 2
 
 ### SOURCE 6: MoveToChargingStationBehavior ###
 
-agent.behavior.assignment_1_B.change.HasLowBattery
+agent.behavior.assignment_2.changes.HasLowBattery
 nbArgs 0
 priority 1
 source 2
 target 6
 
-agent.behavior.assignment_1_B.change.HasLowBattery
+agent.behavior.assignment_2.changes.HasLowBattery
 nbArgs 0
 priority 1
 source 1
@@ -106,7 +106,7 @@ target 6
 
 ### SOURCE 7: ChargingBehavior ###
 
-agent.behavior.assignment_1_B.change.IsOnChargingPad
+agent.behavior.assignment_2.changes.IsOnChargingPad
 nbArgs 0
 priority 2
 source 6

@@ -12,7 +12,7 @@ public class HasEnoughBattery extends BehaviorChange {
 
     @Override
     public void updateChange() {
-        hasEnoughBattery =  this.getAgentState().getBatteryState() >= 900;
+        hasEnoughBattery =  this.getAgentState().getBatteryState() >= 950;
     }
 
     @Override

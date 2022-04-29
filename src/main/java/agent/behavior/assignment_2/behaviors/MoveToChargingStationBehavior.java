@@ -32,6 +32,7 @@ public class MoveToChargingStationBehavior extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         try {
+
             // Check the perception of the agent
             GeneralUtils.checkPerception(agentState);
 

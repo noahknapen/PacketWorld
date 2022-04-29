@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import agent.behavior.assignment_1_B.utils.NodeType;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -198,4 +199,5 @@ public class GraphUtils {
 
         return GeneralUtils.calculateEuclideanDistance(referenceCoordinate, nodeCoordinate);
     }
+
 }

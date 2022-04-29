@@ -57,12 +57,9 @@ public class MoveToDestinationBehavior extends Behavior {
         int agentY = agentState.getY();
         Coordinate agentPosition = new Coordinate(agentX, agentY);
 
-<<<<<<< HEAD
-=======
         // Handle graph
         handleGraph(agentState);
 
->>>>>>> origin/part2-charles
         // Check perception
         checkPerception(agentState);
 
