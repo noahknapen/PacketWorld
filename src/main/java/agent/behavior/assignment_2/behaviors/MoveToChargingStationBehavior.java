@@ -42,6 +42,9 @@ public class MoveToChargingStationBehavior extends Behavior {
             // Move the agent to the target
             ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
 
+            double minDistance = Double.MAX_VALUE;
+            Coordinate bestPosition = null;
+            Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
             for (ChargingStation station : discoveredChargingStations) {
 
                 // Find coordinates of charging station
@@ -49,12 +52,16 @@ public class MoveToChargingStationBehavior extends Behavior {
                 int batteryY = station.getCoordinate().getY() - 1;
                 Coordinate chargingCoordinates = new Coordinate(batteryX, batteryY);
 
-                // Move to the battery station
-                ActionUtils.moveToPosition(agentState, agentAction, chargingCoordinates);
-                return;
+                // Guard clause to check if the charging station is closer than the previous one
+                if (ActionUtils.calculateDistance(agentPosition, chargingCoordinates) > minDistance) continue;
+
+                minDistance = ActionUtils.calculateDistance(agentPosition, chargingCoordinates);
+                bestPosition = chargingCoordinates;
             }
 
-            ActionUtils.moveRandomly(agentState, agentAction);
+            if (bestPosition == null) ActionUtils.moveRandomly(agentState, agentAction);
+            else ActionUtils.moveToPosition(agentState, agentAction, bestPosition);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
