@@ -10,9 +10,9 @@ import com.google.gson.Gson;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import util.MemoryKeys;
-import util.targets.Destination;
-import util.targets.Packet;
+import agent.behavior.assignment_1_A.utils.Destination;
+import agent.behavior.assignment_1_A.utils.Packet;
+import agent.behavior.assignment_1_B.utils.MemoryKeys;
 
 public class TaskDefinitionNotPossible extends BehaviorChange{
 
@@ -24,6 +24,7 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
 
     @Override
     public void updateChange() {
+        System.out.println("[TaskDefinitionNotPossible] updateChange");
 
         AgentState agentState = this.getAgentState();
 

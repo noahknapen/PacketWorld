@@ -4,7 +4,7 @@ description "Delivery with different behaviors"
 # ------------------------------------------------
 # The amount of the behavior states the agent has
 # ------------------------------------------------
-nbStates 7
+nbStates 5
 
 1 agent.behavior.assignment_1_B.MoveRandomBehavior    
 nbArgs 0
@@ -21,19 +21,13 @@ nbArgs 0
 5 agent.behavior.assignment_1_B.PutDownPacketBehavior    
 nbArgs 0
 
-6 agent.behavior.assignment_1_B.MoveToChargingStationBehavior
-nbArgs 0
-
-7 agent.behavior.assignment_1_B.ChargingBehavior
-nbArgs 0
-
 
 
 # ---------------------------------------------------------------
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 11
+nbChanges 7
 
 agent.behavior.assignment_1_B.change.TaskDefinitionPossible
 nbArgs 0
@@ -76,27 +70,3 @@ nbArgs 0
 priority 0
 source 5
 target 2
-
-agent.behavior.assignment_1_B.change.HasLowBattery
-nbArgs 0
-priority 1
-source 2
-target 6
-
-agent.behavior.assignment_1_B.change.HasLowBattery
-nbArgs 0
-priority 1
-source 1
-target 6
-
-agent.behavior.assignment_1_B.change.IsOnChargingPad
-nbArgs 0
-priority 2
-source 6
-target 7
-
-agent.behavior.assignment_1_B.change.HasEnoughBattery
-nbArgs 0
-priority 1
-source 7
-target 1

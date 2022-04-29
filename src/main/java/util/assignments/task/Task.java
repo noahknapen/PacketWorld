@@ -1,0 +1,73 @@
+package util.assignments.task;
+
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import util.assignments.targets.Destination;
+import util.assignments.targets.Packet;
+
+/**
+ * A class representing the task the agent is performing
+ */
+public class Task {
+    
+    private TaskType type;
+    private Optional<Packet> packet;
+    private Optional<Destination> destination;
+
+    //////////////////
+    // CONSTRUCTORS //
+    //////////////////
+    
+    public Task(TaskType type) {
+        this.setType(type);
+        this.setPacket(Optional.empty());
+        this.setDestination(Optional.empty());
+    }
+
+    @JsonCreator
+    public Task(@JsonProperty("type") TaskType type, @JsonProperty("packet") Optional<Packet> packet, @JsonProperty("destination") Optional<Destination> destination) {
+        this.setType(type);
+        this.setPacket(packet);
+        this.setDestination(destination);
+    }
+
+    ///////////////////////
+    // GETTERS & SETTERS //
+    ///////////////////////
+    
+    public TaskType getType() {
+        return type;
+    }
+
+    public Optional<Packet> getPacket() {
+        return packet;
+    }
+
+    public Optional<Destination> getDestination() {
+        return destination;
+    }
+
+    public void setPacket(Optional<Packet> packet) {
+        this.packet = packet;
+    }
+
+    public void setType(TaskType type) {
+        this.type = type;
+    }
+
+    public void setDestination(Optional<Destination> destination) {
+        this.destination = destination;
+    }
+
+    ///////////////
+    // OVERRIDES //
+    ///////////////
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s", type, packet, destination);
+    }
+}
