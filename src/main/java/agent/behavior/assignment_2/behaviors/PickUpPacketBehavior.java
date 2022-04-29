@@ -30,7 +30,6 @@ public class PickUpPacketBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
