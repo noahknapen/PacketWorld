@@ -22,7 +22,7 @@ public class HasLowBattery extends BehaviorChange {
     public void updateChange() {
         AgentState agentState = this.getAgentState();
         System.out.println("Here");
-        hasLowBattery = agentState.getBatteryState() < 750;
+        hasLowBattery = agentState.getBatteryState() < 350;
     }
 
     @Override
