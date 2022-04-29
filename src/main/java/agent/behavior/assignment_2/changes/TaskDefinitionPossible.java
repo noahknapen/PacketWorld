@@ -1,11 +1,15 @@
 package agent.behavior.assignment_2.changes;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
 import java.util.Optional;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
@@ -33,7 +37,11 @@ public class TaskDefinitionPossible extends BehaviorChange{
         AgentState agentState = this.getAgentState();
 
         // Handle the possible task definition
-        taskDefinitionPossible = checkTaskDefinition(agentState);  
+        try {
+            taskDefinitionPossible = checkTaskDefinition(agentState);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }  
     }
 
     @Override
@@ -50,8 +58,11 @@ public class TaskDefinitionPossible extends BehaviorChange{
      * 
      * @param agentState The current state of the agent
      * @return True if the task defintion is possible and was done, otherwise false
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    private boolean checkTaskDefinition(AgentState agentState) {
+    private boolean checkTaskDefinition(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
         // Get the discovered packets and discovered destinations
         ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
         ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);

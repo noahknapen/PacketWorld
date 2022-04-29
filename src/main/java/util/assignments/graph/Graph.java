@@ -5,11 +5,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import util.assignments.jackson.NodeDeserializer;
+import util.assignments.jackson.NodeSerializer;
+
 /**
  * A class that represents a graph
  */
 public class Graph {
 
+    @JsonSerialize(keyUsing = NodeSerializer.class)
+    @JsonDeserialize(keyUsing = NodeDeserializer.class)
+    @JsonProperty("map")
     private Map<Node, List<Node>> map;
 
     //////////////////

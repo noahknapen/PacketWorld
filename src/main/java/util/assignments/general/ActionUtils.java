@@ -1,8 +1,12 @@
 package util.assignments.general;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentAction;
 import agent.AgentState;
@@ -89,8 +93,11 @@ public class ActionUtils {
      * 
      * @param agentAction Perform an action with the agent
      * @param coordinate The coordinate of the position to move to
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    public static void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate coordinate) {
+    public static void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate coordinate) throws JsonParseException, JsonMappingException, IOException {
         // Check if the position is in the perception of the agent
         if(GeneralUtils.positionInPerception(agentState, coordinate)) {
             Coordinate move = calculateMoveDefault(agentState, coordinate);
@@ -138,8 +145,11 @@ public class ActionUtils {
      * 
      * @param agentState The current state of the agent
      * @param target The coordinate of the target
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    private static Coordinate calculateMoveAStar(AgentState agentState,  Coordinate target) {
+    private static Coordinate calculateMoveAStar(AgentState agentState,  Coordinate target) throws JsonParseException, JsonMappingException, IOException {
         // Perform A* search
         Coordinate pathCoordinate = GraphUtils.performAStarSearch(agentState, target);
 

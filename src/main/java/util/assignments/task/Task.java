@@ -2,6 +2,9 @@ package util.assignments.task;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 
@@ -24,7 +27,8 @@ public class Task {
         this.setDestination(Optional.empty());
     }
 
-    public Task(TaskType type, Optional<Packet> packet, Optional<Destination> destination) {
+    @JsonCreator
+    public Task(@JsonProperty("type") TaskType type, @JsonProperty("packet") Optional<Packet> packet, @JsonProperty("destination") Optional<Destination> destination) {
         this.setType(type);
         this.setPacket(packet);
         this.setDestination(destination);
@@ -56,5 +60,14 @@ public class Task {
 
     public void setDestination(Optional<Destination> destination) {
         this.destination = destination;
-    }    
+    }
+
+    ///////////////
+    // OVERRIDES //
+    ///////////////
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s", type, packet, destination);
+    }
 }

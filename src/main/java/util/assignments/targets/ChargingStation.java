@@ -2,35 +2,39 @@ package util.assignments.targets;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import environment.Coordinate;
 
 /**
- * A class that represents a charging station
+ * A class that represents a packet
  */
 public class ChargingStation extends Target{
 
     private boolean inUse;
     private Optional<Integer> batteryOfUser;
-    
+
     //////////////////
     // CONSTRUCTORS //
     //////////////////
 
     public ChargingStation(Coordinate coordinate) {
         super(coordinate);
-        this.setInUse(false);
-        this.setBatteryOfUser(Optional.empty());
+        this.inUse = false;
+        this.batteryOfUser = Optional.empty();
     }
 
-    public ChargingStation(Coordinate coordinate, boolean inUse, Optional<Integer> batteryOfUser) {
+    @JsonCreator
+    public ChargingStation(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("inUse") boolean inUse, @JsonProperty("batteryOfUser") Optional<Integer> batteryOfUser) {
         super(coordinate);
-        this.setInUse(inUse);
-        this.setBatteryOfUser(batteryOfUser);
+        this.inUse = inUse;
+        this.batteryOfUser = batteryOfUser;
     }
 
-    ///////////////
-    // OVERRIDES //
-    ///////////////
+    ///////////////////////
+    // GETTERS & SETTERS //
+    ///////////////////////
 
     public boolean isInUse() {
         return inUse;
@@ -44,21 +48,24 @@ public class ChargingStation extends Target{
         this.inUse = inUse;
     }
 
-    public void setBatteryOfUser(Optional<Integer> batteryOfUser) {
-        this.batteryOfUser = batteryOfUser;
+    public void setBatteryOfUser(Optional<Integer> optional) {
+        this.batteryOfUser = optional;
     }
+
+    ///////////////
+    // OVERRIDES //
+    ///////////////
 
     @Override
     public String toString() {
-        String string = super.toString() + " " + inUse + " " + batteryOfUser.orElse(-1);
-        return string;
+        return String.format("%s %s %s", super.toString(), inUse, batteryOfUser);
     }
 
     @Override
     public boolean equals(Object object) {
         return super.equals(object);
     }
-    
+
     @Override
     public int hashCode() {
         return super.hashCode();

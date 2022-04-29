@@ -1,14 +1,17 @@
 package util.assignments.memory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import agent.AgentState;
-import util.assignments.gson.GsonUtils;
+import util.assignments.jackson.JacksonUtils;
 
 /**
  * A class that implements functions regarding the memory of the agent
@@ -27,8 +30,11 @@ public class MemoryUtils {
      * @param memoryKey The memory key
      * @param objectClass The class of the object
      * @return The object or null if no object was found
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    public static <T> T getObjectFromMemory(AgentState agentState, String memoryKey, Class<T> objectClass) {
+    public static <T> T getObjectFromMemory(AgentState agentState, String memoryKey, Class<T> objectClass) throws JsonParseException, JsonMappingException, IOException {
         // Get the memory
         Set<String> memory = agentState.getMemoryFragmentKeys();
 
@@ -38,8 +44,8 @@ public class MemoryUtils {
             String objectString = agentState.getMemoryFragment(memoryKey);
 
             // Transform the string to a JSON object and return
-            Gson gson = GsonUtils.buildGson();
-            return gson.fromJson(objectString, objectClass);
+            ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+            return objectMapper.readValue(objectString, objectClass);
         }
         else return null;
     }
@@ -52,8 +58,11 @@ public class MemoryUtils {
      * @param memoryKey The memory key
      * @param objectClass The class of the objects contained in the list
      * @return The list of objects
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    public static <T> ArrayList<T> getListFromMemory(AgentState agentState, String memoryKey, Class<T> objectClass) {
+    public static <T> ArrayList<T> getListFromMemory(AgentState agentState, String memoryKey, Class<T> objectClass) throws JsonParseException, JsonMappingException, IOException {
         // Get the memory
         Set<String> memory = agentState.getMemoryFragmentKeys();
 
@@ -63,8 +72,8 @@ public class MemoryUtils {
             String listString = agentState.getMemoryFragment(memoryKey);
 
             // Transform the string to a JSON object and return
-            Gson gson = GsonUtils.buildGson();
-            return gson.fromJson(listString, TypeToken.getParameterized(ArrayList.class, objectClass).getType());
+            ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+            return objectMapper.readValue(listString, objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, objectClass));
         }
         else {
             // Initialize a new list
@@ -87,8 +96,9 @@ public class MemoryUtils {
      * 
      * @param agentState The current state of the agent
      * @param updates A list of updates that should be done
+     * @throws JsonProcessingException
      */
-    public static void updateMemory(AgentState agentState, Map<String, Object> updates) {
+    public static void updateMemory(AgentState agentState, Map<String, Object> updates) throws JsonProcessingException {
         // Get the memory
         Set<String> memory = agentState.getMemoryFragmentKeys();
 
@@ -98,8 +108,8 @@ public class MemoryUtils {
                 agentState.removeMemoryFragment(memoryKey);
 
             // Transform the object to a JSON string
-            Gson gson = GsonUtils.buildGson();
-            String objectString = gson.toJson(updates.get(memoryKey));
+            ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+            String objectString = objectMapper.writeValueAsString(updates.get(memoryKey));
 
             // Add the update to the memory
             agentState.addMemoryFragment(memoryKey, objectString);

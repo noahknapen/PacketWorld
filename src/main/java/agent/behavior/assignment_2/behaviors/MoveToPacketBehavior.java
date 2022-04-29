@@ -1,5 +1,10 @@
 package agent.behavior.assignment_2.behaviors;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
@@ -31,14 +36,18 @@ public class MoveToPacketBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) { 
-        // Check the perception of the agent
-        GeneralUtils.checkPerception(agentState);
+        try {
+            // Check the perception of the agent
+            GeneralUtils.checkPerception(agentState);
 
-        // Build the graph
-        GraphUtils.build(agentState);
-        
-        // Move the agent to the target
-        handleMove(agentState, agentAction);
+            // Build the graph
+            GraphUtils.build(agentState);
+
+            // Move the agent to the target
+            handleMove(agentState, agentAction);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /////////////
@@ -50,8 +59,11 @@ public class MoveToPacketBehavior extends Behavior {
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    private void handleMove(AgentState agentState, AgentAction agentAction) {
+    private void handleMove(AgentState agentState, AgentAction agentAction) throws JsonParseException, JsonMappingException, IOException {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 

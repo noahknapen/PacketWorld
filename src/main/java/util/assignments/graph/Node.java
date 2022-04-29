@@ -1,14 +1,18 @@
 package util.assignments.graph;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import environment.Coordinate;
 
 /**
  * A class that represents a node
  */
+@JsonIgnoreProperties(value={"fcost"})
 public class Node implements Comparable<Node> {
 
     private Coordinate coordinate;
-
     private double gCost;
     private double hCost;
     private Node parent;
@@ -20,6 +24,14 @@ public class Node implements Comparable<Node> {
 
     public Node(Coordinate coordinate) {
         this.setCoordinate(coordinate);
+    }
+
+    @JsonCreator
+    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent) {
+        this.coordinate = coordinate;
+        this.gCost = gCost;
+        this.hCost = hCost;
+        this.parent = parent;
     }
 
     ///////////////////////
@@ -78,7 +90,7 @@ public class Node implements Comparable<Node> {
 
     @Override
     public String toString() {
-        return coordinate.toString();
+        return String.format("%s %s %s %s", coordinate, gCost, hCost, parent);
     }
 
     @Override

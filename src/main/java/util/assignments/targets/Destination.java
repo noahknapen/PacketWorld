@@ -4,9 +4,14 @@ import environment.Coordinate;
 
 import java.awt.Color;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * A class that represents a destination
  */
+@JsonIgnoreProperties(value={"color"})
 public class Destination extends Target{
     
     private int rgbColor;
@@ -15,7 +20,8 @@ public class Destination extends Target{
     // CONSTRUCTORS //
     //////////////////
 
-    public Destination(Coordinate coordinate, int rgbColor) {
+    @JsonCreator
+    public Destination(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("rgbColor") int rgbColor) {
         super(coordinate);
         this.setRgbColor(rgbColor);
     }
@@ -42,8 +48,7 @@ public class Destination extends Target{
 
     @Override
     public String toString() {
-        String string = super.toString() + " " + rgbColor;
-        return string;
+        return String.format("%s %s", super.toString(), rgbColor);
     }
 
     @Override

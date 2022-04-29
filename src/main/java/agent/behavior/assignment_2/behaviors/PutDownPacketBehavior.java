@@ -1,5 +1,10 @@
 package agent.behavior.assignment_2.behaviors;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
@@ -30,7 +35,11 @@ public class PutDownPacketBehavior extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         // Put down the packet
-        handlePutDown(agentState, agentAction);
+        try {
+            handlePutDown(agentState, agentAction);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /////////////
@@ -42,8 +51,11 @@ public class PutDownPacketBehavior extends Behavior {
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    private void handlePutDown(AgentState agentState, AgentAction agentAction) {
+    private void handlePutDown(AgentState agentState, AgentAction agentAction) throws JsonParseException, JsonMappingException, IOException {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 

@@ -3,6 +3,10 @@ package util.assignments.general;
 import java.util.ArrayList;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import java.util.List;
 
 import agent.AgentCommunication;
@@ -22,6 +26,7 @@ import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 
 import java.awt.*;
+import java.io.IOException;
 
 /**
  * A class that implements general functions
@@ -32,8 +37,11 @@ public class GeneralUtils {
      * Check the perception of the agent
      *  
      * @param agentState The current state of the agent
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    public static void checkPerception(AgentState agentState) {
+    public static void checkPerception(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
         // Get the perception of the agent
         Perception agentPerception = agentState.getPerception();
 
@@ -74,7 +82,7 @@ public class GeneralUtils {
                     discoveredPackets.add(packet);
 
                     // Inform
-                    String message = String.format("%s: Discovered a new packet (%d)", agentState.getName(), discoveredPackets.size());
+                    String message = String.format("%s: Discovered a new packet (%s) [%s]", agentState.getName(), packet, discoveredPackets.size());
                     System.out.println(message);
                 }
 
@@ -95,7 +103,7 @@ public class GeneralUtils {
                     discoveredDestinations.add(destination);
 
                     // Inform
-                    String message = String.format("%s: Discovered a new destination (%d)", agentState.getName(), discoveredDestinations.size());
+                    String message = String.format("%s: Discovered a new destination (%s) [%s]", agentState.getName(), destination, discoveredDestinations.size());
                     System.out.println(message);
                 }
 
@@ -111,7 +119,7 @@ public class GeneralUtils {
                     discoveredChargingStations.add(chargingStation);
 
                     // Inform
-                    String message = String.format("%s: Discovered a new charging station (%d)", agentState.getName(), discoveredChargingStations.size());
+                    String message = String.format("%s: Discovered a new charging station (%s) [%s]", agentState.getName(), chargingStation, discoveredChargingStations.size());
                     System.out.println(message);
                 }
             }
@@ -142,8 +150,9 @@ public class GeneralUtils {
      * 
      * @param agentState The current state of the agent
      * @param agentCommunication Perform communication with the agent
+     * @throws JsonProcessingException
      */
-    private static void shareChargingStationsInformation(AgentState agentState, AgentCommunication agentCommunication) {
+    private static void shareChargingStationsInformation(AgentState agentState, AgentCommunication agentCommunication) throws JsonProcessingException {
         CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
     }
 
@@ -152,8 +161,11 @@ public class GeneralUtils {
      * 
      * @param agentState The current state of the agent
      * @param agentCommunication Perform communication with the agent
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    private static void updateChargingStationsInformation(AgentState agentState, AgentCommunication agentCommunication) {
+    private static void updateChargingStationsInformation(AgentState agentState, AgentCommunication agentCommunication) throws JsonParseException, JsonMappingException, IOException {
         // Get the current charging stations
         ArrayList<ChargingStation> currentChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
 
@@ -247,8 +259,11 @@ public class GeneralUtils {
      * @param agentState The current state of the agent
      * @param coordinate The coordinate of the position to check
      * @return True is the position is in the graph, otherwise false
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    public static boolean positionInGraph(AgentState agentState, Coordinate coordinate) {
+    public static boolean positionInGraph(AgentState agentState, Coordinate coordinate) throws JsonParseException, JsonMappingException, IOException {
         // Get the graph
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 

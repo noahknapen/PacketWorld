@@ -3,14 +3,20 @@ package environment;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import util.Pair;
 
 /**
  * A class to represent a 2-dimensional coordinate.
  */
+@JsonIgnoreProperties({"first","second"})
 public class Coordinate extends Pair<Integer, Integer> {
 
-    public Coordinate(int x, int y) {
+    @JsonCreator
+    public Coordinate(@JsonProperty("x") int x, @JsonProperty("y") int y) {
         super(x, y);
     }
 

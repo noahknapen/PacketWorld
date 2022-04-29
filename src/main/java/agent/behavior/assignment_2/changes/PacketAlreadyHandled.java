@@ -1,5 +1,10 @@
 package agent.behavior.assignment_2.changes;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.CellPerception;
@@ -26,7 +31,11 @@ public class PacketAlreadyHandled extends BehaviorChange{
         AgentState agentState = this.getAgentState();
         
         // Check if the packet was already handled
-        packetAlreadyHandled = checkPacketAlreadyHandled(agentState);
+        try {
+            packetAlreadyHandled = checkPacketAlreadyHandled(agentState);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -43,8 +52,11 @@ public class PacketAlreadyHandled extends BehaviorChange{
      * 
      * @param agentState The current state of the agent
      * @return True is packet is not at initial place, otherwise false
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    private boolean checkPacketAlreadyHandled(AgentState agentState) {
+    private boolean checkPacketAlreadyHandled(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 

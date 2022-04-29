@@ -1,5 +1,10 @@
 package agent.behavior.assignment_2.changes;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.Coordinate;
@@ -25,7 +30,11 @@ public class ReadyToPutDown extends BehaviorChange{
         AgentState agentState = this.getAgentState();
         
         // Check if the position is reached
-        readyToPutDown = handlePositionReached(agentState);
+        try {
+            readyToPutDown = handlePositionReached(agentState);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -42,8 +51,11 @@ public class ReadyToPutDown extends BehaviorChange{
      * 
      * @param agentState The current state of the agent
      * @return True if agent has reached the position of the destination, otherwise false
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    private boolean handlePositionReached(AgentState agentState) {
+    private boolean handlePositionReached(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 

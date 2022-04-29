@@ -1,6 +1,10 @@
 package agent.behavior.assignment_2.behaviors;
 
+import java.io.IOException;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentAction;
 import agent.AgentCommunication;
@@ -31,11 +35,15 @@ public class PickUpPacketBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        // Pick up the packet
-        handlePickUp(agentState, agentAction);
+        try {
+            // Pick up the packet
+            handlePickUp(agentState, agentAction);
 
-        // Update task
-        updateTask(agentState);
+            // Update task
+            updateTask(agentState);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /////////////
@@ -47,8 +55,11 @@ public class PickUpPacketBehavior extends Behavior {
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    private void handlePickUp(AgentState agentState, AgentAction agentAction) {
+    private void handlePickUp(AgentState agentState, AgentAction agentAction) throws JsonParseException, JsonMappingException, IOException {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
@@ -67,8 +78,11 @@ public class PickUpPacketBehavior extends Behavior {
      * A function to update the task type to MOVE_TO_DESTINATION
      * 
      * @param agentState The current state of the agent
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    private void updateTask(AgentState agentState) {
+    private void updateTask(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 

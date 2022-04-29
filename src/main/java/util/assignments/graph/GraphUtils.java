@@ -1,9 +1,13 @@
 package util.assignments.graph;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.PriorityQueue;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentState;
 import environment.CellPerception;
@@ -26,8 +30,11 @@ public class GraphUtils {
      * Build the graph based on the perception of the agent
      * 
      * @param agentState The current state of the agent
+     * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
      */
-    public static void build(AgentState agentState) {
+    public static void build(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
         // Get the perception the agent
         Perception agentPerception = agentState.getPerception();
 
@@ -100,7 +107,7 @@ public class GraphUtils {
     // SEARCH //
     ////////////
 
-    public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) {
+    public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) throws JsonParseException, JsonMappingException, IOException {
         // Get the position of the agent
         int agentX = agentState.getX();
         int agentY = agentState.getY();
