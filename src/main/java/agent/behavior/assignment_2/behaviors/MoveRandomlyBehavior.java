@@ -2,6 +2,8 @@ package agent.behavior.assignment_2.behaviors;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
@@ -18,7 +20,11 @@ public class MoveRandomlyBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Handle the charging stations
-        GeneralUtils.handleChargingStations(agentState, agentCommunication);
+        try {
+            GeneralUtils.handleChargingStations(agentState, agentCommunication);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } 
     }
 
     @Override

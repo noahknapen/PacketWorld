@@ -3,6 +3,7 @@ package agent.behavior.assignment_2.behaviors;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentAction;
@@ -31,7 +32,11 @@ public class MoveToPacketBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Handle the charging stations
-        GeneralUtils.handleChargingStations(agentState, agentCommunication);       
+        try {
+            GeneralUtils.handleChargingStations(agentState, agentCommunication);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }        
     }
 
     @Override

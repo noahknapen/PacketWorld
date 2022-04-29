@@ -134,15 +134,14 @@ public class GeneralUtils {
      * 
      * @param agentState The current state of the agent
      * @param agentCommunication Perform communication with the agent
+     * @throws IOException
      */
-    public static void handleChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
-        // TEMP
-
+    public static void handleChargingStations(AgentState agentState, AgentCommunication agentCommunication) throws IOException {
         // Share charging station information
-        // shareChargingStationsInformation(agentState, agentCommunication);
+        shareChargingStationsInformation(agentState, agentCommunication);
 
         // Update charging station information
-        // updateChargingStationsInformation(agentState, agentCommunication);
+        updateChargingStationsInformation(agentState, agentCommunication);
     }
 
     /**
@@ -176,7 +175,13 @@ public class GeneralUtils {
         for(ChargingStation updatedChargingStation: updatedChargingStations) {
             // Check if the charging station is not included in the current list and add it if so
             if(!currentChargingStations.contains(updatedChargingStation)) {
+                // Add the new charging station to the charging stations
                 currentChargingStations.add(updatedChargingStation);
+
+                // Inform
+                String message = String.format("%s: Add a new charging station from communication (%s) [%s]", agentState.getName(), updatedChargingStation, currentChargingStations.size());
+                System.out.println(message);
+
                 continue;
             }            
 
@@ -187,6 +192,10 @@ public class GeneralUtils {
                     // Update the current chargint station is needed
                     if(!currentChargingStation.isInUse() && updatedChargingStation.isInUse()) currentChargingStation.setInUse(true);
                     if(!currentChargingStation.getBatteryOfUser().isPresent() && updatedChargingStation.getBatteryOfUser().isPresent()) currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
+                
+                    // Inform
+                    String message = String.format("%s: Updated a known charging station from communication (%s)", agentState.getName(), currentChargingStation);
+                    System.out.println(message);
                 }
             }
         }
