@@ -13,6 +13,7 @@ import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
+import util.assignments.exceptions.NoMoveFoundException;
 import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
@@ -107,7 +108,7 @@ public class GraphUtils {
     // SEARCH //
     ////////////
 
-    public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) throws JsonParseException, JsonMappingException, IOException {
+    public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) throws JsonParseException, JsonMappingException, IOException, NoMoveFoundException {
         // Get the position of the agent
         int agentX = agentState.getX();
         int agentY = agentState.getY();
@@ -172,6 +173,9 @@ public class GraphUtils {
             openList.remove(node);
             closeList.add(node);
         }
+
+        if (result == null)
+            throw new NoMoveFoundException("No move found with A* search");
 
         // Calculate the path
         ArrayList<Coordinate> path = new ArrayList<>();

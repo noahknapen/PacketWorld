@@ -13,6 +13,7 @@ import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
+import util.assignments.exceptions.NoMoveFoundException;
 import util.assignments.graph.GraphUtils;
 
 /**
@@ -98,19 +99,22 @@ public class ActionUtils {
      * @throws JsonParseException
      */
     public static void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate coordinate) throws JsonParseException, JsonMappingException, IOException {
-        // Check if the position is in the perception of the agent
-        if(GeneralUtils.positionInPerception(agentState, coordinate)) {
-            Coordinate move = calculateMoveDefault(agentState, coordinate);
+        Coordinate move = null;
+        try
+        {
+            if (GeneralUtils.positionInPerception(agentState, coordinate)) // Problem is that packets behind a glass wall are within vision, but it would be better to have a path with the graph
+                move = calculateMoveDefault(agentState, coordinate);
+            else if (GeneralUtils.positionInGraph(agentState, coordinate))
+                move = calculateMoveAStar(agentState, coordinate);
+            else 
+                throw new IllegalArgumentException("Target not in perception nor in graph");
 
             makeMove(agentState, agentAction, move);
+        } 
+        catch (NoMoveFoundException e)
+        {
+            moveRandomly(agentState, agentAction);
         }
-        // Check if the position is in the graph
-        else if(GeneralUtils.positionInGraph(agentState, coordinate)) {
-            Coordinate move = calculateMoveAStar(agentState, coordinate);
-
-            makeMove(agentState, agentAction, move);
-        }
-        else throw new IllegalArgumentException("Target not in perpcetion nor in graph");
     }
 
     /**
@@ -119,7 +123,7 @@ public class ActionUtils {
      * @param agentState The current state of the agent
      * @param target The coordinate of the target
      */
-    private static Coordinate calculateMoveDefault(AgentState agentState,  Coordinate target) {
+    private static Coordinate calculateMoveDefault(AgentState agentState,  Coordinate target) throws NoMoveFoundException {
         // Get the positions
         int agentX = agentState.getX();
         int agentY = agentState.getY();
@@ -136,8 +140,49 @@ public class ActionUtils {
 
         // Define the move coordinate
         Coordinate moveCoordinate = new Coordinate(relativePositionX, relativePositionY);
+        Perception perception = agentState.getPerception();
+        CellPerception moveCellPerception = perception.getCellPerceptionOnRelPos(relativePositionX, relativePositionY);
 
-        return moveCoordinate;
+        if (moveCellPerception != null && moveCellPerception.isWalkable())
+            return moveCoordinate;
+        else
+        {
+            return calculateEquivalentMove(agentState, target, Perception.distance(targetX, targetY, agentX+relativePositionX, agentY+relativePositionY));
+        }
+    }
+
+    /** A function that searches an equivalent move so the distance to the target is not higher than 1 above the {@code bestCaseDistance}
+     * This is necessary as the {@code bestCaseDistance} is achieved by moving to a position that leads right to {@code target}. If this move is not possible,
+     * the agent should find a move that is equal to, or only slightly worse than the preferred move.
+     * @param agentState The current state of the agent
+     * @param target The coordinate of the target
+     * @param bestCaseDistance The distance from the target to the agent's position if the agent could have gone straight to the target
+     * @return
+     * @throws NoMoveFoundException
+     */
+    private static Coordinate calculateEquivalentMove(AgentState agentState, Coordinate target, int bestCaseDistance) throws NoMoveFoundException {
+
+        List<Coordinate> relativePositions = ActionUtils.RELATIVE_POSITIONS;
+        Collections.shuffle(relativePositions);
+        int targetX = target.getX();
+        int targetY = target.getY();
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+        Perception perception = agentState.getPerception();
+
+        for (Coordinate relPos : relativePositions)
+        {
+            CellPerception cellPerception = perception.getCellPerceptionOnRelPos(relPos.getX(), relPos.getY());
+            int relPosX = relPos.getX();
+            int relPosY = relPos.getY();
+
+            if (cellPerception == null || !cellPerception.isWalkable() || Perception.distance(targetX, targetY, agentX+relPosX, agentY+relPosY) != bestCaseDistance+1)
+                continue;
+
+            return new Coordinate(relPosX, relPosY);
+        }
+
+        throw new NoMoveFoundException("No equivalent move found");
     }
 
     /**
@@ -149,7 +194,7 @@ public class ActionUtils {
      * @throws JsonMappingException
      * @throws JsonParseException
      */
-    private static Coordinate calculateMoveAStar(AgentState agentState,  Coordinate target) throws JsonParseException, JsonMappingException, IOException {
+    private static Coordinate calculateMoveAStar(AgentState agentState,  Coordinate target) throws JsonParseException, JsonMappingException, IOException, NoMoveFoundException {
         // Perform A* search
         Coordinate pathCoordinate = GraphUtils.performAStarSearch(agentState, target);
 
