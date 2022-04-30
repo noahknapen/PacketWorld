@@ -25,6 +25,7 @@ public class MoveToChargingStationBehavior extends Behavior {
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         try {
             GeneralUtils.handleChargingStations(agentState, agentCommunication);
+            GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
         } catch (IOException e) {
             e.printStackTrace();
         }

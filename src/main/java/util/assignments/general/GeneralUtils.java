@@ -12,13 +12,17 @@ import java.util.List;
 
 import agent.AgentCommunication;
 import agent.AgentState;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
+import environment.world.agent.AgentRep;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
+import util.Message;
 import util.assignments.graph.Graph;
 import util.assignments.graph.Node;
+import util.assignments.jackson.JacksonUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
@@ -26,6 +30,7 @@ import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 
+import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Optional;
@@ -131,13 +136,82 @@ public class GeneralUtils {
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets, MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations, MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations));
     }
 
-    /**
-     * Handle the charging stations
-     * 
-     * @param agentState The current state of the agent
-     * @param agentCommunication Perform communication with the agent
-     * @throws IOException
-     */
+    public static void handleDestinationLocations(AgentState agentState, AgentCommunication agentCommunication) throws IOException {
+        // Share destinations found to agent in perception
+        shareDestinationsInformation(agentState, agentCommunication);
+
+        // Update own destinations from mails
+        updateDestinationsInformation(agentState, agentCommunication);
+    }
+
+    private static void updateDestinationsInformation(AgentState agentState, AgentCommunication agentCommunication) throws IOException {
+        // Get the current charging stations
+        ArrayList<Destination> currentDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
+
+        // Get the updated charging stations
+        ArrayList<Destination> updatedDestinations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
+
+        // Loop over updated charging stations
+        for(Destination updatedDestination: updatedDestinations) {
+            // Check if the charging station is not included in the current list and add it if so
+            if(!currentDestinations.contains(updatedDestination)) {
+                // Add the new charging station to the charging stations
+                currentDestinations.add(updatedDestination);
+
+                // Inform
+                String message = String.format("%s: Add a new destination from communication (%s) [%s]", agentState.getName(), updatedDestination, currentDestinations.size());
+                System.out.println(message);
+            }
+        }
+
+        // Update the current charging stations
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_DESTINATIONS, currentDestinations));
+    }
+
+    private static void shareDestinationsInformation(AgentState agentState, AgentCommunication agentCommunication) throws JsonProcessingException {
+        Perception agentPerception = agentState.getPerception();
+        Coordinate currentPos = new Coordinate(agentState.getX(), agentState.getY());
+        // Loop over the whole perception
+        for (int x = 0; x < agentPerception.getWidth(); x++) {
+            for (int y = 0; y < agentPerception.getHeight(); y++) {
+                CellPerception cellPerception = agentPerception.getCellAt(x, y);
+
+                // Check if the cell is null and continue with the next cell if so
+                if (cellPerception == null) continue;
+
+                // Retrieve the agent representation on the cell
+                Optional<AgentRep> agentRep = cellPerception.getAgentRepresentation();
+
+                // If no agent on the cell, go to the next cell
+                if (agentRep.isEmpty()) continue;
+
+                // If the agentRep is us, continue to next cell
+                // TODO: Improve this so it isn't name based
+                if (agentRep.get().getName().equals(agentState.getName())) continue;
+
+                // Create a message string to send to the agent on the cell
+                String memoryFragmentString = agentState.getMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
+                ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+                Message message = new Message(memoryFragmentString, MemoryKeys.DISCOVERED_DESTINATIONS);
+                String messageString = objectMapper.writeValueAsString(message);
+
+                // Communicate the message to the agent
+                agentCommunication.sendMessage(agentRep.get(), messageString);
+
+                // Display a message to dev
+                System.out.printf("%s: Sends it's destinations to agent: %s\n", agentState.getName(), agentRep.get().getName());
+            }
+        }
+    }
+
+
+        /**
+         * Handle the charging stations
+         *
+         * @param agentState The current state of the agent
+         * @param agentCommunication Perform communication with the agent
+         * @throws IOException
+         */
     public static void handleChargingStations(AgentState agentState, AgentCommunication agentCommunication) throws IOException {
         // Share charging station information
         shareChargingStationsInformation(agentState, agentCommunication);

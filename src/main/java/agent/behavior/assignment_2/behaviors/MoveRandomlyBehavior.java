@@ -20,6 +20,7 @@ public class MoveRandomlyBehavior extends Behavior {
         // Handle the charging stations
         try {
             GeneralUtils.handleChargingStations(agentState, agentCommunication);
+            GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
         } catch (IOException e) {
             e.printStackTrace();
         } 
