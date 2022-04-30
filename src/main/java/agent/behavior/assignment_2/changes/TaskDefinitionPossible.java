@@ -13,7 +13,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
+import environment.Coordinate;
 import util.assignments.comparators.PacketComparator;
+import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -69,7 +71,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
         // Sort the discovered packets
         PacketComparator packetComparator = new PacketComparator(agentState, discoveredDestinations);
-        Collections.sort(discoveredPackets, packetComparator);
+        discoveredPackets.sort(packetComparator);
 
         // Loop over the sorted discovered packets
         for(int i = 0; i < discoveredPackets.size(); i++) {
@@ -80,15 +82,15 @@ public class TaskDefinitionPossible extends BehaviorChange{
             Color candidatePacketColor = candidatePacket.getColor();
 
             // Loop over the discovered destinations
-            for(int j = 0; j < discoveredDestinations.size(); j++) {
+            for (Destination candidateDestination : discoveredDestinations) {
                 // Get a candidate destination
-                Destination candidateDestination = discoveredDestinations.get(j);
-
                 // Get the color of the candidate destination
                 Color candidateDestinationColor = candidateDestination.getColor();
 
                 // Check if the colors correspond
-                if(candidatePacketColor.equals(candidateDestinationColor)) {
+                if (candidatePacketColor.equals(candidateDestinationColor)) {
+                    if (!hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
+
                     // Remove the packet from the discovered packets
                     candidatePacket = discoveredPackets.remove(i);
 
@@ -104,5 +106,18 @@ public class TaskDefinitionPossible extends BehaviorChange{
         }
 
         return false;
+    }
+
+    private boolean hasEnoughBatteryToCompleteTask(AgentState agentState, Packet packet, Destination destination) {
+        // First calculate the power to go to the packet location
+        Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
+        Coordinate packetPosition = packet.getCoordinate();
+        double powerToGoToPacket = GeneralUtils.calculateEuclideanDistance(agentPosition, packetPosition) * 10;
+
+        // Second calculate the power to go from packet to destination
+        Coordinate destinationPosition = destination.getCoordinate();
+        double powerToGoToDestination = GeneralUtils.calculateEuclideanDistance(packetPosition, destinationPosition) * 25;
+
+        return agentState.getBatteryState() > (powerToGoToDestination + powerToGoToPacket + 150);
     }
 }

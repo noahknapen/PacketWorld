@@ -387,8 +387,7 @@ public class GeneralUtils {
         int coordinate2Y = coordinate2.getY();
 
         // Calculate the distance
-        double distance = Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
 
-        return distance;
+        return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
     } 
 }
