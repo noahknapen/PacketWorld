@@ -119,25 +119,6 @@ public class PacketAlreadyHandled extends BehaviorChange{
     }
 
     /**
-     * Retrieve task from memory
-     * 
-     * @param agentState Current state of agent
-     * @return Task
-     */
-    private Task getTask(AgentState agentState) {
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
-        // Check if task exists in memory
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            // Retrieve task
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            return Task.fromJson(taskString);
-        }
-        else return null;
-    }
-
-    /**
      * Update mapping memory of agent
      * 
      * @param agentState Current state of the agent
