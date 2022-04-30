@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -25,7 +26,7 @@ public class ActionUtils {
     // MOVEMENT //
     //////////////
 
-        final static List<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
+    private final static List<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
             new Coordinate(1, 1), 
             new Coordinate(-1, -1),
             new Coordinate(1, 0), 
@@ -53,7 +54,7 @@ public class ActionUtils {
         int agentY = agentState.getY();
 
         // Get the relative positions
-        List<Coordinate> relativePositions = RELATIVE_POSITIONS;
+        List<Coordinate> relativePositions = new ArrayList<>(ActionUtils.RELATIVE_POSITIONS);
 
         Collections.shuffle(relativePositions);
 
@@ -162,7 +163,7 @@ public class ActionUtils {
      */
     private static Coordinate calculateEquivalentMove(AgentState agentState, Coordinate target, int bestCaseDistance) throws NoMoveFoundException {
 
-        List<Coordinate> relativePositions = ActionUtils.RELATIVE_POSITIONS;
+        List<Coordinate> relativePositions = new ArrayList<>(ActionUtils.RELATIVE_POSITIONS);
         Collections.shuffle(relativePositions);
         int targetX = target.getX();
         int targetY = target.getY();
