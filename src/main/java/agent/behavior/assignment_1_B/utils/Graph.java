@@ -76,7 +76,7 @@ public class Graph {
 
             if (perception.getCellPerceptionOnAbsPos(candidatePosition.getX(), candidatePosition.getY()) != null
                 && candidateDistance < minDistance
-                && nodes.get(candidatePosition).getState() == NodeType.FREE) {
+                && nodes.get(candidatePosition).getType() == NodeType.FREE) {
 
                 minDistance = candidateDistance;
                 result = candidatePosition;
