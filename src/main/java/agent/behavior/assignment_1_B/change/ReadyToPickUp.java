@@ -4,16 +4,14 @@ import java.util.Set;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import agent.behavior.assignment_1_A.utils.Packet;
 import agent.behavior.assignment_1_A.utils.Task;
+import agent.behavior.assignment_1_A.utils.TaskState;
 import agent.behavior.assignment_1_B.utils.Graph;
 import agent.behavior.assignment_1_B.utils.MemoryKeys;
-import environment.CellPerception;
-import environment.Perception;
 
-public class PacketAlreadyHandled extends BehaviorChange{
+public class ReadyToPickUp extends BehaviorChange{
 
-    private boolean packetAlreadyHandled = false;
+    private boolean readyToPickUp = false;
 
     ///////////////
     // OVERRIDES //
@@ -21,17 +19,18 @@ public class PacketAlreadyHandled extends BehaviorChange{
 
     @Override
     public void updateChange() {
-        System.out.println("[PacketAlreadyHandled]{updateChange}");
+        System.out.println("[ReadyToPickUp] updateChange");
 
         AgentState agentState = this.getAgentState();
         
-        // Packet already handled
-        packetAlreadyHandled = checkPacketAlreadyHandled(agentState);
-
-        if(packetAlreadyHandled) {
+        // Ready to pick up if task state is TO_PACKET and if position is reached
+        readyToPickUp = toPacketTask(agentState) && positionReached(agentState);
+        
+        if(readyToPickUp) {
             Graph graph = getGraph(agentState);
+            Task task = getTask(agentState);
 
-            // graph.removeNode(task.getPacket().getCoordinate());
+            graph.removeNode(task.getPacket().getCoordinate());
 
             updateMappingMemory(agentState, graph);
         }
@@ -39,7 +38,7 @@ public class PacketAlreadyHandled extends BehaviorChange{
 
     @Override
     public boolean isSatisfied() {
-        return packetAlreadyHandled;
+        return readyToPickUp;
     }
 
     /////////////
@@ -47,12 +46,12 @@ public class PacketAlreadyHandled extends BehaviorChange{
     /////////////
 
     /**
-     * Check if packet was already handled by another agent
+     * Check if current state of task is TO_PACKET
      * 
-     * @param agentState Current state of the agent
-     * @return True is packet is not at initial place, otherwise false
+     * @param agentState Current state of agent
+     * @return True if task state is TO_PACKET
      */
-    private boolean checkPacketAlreadyHandled(AgentState agentState) {       
+    private boolean toPacketTask(AgentState agentState) {
         // Retrieve memory of agent
         Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
 
@@ -62,31 +61,41 @@ public class PacketAlreadyHandled extends BehaviorChange{
             String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
             Task task = Task.fromJson(taskString);
 
-            // Retrieve position
-            Packet packet= task.getPacket();
-            int positionX = packet.getCoordinate().getX();
-            int positionY = packet.getCoordinate().getY();
-
-            Perception perception = agentState.getPerception();
-            for (int x = 0; x < perception.getWidth(); x++) {
-                for (int y = 0; y < perception.getHeight(); y++) {
-                    CellPerception cell = perception.getCellAt(x,y);
-
-                    if(cell == null) continue;
-
-                    int cellX = cell.getX();
-                    int cellY = cell.getY();
-                    
-                    // Check if positions correponds
-                    if(cellX == positionX && cellY == positionY) {
-                        return !cell.containsPacket();
-                    }
-                }
-            }
-
-            return false;
+            // Check if state is TO_PACKET
+            return task.getState() == TaskState.TO_PACKET;
         }
         else return false;
+    }
+
+    /**
+     * Check if position is reached
+     * 
+     * @param agentState Current state of agent
+     * @param position Position to reach
+     * @return True if agent is next to position
+     */
+    private boolean positionReached(AgentState agentState) {
+        // Retrieve memory of agent
+        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
+
+        // Check if task exists in memory
+        if(memoryFragments.contains(MemoryKeys.TASK)) {
+            // Retrieve task
+            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
+            Task task = Task.fromJson(taskString);
+
+            // Retrieve positions
+            int agentX = agentState.getX();
+            int agentY = agentState.getY();
+            int positionX = task.getPacket().getCoordinate().getX();
+            int positionY = task.getPacket().getCoordinate().getY();
+    
+            int dX = Math.abs(agentX - positionX);
+            int dY = Math.abs(agentY - positionY);
+
+            return (dX <= 1) && (dY <= 1);
+        }
+        else return false;  
     }
 
     /**
@@ -154,6 +163,6 @@ public class PacketAlreadyHandled extends BehaviorChange{
         String graphString = graph.toJson();
         agentState.addMemoryFragment(MemoryKeys.GRAPH, graphString);
 
-        System.out.println("[PacketAlreadyHandled]{updateMappingMemory} Graph updated in memory");
+        System.out.println("[ReadyToPickUp]{updateMappingMemory} Graph updated in memory");
     }    
 }
