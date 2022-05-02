@@ -6,12 +6,15 @@ import agent.AgentState;
 import agent.behavior.Behavior;
 import environment.CellPerception;
 import environment.Coordinate;
+import environment.Perception;
 import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
+
+import javax.management.MBeanException;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -34,7 +37,6 @@ public class MoveToChargingStationBehavior extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         try {
-
             // Check the perception of the agent
             GeneralUtils.checkPerception(agentState);
 
@@ -48,6 +50,7 @@ public class MoveToChargingStationBehavior extends Behavior {
             Coordinate bestPosition = null;
             ChargingStation bestStation = null;
             Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
+
             for (ChargingStation station : discoveredChargingStations) {
 
                 // Find coordinates of charging station
@@ -55,17 +58,22 @@ public class MoveToChargingStationBehavior extends Behavior {
                 int batteryY = station.getCoordinate().getY() - 1;
                 Coordinate chargingCoordinates = new Coordinate(batteryX, batteryY);
 
-                // Guard clause to check if the charging station is closer than the previous one
-                if (ActionUtils.calculateDistance(agentPosition, chargingCoordinates) > minDistance) continue;
+                // Calculate the distance between current position and the current charging station
+                int currentDistance = Perception.distance(agentPosition.getX(), agentPosition.getY(), chargingCoordinates.getX(), chargingCoordinates.getY());
 
-                minDistance = ActionUtils.calculateDistance(agentPosition, chargingCoordinates);
+                // Guard clause to check if the charging station is closer than the previous one
+                if (currentDistance > minDistance) continue;
+
+                // Set the variables to the new best option
+                minDistance = currentDistance;
                 bestPosition = chargingCoordinates;
                 bestStation = station;
             }
 
             // If the agent is close to the chargingStation, but it is in use skip a turn to conserve energy.
             if (bestPosition != null) {
-                if (ActionUtils.calculateDistance(agentPosition, bestPosition) < 5 & bestStation.isInUse()) ActionUtils.skipTurn(agentAction);
+                int distance = Perception.distance(agentPosition.getX(), agentPosition.getY(), bestPosition.getX(), bestPosition.getY());
+                if (distance < 5 & bestStation.isInUse()) ActionUtils.skipTurn(agentAction);
                 else ActionUtils.moveToPosition(agentState, agentAction, bestPosition);
             } else {
                 ActionUtils.moveRandomly(agentState, agentAction);

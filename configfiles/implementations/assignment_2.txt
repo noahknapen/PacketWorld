@@ -30,7 +30,7 @@ nbArgs 0
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 11
+nbChanges 12
 
 ### SOURCE 1: MoveRandomlyBehavior ###
 
@@ -40,11 +40,11 @@ priority 0
 source 1
 target 2
 
-agent.behavior.assignment_2.changes.MustLeaveChargingStation
+agent.behavior.assignment_2.changes.MustGoToChargingStation
 nbArgs 0
 priority 1
-source 7
-target 1
+source 1
+target 6
 
 ### SOURCE 2: MoveToPacketBehavior ###
 
@@ -59,6 +59,12 @@ nbArgs 0
 priority 1
 source 2
 target 1
+
+agent.behavior.assignment_2.changes.MustGoToChargingStation
+nbArgs 0
+priority 1
+source 2
+target 6
 
 ### SOURCE 3: PickUpPacketBehavior ###
 
@@ -90,25 +96,26 @@ priority 1
 source 5
 target 2
 
+agent.behavior.assignment_2.changes.NotEnoughEnergyToWork
+nbArgs 0
+priority 1
+source 5
+target 1
+
 ### SOURCE 6: MoveToChargingStationBehavior ###
-
-agent.behavior.assignment_2.changes.MustGoToChargingStation
-nbArgs 0
-priority 1
-source 2
-target 6
-
-agent.behavior.assignment_2.changes.MustGoToChargingStation
-nbArgs 0
-priority 1
-source 1
-target 6
-
-### SOURCE 7: ChargingBehavior ###
 
 agent.behavior.assignment_2.changes.IsOnChargingPad
 nbArgs 0
 priority 2
 source 6
 target 7
+
+
+### SOURCE 7: ChargingBehavior ###
+
+agent.behavior.assignment_2.changes.MustLeaveChargingStation
+nbArgs 0
+priority 1
+source 7
+target 1
 

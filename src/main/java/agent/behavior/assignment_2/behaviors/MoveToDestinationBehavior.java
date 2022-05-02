@@ -76,10 +76,10 @@ public class MoveToDestinationBehavior extends Behavior {
         if(task == null) throw new IllegalArgumentException("Task is null");
 
         // Check if the task has task type MOVE_TO_PACKET but has no packet and raise exception if so
-        if(task.getType() == TaskType.MOVE_TO_PACKET && !task.getPacket().isPresent()) throw new IllegalArgumentException("Task has no packet");
+        if(task.getType() == TaskType.MOVE_TO_PACKET && task.getPacket().isEmpty()) throw new IllegalArgumentException("Task has no packet");
 
         // Check if the task has other task type than MOVE_TO_DESTINATION or has no destination and raise exception if so
-        if(task.getType() != TaskType.MOVE_TO_DESTINATION || !task.getDestination().isPresent()) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION or task has no destination");
+        if(task.getType() != TaskType.MOVE_TO_DESTINATION || task.getDestination().isEmpty()) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION or task has no destination");
 
         // Get the coordinate of the destination
         Destination destination= task.getDestination().get();

@@ -2,18 +2,15 @@ package agent.behavior.assignment_2.changes;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import environment.CellPerception;
 import environment.Coordinate;
-import org.checkerframework.checker.units.qual.C;
+import environment.Perception;
 import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
-import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
 
 import java.io.IOException;
-import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -70,7 +67,7 @@ public class MustGoToChargingStation extends BehaviorChange {
         // Calculate the turns away from the station and the turns the station is in use
         Coordinate agentPosition = new Coordinate(this.getAgentState().getX(), this.getAgentState().getY());
         Coordinate stationPosition = station.getCoordinate();
-        double turnsAwayFromStation = ActionUtils.calculateDistance(agentPosition, stationPosition);
+        double turnsAwayFromStation = Perception.distance(agentPosition.getX(), agentPosition.getY(), stationPosition.getX(), stationPosition.getY());
         double turnsTheStationIsInUse = (environment.EnergyValues.BATTERY_MAX - batteryLevelUserOnStation.get()) / 100.0;
 
         // If the turns away from the station is more than the turns in use, the station will be empty upon arrival
@@ -81,10 +78,10 @@ public class MustGoToChargingStation extends BehaviorChange {
         // Calculate the turns away from the station
         Coordinate agentPosition = new Coordinate(this.getAgentState().getX(), this.getAgentState().getY());
         Coordinate stationPosition = station.getCoordinate();
-        double turnsAwayFromStation = ActionUtils.calculateDistance(agentPosition, stationPosition);
+        double turnsAwayFromStation = Perception.distance(agentPosition.getX(), agentPosition.getY(), stationPosition.getX(), stationPosition.getY());
 
         // Calculate the energy it would cost to go to the station
-        double energyUsedToGetToStation = turnsAwayFromStation*10;
+        double energyUsedToGetToStation = turnsAwayFromStation * GeneralUtils.WALK_WITHOUT_PACKET;
 
         // Derive the energy surplus of the agent
         double energySurplus = getAgentState().getBatteryState() - energyUsedToGetToStation;

@@ -39,7 +39,11 @@ import java.util.Optional;
  * A class that implements general functions
  */
 public class GeneralUtils {
-    
+
+    public static final int SKIP = 5;
+    public static final int WALK_WITHOUT_PACKET = 10;
+    public static final int WALK_WITH_PACKET = 25;
+
     /**
      * Check the perception of the agent
      *  
@@ -373,9 +377,25 @@ public class GeneralUtils {
         return false;
     }
 
+
+    public static boolean hasEnoughBatteryToCompleteTask(AgentState agentState, Packet packet, Destination destination) {
+        // First calculate the power to go to the packet location
+        Coordinate packetPosition = packet.getCoordinate();
+        int cellsToWalk1 = Perception.distance(agentState.getX(), agentState.getY(), packetPosition.getX(), packetPosition.getY());
+        double powerToGoToPacket = cellsToWalk1 * GeneralUtils.WALK_WITHOUT_PACKET;
+
+        // Second calculate the power to go from packet to destination
+        Coordinate destinationPosition = destination.getCoordinate();
+        int cellsToWalk2 = Perception.distance(packetPosition.getX(), packetPosition.getY(), destinationPosition.getX(), destinationPosition.getY());
+        double powerToGoToDestination = cellsToWalk2 * GeneralUtils.WALK_WITH_PACKET;
+
+        // See if there is enough power to complete the task and have an extra buffer
+        return agentState.getBatteryState() > (powerToGoToDestination + powerToGoToPacket + 150);
+    }
+
     /**
      * A function to calculate the Euclidean distance between two coordinates
-     * 
+     *
      * @param coordinate1 The first coordinate
      * @param coordinate2 The second coordinate
      */
@@ -389,5 +409,5 @@ public class GeneralUtils {
         // Calculate the distance
 
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
-    } 
+    }
 }
