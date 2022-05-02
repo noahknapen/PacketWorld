@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -13,7 +14,10 @@ import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
+import org.checkerframework.checker.units.qual.A;
 import util.assignments.graph.GraphUtils;
+import util.assignments.memory.MemoryKeys;
+import util.assignments.memory.MemoryUtils;
 
 /**
  * A class that implements functions regarding the action of the agent
@@ -46,6 +50,14 @@ public class ActionUtils {
      * @param agentAction Used to perform an action with the agent
      */
     public static void moveRandomly(AgentState agentState, AgentAction agentAction) {
+        // Get the last five positions
+        ArrayList<Coordinate> lastPositions = new ArrayList<>();
+        try {
+            lastPositions = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PREVIOUS_FIVE_MOVES, Coordinate.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // Get the position of the agent
         Perception agentPerception = agentState.getPerception();
         int agentX = agentState.getX();
@@ -69,8 +81,16 @@ public class ActionUtils {
                 int agentNewX = agentX + relativePositionX;
                 int agentNewY = agentY + relativePositionY;
 
+                if (lastPositions.contains(new Coordinate(agentNewX, agentNewY))) continue;
                 // Perform a step
                 agentAction.step(agentNewX, agentNewY);
+
+                // Update memory
+                try {
+                    updateLastFiveTurns(agentState, new Coordinate(agentNewX, agentNewY));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 // Inform
                 String message = String.format("%s: Moved randomly", agentState.getName());
@@ -117,8 +137,9 @@ public class ActionUtils {
         }
     }
 
-    private static void MoveRandomToPosition(AgentState agentState, AgentAction agentAction, Coordinate targetCoordinate) {
+    private static void MoveRandomToPosition(AgentState agentState, AgentAction agentAction, Coordinate targetCoordinate) throws IOException {
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
+        ArrayList<Coordinate> lastPositions = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PREVIOUS_FIVE_MOVES, Coordinate.class);
 
         // Two variables for determining which is the best coordinate
         double minDistance = Double.MAX_VALUE;
@@ -134,19 +155,21 @@ public class ActionUtils {
             // Create a variable of the position to try
             int newPositionX = agentState.getX() + relativePosition.getX();
             int newPositionY = agentState.getY() + relativePosition.getY();
-            Coordinate position = new Coordinate(newPositionX, newPositionY);
+            Coordinate newPosition = new Coordinate(newPositionX, newPositionY);
+
+            // Check if cell is already walked on last five turns
+            if (lastPositions.contains(newPosition)) continue;
 
             // Check if cell is a better option
-            if (ActionUtils.calculateDistance(position, targetCoordinate) > minDistance) continue;
+            if (ActionUtils.calculateDistance(newPosition, targetCoordinate) > minDistance) continue;
 
             // It is a better option so change the min distance and the relative position
-            minDistance = ActionUtils.calculateDistance(position, targetCoordinate);
+            minDistance = ActionUtils.calculateDistance(newPosition, targetCoordinate);
             bestCoordinate = relativePosition;
         }
 
         if (agentPosition.equals(bestCoordinate)) moveRandomly(agentState, agentAction);
         else makeMove(agentState, agentAction, bestCoordinate);
-
     }
 
     /**
@@ -259,11 +282,27 @@ public class ActionUtils {
             // Perform a step
             agentAction.step(agentNewX, agentNewY);
 
+            // Update memory
+            try {
+            updateLastFiveTurns(agentState, new Coordinate(agentNewX, agentNewY));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             // Inform
             String message = String.format("%s: Moved to position (%d,%d)", agentState.getName(), agentNewX, agentNewY);
             System.out.println(message);
         }
         else ActionUtils.moveRandomly(agentState, agentAction);
+    }
+
+    private static void updateLastFiveTurns(AgentState agentState, Coordinate move) throws IOException {
+        ArrayList<Coordinate> lastPositions = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PREVIOUS_FIVE_MOVES, Coordinate.class);
+
+        if (lastPositions.size() != 0) lastPositions.remove(0);
+
+        lastPositions.add(move);
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PREVIOUS_FIVE_MOVES, lastPositions));
     }
 
     ////////////

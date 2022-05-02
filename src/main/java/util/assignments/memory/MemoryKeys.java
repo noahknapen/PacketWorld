@@ -9,4 +9,6 @@ public class MemoryKeys {
     public static final String DISCOVERED_DESTINATIONS = "DISCOVERED_DESTINATIONS";
     public static final String DISCOVERED_PACKETS = "DISCOVERED_PACKETS";
     public static final String DISCOVERED_CHARGING_STATIONS = "DISCOVERED_CHARGING_STATIONS";
+    public static final String PREVIOUS_FIVE_MOVES = "PREVIOUS_FIVE_MOVES";
+
 }
