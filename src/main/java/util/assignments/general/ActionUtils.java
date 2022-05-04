@@ -54,6 +54,7 @@ public class ActionUtils {
         ArrayList<Coordinate> lastPositions = new ArrayList<>();
         try {
             lastPositions = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PREVIOUS_FIVE_MOVES, Coordinate.class);
+            System.out.println(lastPositions + " " + agentState.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -82,6 +83,7 @@ public class ActionUtils {
                 int agentNewY = agentY + relativePositionY;
 
                 if (lastPositions.contains(new Coordinate(agentNewX, agentNewY))) continue;
+
                 // Perform a step
                 agentAction.step(agentNewX, agentNewY);
 
@@ -248,9 +250,8 @@ public class ActionUtils {
         int relativePositionY = (dY > 0) ? 1 : ((dY < 0) ? -1 : 0);
 
         // Define the move coordinate
-        Coordinate moveCoordinate = new Coordinate(relativePositionX, relativePositionY);
 
-        return moveCoordinate;
+        return new Coordinate(relativePositionX, relativePositionY);
     }
 
     /**
@@ -264,6 +265,14 @@ public class ActionUtils {
         // Get the perception of the agent
         Perception agentPerception = agentState.getPerception();
 
+        // Get the last five turns
+        ArrayList<Coordinate> lastPositions = new ArrayList<>();
+        try {
+            lastPositions = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PREVIOUS_FIVE_MOVES, Coordinate.class);
+            System.out.println(lastPositions + " " + agentState.getName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // Get the positions
         int agentX = agentState.getX();
         int agentY = agentState.getY();
@@ -279,12 +288,15 @@ public class ActionUtils {
             int agentNewX = agentX + moveX;
             int agentNewY = agentY + moveY;
 
+            // Check if we have been to that cell in the previous five turns
+            if (lastPositions.contains(new Coordinate(agentNewX, agentNewY))) ActionUtils.moveRandomly(agentState, agentAction);
+
             // Perform a step
             agentAction.step(agentNewX, agentNewY);
 
             // Update memory
             try {
-            updateLastFiveTurns(agentState, new Coordinate(agentNewX, agentNewY));
+                updateLastFiveTurns(agentState, new Coordinate(agentNewX, agentNewY));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -299,7 +311,7 @@ public class ActionUtils {
     private static void updateLastFiveTurns(AgentState agentState, Coordinate move) throws IOException {
         ArrayList<Coordinate> lastPositions = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PREVIOUS_FIVE_MOVES, Coordinate.class);
 
-        if (lastPositions.size() != 0) lastPositions.remove(0);
+        if (lastPositions.size() == 5) lastPositions.remove(0);
 
         lastPositions.add(move);
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PREVIOUS_FIVE_MOVES, lastPositions));

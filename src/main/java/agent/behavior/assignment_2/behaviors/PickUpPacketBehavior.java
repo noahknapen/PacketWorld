@@ -1,6 +1,7 @@
 package agent.behavior.assignment_2.behaviors;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -93,5 +94,8 @@ public class PickUpPacketBehavior extends Behavior {
 
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task));
+
+        // Remove last five turns from memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PREVIOUS_FIVE_MOVES, new ArrayList<Coordinate>()));
     }
 }

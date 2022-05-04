@@ -1,6 +1,8 @@
 package agent.behavior.assignment_2.behaviors;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -68,5 +70,9 @@ public class PutDownPacketBehavior extends Behavior {
 
         // Put down the packet
         ActionUtils.putDownPacket(agentState, agentAction, destinationCoordinate);
+
+        // Remove last five turns from memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PREVIOUS_FIVE_MOVES, new ArrayList<Coordinate>()));
+
     }
 }
