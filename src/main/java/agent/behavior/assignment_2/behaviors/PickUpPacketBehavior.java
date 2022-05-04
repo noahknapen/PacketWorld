@@ -9,6 +9,7 @@ import agent.behavior.Behavior;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
+import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Packet;
@@ -37,6 +38,9 @@ public class PickUpPacketBehavior extends Behavior {
     public void act(AgentState agentState, AgentAction agentAction) {
         // Pick up the packet
         handlePickUp(agentState, agentAction);
+
+        // Build the graph
+        GraphUtils.build(agentState);
 
         // Update task
         updateTask(agentState);

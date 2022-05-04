@@ -7,6 +7,7 @@ import agent.behavior.Behavior;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
+import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -33,6 +34,9 @@ public class PutDownPacketBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
+        // Build the graph
+        GraphUtils.build(agentState);
+
         // Put down the packet
         handlePutDown(agentState, agentAction);
     }

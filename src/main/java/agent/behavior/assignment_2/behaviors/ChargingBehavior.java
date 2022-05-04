@@ -6,6 +6,7 @@ import agent.AgentState;
 import agent.behavior.Behavior;
 import environment.Coordinate;
 import util.assignments.general.GeneralUtils;
+import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 
@@ -35,6 +36,9 @@ public class ChargingBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
+        // Build the graph
+        GraphUtils.build(agentState);
+
         // Charging is staying still on charging spot -> skip a turn
         agentAction.skip();
     }
