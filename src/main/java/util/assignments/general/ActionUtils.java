@@ -1,11 +1,13 @@
 package util.assignments.general;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import agent.AgentAction;
 import agent.AgentState;
+import com.google.common.collect.Table;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
@@ -45,54 +47,30 @@ public class ActionUtils {
     public static void moveRandomly(AgentState agentState, AgentAction agentAction) {
         // Get the position of the agent
         Perception agentPerception = agentState.getPerception();
-        int agentX = agentState.getX();
-        int agentY = agentState.getY();
 
-        // A variable to keep track of the best position
-        Coordinate tempBestPosition = null;
+        // Retrieves all the neighbours of the agent
+        ArrayList<CellPerception> neighbours = agentPerception.getNeighbours();
 
-        // Get the relative positions
-        List<Coordinate> relativePositions = RELATIVE_POSITIONS;
-        Collections.shuffle(relativePositions);
+        // Shuffle for randomness
+        Collections.shuffle(neighbours);
 
-        // Loop over all relative positions
-        for (Coordinate relativePosition : relativePositions) {
-            // Get candidate cell
-            int relativePositionX = relativePosition.getX();
-            int relativePositionY = relativePosition.getY();
-            CellPerception cellPerception = agentPerception.getCellPerceptionOnRelPos(relativePositionX, relativePositionY);
+        // Iterate through all the neighbours
+        for (CellPerception neighbour : neighbours) {
+            // If the neighbour isn't walkable or is null -> skip
+            if (neighbour == null || !neighbour.isWalkable()) continue;
 
-            // A guard clause to ensure the cell is walkable
-            if (cellPerception == null) continue;
-            if (!cellPerception.isWalkable()) continue;
+            // Perform step
+            agentAction.step(neighbour.getX(), neighbour.getY());
 
-            // Calculate the coordinates of the move
-            int targetX = agentX + relativePositionX;
-            int targetY = agentY + relativePositionY;
-            tempBestPosition = new Coordinate(targetX, targetY);
-
-            // If the position is in the graph, we have previously been here so keep looking for a position we haven't discovered
-            if (GeneralUtils.positionInGraph(agentState, tempBestPosition)) continue;
-
-            // If the program gets here, it has found a position we haven't yet explored so explore it
-            agentAction.step(targetX, targetY);
-
-            // Inform the dev
-            System.out.printf("%s: Moved randomly\n", agentState.getName());
+            // Inform dev
+            System.out.printf("%s: Moved randomly to %s %s\n", agentState.getName(),neighbour.getX(), neighbour.getY());
 
             return;
+
         }
 
-        if (tempBestPosition == null) {
-            // If tempBestPosition is null, there are no walkable cells
-            agentAction.skip();
-        } else {
-            // The agent has already explored all the surrounding cells, so take the best position
-            agentAction.step(tempBestPosition.getX(), tempBestPosition.getY());
-
-            // Inform the dev
-            System.out.printf("%s: Moved randomly\n", agentState.getName());
-        }
+        // Skip if no walkable cell was found
+        skipTurn(agentAction);
     }
 
         /////////////////
@@ -111,16 +89,19 @@ public class ActionUtils {
 
         // Check if the position is in the perception of the agent
         if(GeneralUtils.positionInPerception(agentState, coordinate)) {
+            System.out.println("perception");
             Coordinate move = calculateMoveDefault(agentState, coordinate);
             makeMove(agentState, agentAction, move);
         }
         // Check if the position is in the graph
         else if(GeneralUtils.positionInGraph(agentState, coordinate)) {
+            System.out.println("grpah");
             Coordinate move = calculateMoveAStar(agentState, coordinate);
             makeMove(agentState, agentAction, move);
         }
         // If not in the graph, move closer to the position
         else {
+            System.out.println("third option");
             ActionUtils.MoveRandomToPosition(agentState, agentAction, coordinate);
         }
     }

@@ -43,8 +43,8 @@ public class GraphUtils {
         if(graph == null) graph = new Graph();
         
         // Loop over the whole perception to create nodes
-        for (int x = 0; x < agentPerception.getWidth(); x++) {
-            for (int y = 0; y < agentPerception.getHeight(); y++) {
+        for (int x = 0; x <= agentPerception.getWidth(); x++) {
+            for (int y = 0; y <= agentPerception.getHeight(); y++) {
                 CellPerception cellPerception = agentPerception.getCellAt(x,y);
 
                 // Check if the cell is null and continue with the next cell if so
@@ -186,6 +186,8 @@ public class GraphUtils {
 
         // Reverse the path
         Collections.reverse(path);
+
+        System.out.println(path);
 
         // Return the first element of the path (which defines the next move)
         return path.get(0);
