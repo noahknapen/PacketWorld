@@ -89,19 +89,16 @@ public class ActionUtils {
 
         // Check if the position is in the perception of the agent
         if(GeneralUtils.positionInPerception(agentState, coordinate)) {
-            System.out.println("perception");
             Coordinate move = calculateMoveDefault(agentState, coordinate);
             makeMove(agentState, agentAction, move);
         }
         // Check if the position is in the graph
         else if(GeneralUtils.positionInGraph(agentState, coordinate)) {
-            System.out.println("grpah");
             Coordinate move = calculateMoveAStar(agentState, coordinate);
             makeMove(agentState, agentAction, move);
         }
         // If not in the graph, move closer to the position
         else {
-            System.out.println("third option");
             ActionUtils.MoveRandomToPosition(agentState, agentAction, coordinate);
         }
     }

@@ -128,7 +128,6 @@ public class Perception {
             }
         }
 
-        System.out.println(neighbours);
         return neighbours;
     }
 
