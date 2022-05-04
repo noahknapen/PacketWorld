@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import agent.AgentState;
@@ -30,11 +27,8 @@ public class MemoryUtils {
      * @param memoryKey The memory key
      * @param objectClass The class of the object
      * @return The object or null if no object was found
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    public static <T> T getObjectFromMemory(AgentState agentState, String memoryKey, Class<T> objectClass) throws JsonParseException, JsonMappingException, IOException {
+    public static <T> T getObjectFromMemory(AgentState agentState, String memoryKey, Class<T> objectClass) {
         // Get the memory
         Set<String> memory = agentState.getMemoryFragmentKeys();
 
@@ -45,7 +39,12 @@ public class MemoryUtils {
 
             // Transform the string to a JSON object and return
             ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
-            return objectMapper.readValue(objectString, objectClass);
+            try {
+                return objectMapper.readValue(objectString, objectClass);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
         else return null;
     }
@@ -58,11 +57,8 @@ public class MemoryUtils {
      * @param memoryKey The memory key
      * @param objectClass The class of the objects contained in the list
      * @return The list of objects
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    public static <T> ArrayList<T> getListFromMemory(AgentState agentState, String memoryKey, Class<T> objectClass) throws JsonParseException, JsonMappingException, IOException {
+    public static <T> ArrayList<T> getListFromMemory(AgentState agentState, String memoryKey, Class<T> objectClass) {
         // Get the memory
         Set<String> memory = agentState.getMemoryFragmentKeys();
 
@@ -73,7 +69,12 @@ public class MemoryUtils {
 
             // Transform the string to a JSON object and return
             ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
-            return objectMapper.readValue(listString, objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, objectClass));
+            try {
+                return objectMapper.readValue(listString, objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, objectClass));
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new ArrayList<>();
+            }
         }
         else {
             // Initialize a new list
@@ -96,9 +97,8 @@ public class MemoryUtils {
      * 
      * @param agentState The current state of the agent
      * @param updates A list of updates that should be done
-     * @throws JsonProcessingException
      */
-    public static void updateMemory(AgentState agentState, Map<String, Object> updates) throws JsonProcessingException {
+    public static void updateMemory(AgentState agentState, Map<String, Object> updates) {
         // Get the memory
         Set<String> memory = agentState.getMemoryFragmentKeys();
 
@@ -109,7 +109,12 @@ public class MemoryUtils {
 
             // Transform the object to a JSON string
             ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
-            String objectString = objectMapper.writeValueAsString(updates.get(memoryKey));
+            String objectString = "";
+            try {
+                objectString = objectMapper.writeValueAsString(updates.get(memoryKey));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             // Add the update to the memory
             agentState.addMemoryFragment(memoryKey, objectString);

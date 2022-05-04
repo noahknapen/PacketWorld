@@ -2,23 +2,16 @@ package agent.behavior.assignment_2.changes;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import util.assignments.comparators.PacketComparator;
 import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
-import util.assignments.task.Task;
-import util.assignments.task.TaskType;
 
 import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 public class NotEnoughEnergyToWork extends BehaviorChange {
 
@@ -32,12 +25,9 @@ public class NotEnoughEnergyToWork extends BehaviorChange {
     public void updateChange() {
         AgentState agentState = this.getAgentState();
 
-        // Check if the task definition is not possible
-        try {
-            notEnoughEnergyToWork = isNotEnoughEnergyToWork(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Check if the agent has enough energy to work
+        notEnoughEnergyToWork = isNotEnoughEnergyToWork(agentState);
+
     }
 
     @Override
@@ -45,7 +35,15 @@ public class NotEnoughEnergyToWork extends BehaviorChange {
         return notEnoughEnergyToWork;
     }
 
-    private boolean isNotEnoughEnergyToWork(AgentState agentState) throws IOException {
+    /**
+     * A function used to determine whether an agent should continue working or if they should move randomly,
+     * explore, or go to the charging station.
+     *
+     * @param agentState: The state of the agent
+     *
+     * @return True if the agent can continue to work, false otherwise
+     */
+    private boolean isNotEnoughEnergyToWork(AgentState agentState) {
         // Get the discovered packets and discovered destinations
         ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
         ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
@@ -57,20 +55,19 @@ public class NotEnoughEnergyToWork extends BehaviorChange {
         // Loop over the sorted discovered packets
         for (Packet candidatePacket : discoveredPackets) {
 
-            // Get a candidate packet
             // Get the color of the candidate packet
             Color candidatePacketColor = candidatePacket.getColor();
 
             // Loop over the discovered destinations
             for (Destination candidateDestination : discoveredDestinations) {
-                // Get a candidate destination
+
                 // Get the color of the candidate destination
                 Color candidateDestinationColor = candidateDestination.getColor();
 
                 // Check if the colors correspond
                 if (!candidatePacketColor.equals(candidateDestinationColor)) continue;
 
-
+                // Check if the agent has enough energy left
                 if (GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) return false;
 
             }

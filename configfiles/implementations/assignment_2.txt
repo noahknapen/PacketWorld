@@ -110,7 +110,6 @@ priority 2
 source 6
 target 7
 
-
 ### SOURCE 7: ChargingBehavior ###
 
 agent.behavior.assignment_2.changes.MustLeaveChargingStation

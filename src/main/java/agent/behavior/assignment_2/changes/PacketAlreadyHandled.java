@@ -31,11 +31,7 @@ public class PacketAlreadyHandled extends BehaviorChange{
         AgentState agentState = this.getAgentState();
         
         // Check if the packet was already handled
-        try {
-            packetAlreadyHandled = checkPacketAlreadyHandled(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        packetAlreadyHandled = checkPacketAlreadyHandled(agentState);
     }
 
     @Override
@@ -51,12 +47,10 @@ public class PacketAlreadyHandled extends BehaviorChange{
      * Check if the packet was already handled by another agent
      * 
      * @param agentState The current state of the agent
+     *
      * @return True is packet is not at initial place, otherwise false
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private boolean checkPacketAlreadyHandled(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
+    private boolean checkPacketAlreadyHandled(AgentState agentState) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
@@ -64,7 +58,7 @@ public class PacketAlreadyHandled extends BehaviorChange{
         if(task == null) return false;
 
         // Check if the task has no packet and return false if so
-        if(!task.getPacket().isPresent()) return false;
+        if(task.getPacket().isEmpty()) return false;
 
         // Get the position of the packet
         Packet packet= task.getPacket().get();

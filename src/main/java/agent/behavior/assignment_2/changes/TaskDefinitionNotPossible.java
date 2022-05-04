@@ -1,12 +1,9 @@
 package agent.behavior.assignment_2.changes;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
@@ -31,11 +28,7 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
         AgentState agentState = this.getAgentState();
 
         // Check if the task definition is not possible
-        try {
-            taskDefinitionNotPossible = checkNoTaskDefinition(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        taskDefinitionNotPossible = checkNoTaskDefinition(agentState);
     }
 
     @Override
@@ -51,12 +44,10 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
      * Check if no task can be defined
      *
      * @param agentState The current state of the agent
-     * @return True if the task defintion is not possible, otherwise false
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
+     *
+     * @return True if the task definition is not possible, otherwise false
      */
-    private boolean checkNoTaskDefinition(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
+    private boolean checkNoTaskDefinition(AgentState agentState) {
         // Get the discovered packets
         ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
 

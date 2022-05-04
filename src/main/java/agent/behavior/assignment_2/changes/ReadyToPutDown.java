@@ -1,10 +1,5 @@
 package agent.behavior.assignment_2.changes;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.Coordinate;
@@ -30,11 +25,7 @@ public class ReadyToPutDown extends BehaviorChange{
         AgentState agentState = this.getAgentState();
         
         // Check if the position is reached
-        try {
-            readyToPutDown = handlePositionReached(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readyToPutDown = handlePositionReached(agentState);
     }
 
     @Override
@@ -50,12 +41,10 @@ public class ReadyToPutDown extends BehaviorChange{
      * Check if the position of the destination is reached by the agent
      * 
      * @param agentState The current state of the agent
+     *
      * @return True if agent has reached the position of the destination, otherwise false
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private boolean handlePositionReached(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
+    private boolean handlePositionReached(AgentState agentState) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
@@ -63,7 +52,7 @@ public class ReadyToPutDown extends BehaviorChange{
         if(task == null) return false;
 
         // Check if the task has no destination and return false if so
-        if(!task.getDestination().isPresent()) return false;
+        if(task.getDestination().isEmpty()) return false;
 
         // Get the coordinate of the destination
         Destination destination= task.getDestination().get();

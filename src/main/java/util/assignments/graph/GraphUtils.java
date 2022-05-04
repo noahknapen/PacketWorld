@@ -31,11 +31,8 @@ public class GraphUtils {
      * Build the graph based on the perception of the agent
      * 
      * @param agentState The current state of the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    public static void build(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
+    public static void build(AgentState agentState) {
         // Get the perception the agent
         Perception agentPerception = agentState.getPerception();
 
@@ -43,8 +40,7 @@ public class GraphUtils {
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Check if graph is null and create one if so
-        if(graph == null)
-            graph = new Graph();
+        if(graph == null) graph = new Graph();
         
         // Loop over the whole perception to create nodes
         for (int x = 0; x < agentPerception.getWidth(); x++) {
@@ -55,8 +51,9 @@ public class GraphUtils {
                 if(cellPerception == null) continue;
 
                 // Check if the cell contains no packet nor destination and is not walkable and continue with the next cell if so
-                if(!(cellPerception.containsPacket() || cellPerception.containsAnyDestination()) && !cellPerception.isWalkable()) continue;
-        
+                if(!(cellPerception.containsPacket() || cellPerception.containsAnyDestination() || cellPerception.containsEnergyStation() || cellPerception.containsWall())) continue;
+                if (!cellPerception.isWalkable()) continue;
+
                 // Get the position of the cell
                 int cellX = cellPerception.getX();
                 int cellY = cellPerception.getY();
@@ -108,7 +105,7 @@ public class GraphUtils {
     // SEARCH //
     ////////////
 
-    public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) throws JsonParseException, JsonMappingException, IOException {
+    public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) {
         // Get the position of the agent
         int agentX = agentState.getX();
         int agentY = agentState.getY();
@@ -118,8 +115,8 @@ public class GraphUtils {
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Check if graph is null and raise exception if so
-        if(graph == null) throw new IllegalArgumentException("No graph to perform A* search on");
-        
+        if(graph == null) return null;
+
         // Define the nodes
         Node startNode = new Node(agentCoordinate);
         Node targetNode = new Node(target);
@@ -174,12 +171,20 @@ public class GraphUtils {
             closeList.add(node);
         }
 
+        // Ensure that result isn't null
+        if (result == null) return new Coordinate(agentX, agentY);
+
         // Calculate the path
         ArrayList<Coordinate> path = new ArrayList<>();
         while(result.getParent() != null) {
             path.add(result.getCoordinate());
             result = result.getParent();
+
+            // Ensure that the result isn't null for the next iteration
+            if (result == null) break;
         }
+
+        // Reverse the path
         Collections.reverse(path);
 
         // Return the first element of the path (which defines the next move)

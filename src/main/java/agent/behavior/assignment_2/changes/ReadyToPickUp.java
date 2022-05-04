@@ -30,11 +30,7 @@ public class ReadyToPickUp extends BehaviorChange{
         AgentState agentState = this.getAgentState();
         
         // Check if the position is reached
-        try {
-            readyToPickUp = handlePositionReached(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readyToPickUp = handlePositionReached(agentState);
     }
 
     @Override
@@ -50,12 +46,10 @@ public class ReadyToPickUp extends BehaviorChange{
      * Check if the position of the packet is reached by the agent
      * 
      * @param agentState The current state of the agent
+     *
      * @return True if agent has reached the position of the packet, otherwise false
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private boolean handlePositionReached(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
+    private boolean handlePositionReached(AgentState agentState) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 

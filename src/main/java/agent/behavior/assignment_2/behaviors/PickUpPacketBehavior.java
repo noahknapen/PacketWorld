@@ -1,11 +1,6 @@
 package agent.behavior.assignment_2.behaviors;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentAction;
 import agent.AgentCommunication;
@@ -13,6 +8,7 @@ import agent.AgentState;
 import agent.behavior.Behavior;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
+import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Packet;
@@ -30,20 +26,20 @@ public class PickUpPacketBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // TODO Auto-generated method stub
+        // Communicate the charging stations with all the other agents
+        GeneralUtils.handleChargingStations(agentState, agentCommunication);
+
+        // Communicate the destination locations with agents in perception
+        GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
     }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        try {
-            // Pick up the packet
-            handlePickUp(agentState, agentAction);
+        // Pick up the packet
+        handlePickUp(agentState, agentAction);
 
-            // Update task
-            updateTask(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Update task
+        updateTask(agentState);
     }
 
     /////////////
@@ -55,11 +51,8 @@ public class PickUpPacketBehavior extends Behavior {
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private void handlePickUp(AgentState agentState, AgentAction agentAction) throws JsonParseException, JsonMappingException, IOException {
+    private void handlePickUp(AgentState agentState, AgentAction agentAction) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
@@ -78,11 +71,8 @@ public class PickUpPacketBehavior extends Behavior {
      * A function to update the task type to MOVE_TO_DESTINATION
      * 
      * @param agentState The current state of the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private void updateTask(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
+    private void updateTask(AgentState agentState) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
@@ -94,8 +84,5 @@ public class PickUpPacketBehavior extends Behavior {
 
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task));
-
-        // Remove last five turns from memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PREVIOUS_FIVE_MOVES, new ArrayList<Coordinate>()));
     }
 }

@@ -1,7 +1,6 @@
 package agent.behavior.assignment_2.changes;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.util.*;
 
 import agent.AgentState;
@@ -31,11 +30,8 @@ public class TaskDefinitionPossible extends BehaviorChange{
         AgentState agentState = this.getAgentState();
 
         // Handle the possible task definition
-        try {
-            taskDefinitionPossible = checkTaskDefinition(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        taskDefinitionPossible = checkTaskDefinition(agentState);
+
     }
 
     @Override
@@ -53,9 +49,8 @@ public class TaskDefinitionPossible extends BehaviorChange{
      * @param agentState The current state of the agent
      * @return True if the task definition is possible and was done, otherwise false
      *
-     * @throws IOException when an exception occurred with the deserialization
      */
-    private boolean checkTaskDefinition(AgentState agentState) throws IOException {
+    private boolean checkTaskDefinition(AgentState agentState) {
         // Get the discovered packets and discovered destinations
         ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
         ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
@@ -74,26 +69,26 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
             // Loop over the discovered destinations
             for (Destination candidateDestination : discoveredDestinations) {
-                // Get a candidate destination
                 // Get the color of the candidate destination
                 Color candidateDestinationColor = candidateDestination.getColor();
 
                 // Check if the colors correspond
-                if (candidatePacketColor.equals(candidateDestinationColor)) {
+                if (!candidatePacketColor.equals(candidateDestinationColor)) continue;
 
-                    if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
+                // If the agent hasn't got enough energy to work on it, it will not start the work
+                if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
 
-                    // Remove the packet from the discovered packets
-                    candidatePacket = discoveredPackets.remove(i);
+                // Remove the packet from the discovered packets
+                candidatePacket = discoveredPackets.remove(i);
 
-                    // Define the task
-                    Task task = new Task(TaskType.MOVE_TO_PACKET, Optional.of(candidatePacket), Optional.of(candidateDestination));
+                // Define the task
+                Task task = new Task(TaskType.MOVE_TO_PACKET, Optional.of(candidatePacket), Optional.of(candidateDestination));
 
-                    // Update the memory
-                    MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
+                // Update the memory
+                MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
 
-                    return true;
-                }
+                return true;
+
             }
         }
 

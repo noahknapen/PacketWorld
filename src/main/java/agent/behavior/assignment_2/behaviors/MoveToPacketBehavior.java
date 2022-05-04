@@ -1,10 +1,5 @@
 package agent.behavior.assignment_2.behaviors;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
@@ -15,7 +10,6 @@ import util.assignments.general.GeneralUtils;
 import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
-import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 import util.assignments.task.TaskType;
@@ -31,29 +25,23 @@ public class MoveToPacketBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // Handle the charging stations
-        try {
-            GeneralUtils.handleChargingStations(agentState, agentCommunication);
-            GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }        
+        // Communicate the charging stations with all the other agents
+        GeneralUtils.handleChargingStations(agentState, agentCommunication);
+
+        // Communicate the destination locations with agents in perception
+        GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
     }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) { 
-        try {
-            // Check the perception of the agent
-            GeneralUtils.checkPerception(agentState);
+        // Check the perception of the agent
+        GeneralUtils.checkPerception(agentState);
 
-            // Build the graph
-            GraphUtils.build(agentState);
+        // Build the graph
+        GraphUtils.build(agentState);
 
-            // Move the agent to the target
-            handleMove(agentState, agentAction);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Move the agent to the target
+        handleMove(agentState, agentAction);
     }
 
     /////////////
@@ -65,11 +53,8 @@ public class MoveToPacketBehavior extends Behavior {
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private void handleMove(AgentState agentState, AgentAction agentAction) throws JsonParseException, JsonMappingException, IOException {
+    private void handleMove(AgentState agentState, AgentAction agentAction) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 

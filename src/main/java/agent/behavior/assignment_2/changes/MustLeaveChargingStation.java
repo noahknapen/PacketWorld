@@ -1,11 +1,9 @@
 package agent.behavior.assignment_2.changes;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
@@ -23,17 +21,18 @@ public class MustLeaveChargingStation extends BehaviorChange {
 
     @Override
     public void updateChange() {
+        // Retrieve agent state
         AgentState agentState = this.getAgentState();
+
+        // If the agent has enough battery
         hasEnoughBattery =  this.getAgentState().getBatteryState() >= 900;
 
-        if(hasEnoughBattery) {
-            try {
-                updateCharginStation(agentState);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
+        // Guard clause to ensure the agent has enough battery before updating the station.
+        if(!hasEnoughBattery) return;
+
+        // Update the charging station
+        updateChargingStation(agentState);
+
     }
 
     @Override
@@ -44,30 +43,35 @@ public class MustLeaveChargingStation extends BehaviorChange {
     /////////////
     // METHODS //
     /////////////
-    
+
     /**
-     * Update the state of the chargingStation that is currently in use by the agent
-     * 
-     * @param agentState The current state of the agent
-     * 
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
+     * Update the chargingStations with the right information. If the agent is standing in the charging station spot,
+     * it will set the parameter of inUse to true and will update the optional battery level.
+     *
+     * @param agentState: The state of the agent.
      */
-    private void updateCharginStation(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
-        // Get charging station position
-        Coordinate charginStationCoordinate = new Coordinate(agentState.getX(), agentState.getY() - 1);
+    private void updateChargingStation(AgentState agentState) {
+        // Get agent position, + 1 because the spot to charge is one above the charging station
+        Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY() + 1);
         
         // Get the current charging stations
         ArrayList<ChargingStation> chargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
 
+        // Iterate through all the stations to check them all
         for(ChargingStation chargingStation: chargingStations) {
-            if(chargingStation.getCoordinate().equals(charginStationCoordinate)) { 
-                chargingStation.setBatteryOfUser(Optional.empty());
-                chargingStation.setInUse(false);
-                return;
-            }
-        }
-    } 
 
+            // A guard clause to ensure we are on the charging station
+            if(!chargingStation.getCoordinate().equals(agentPosition)) continue;
+
+            // Change the parameters
+            chargingStation.setBatteryOfUser(Optional.empty());
+            chargingStation.setInUse(false);
+
+            // Set a variable in memory to true, this is for communication purposes
+            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.UPDATED_STATIONS, true));
+        }
+
+        // Update memory for charging stations
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, chargingStations));
+    }
 }

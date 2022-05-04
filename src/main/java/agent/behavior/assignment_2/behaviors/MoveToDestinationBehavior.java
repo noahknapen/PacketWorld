@@ -1,10 +1,5 @@
 package agent.behavior.assignment_2.behaviors;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
@@ -30,29 +25,23 @@ public class MoveToDestinationBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // Handle the charging stations
-        try {
-            GeneralUtils.handleChargingStations(agentState, agentCommunication);
-            GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } 
+        // Communicate the charging stations with all the other agents
+        GeneralUtils.handleChargingStations(agentState, agentCommunication);
+
+        // Communicate the destination locations with agents in perception
+        GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
     }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {      
-        try {
-            // Check the perception of the agent
-            GeneralUtils.checkPerception(agentState);
+        // Check the perception of the agent
+        GeneralUtils.checkPerception(agentState);
 
-            // Build the graph
-            GraphUtils.build(agentState);
+        // Build the graph
+        GraphUtils.build(agentState);
 
-            // Move the agent to the target
-            handleMove(agentState, agentAction);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Move the agent to the target
+        handleMove(agentState, agentAction);
     }
 
     /////////////
@@ -60,15 +49,12 @@ public class MoveToDestinationBehavior extends Behavior {
     /////////////
 
     /**
-     * A function to let the agent move
+     * A function that is used to make the agent move.
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private void handleMove(AgentState agentState, AgentAction agentAction) throws JsonParseException, JsonMappingException, IOException {
+    private void handleMove(AgentState agentState, AgentAction agentAction) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
@@ -82,7 +68,7 @@ public class MoveToDestinationBehavior extends Behavior {
         if(task.getType() != TaskType.MOVE_TO_DESTINATION || task.getDestination().isEmpty()) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION or task has no destination");
 
         // Get the coordinate of the destination
-        Destination destination= task.getDestination().get();
+        Destination destination = task.getDestination().get();
         Coordinate destinationCoordinate = destination.getCoordinate();
 
         // Perform move to the position of the destination

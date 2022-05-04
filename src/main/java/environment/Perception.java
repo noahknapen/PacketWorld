@@ -25,7 +25,6 @@ public class Perception {
      */
     private int width;
 
-
     /**
      * The x-coordinate of self within this Perception.
      */

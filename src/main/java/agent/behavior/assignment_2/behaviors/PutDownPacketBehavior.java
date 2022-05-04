@@ -1,18 +1,12 @@
 package agent.behavior.assignment_2.behaviors;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
+import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -30,18 +24,17 @@ public class PutDownPacketBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // TODO Auto-generated method stub
-        
+        // Communicate the charging stations with all the other agents
+        GeneralUtils.handleChargingStations(agentState, agentCommunication);
+
+        // Communicate the destination locations with agents in perception
+        GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
     }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         // Put down the packet
-        try {
-            handlePutDown(agentState, agentAction);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        handlePutDown(agentState, agentAction);
     }
 
     /////////////
@@ -53,11 +46,8 @@ public class PutDownPacketBehavior extends Behavior {
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private void handlePutDown(AgentState agentState, AgentAction agentAction) throws JsonParseException, JsonMappingException, IOException {
+    private void handlePutDown(AgentState agentState, AgentAction agentAction)  {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
@@ -70,9 +60,5 @@ public class PutDownPacketBehavior extends Behavior {
 
         // Put down the packet
         ActionUtils.putDownPacket(agentState, agentAction, destinationCoordinate);
-
-        // Remove last five turns from memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PREVIOUS_FIVE_MOVES, new ArrayList<Coordinate>()));
-
     }
 }
