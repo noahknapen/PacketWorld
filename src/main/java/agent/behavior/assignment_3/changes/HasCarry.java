@@ -16,8 +16,10 @@ public class HasCarry extends BehaviorChange{
 
     @Override
     public void updateChange() {
+        // Retrieve the agent state
         AgentState agentState = this.getAgentState();
 
+        // If the agent carries something, hasCarry is true
         hasCarry = agentState.hasCarry();
     }
 

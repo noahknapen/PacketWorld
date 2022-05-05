@@ -1,7 +1,5 @@
 package agent.behavior.assignment_3.behaviors;
 
-import java.io.IOException;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
@@ -17,26 +15,22 @@ public class MoveRandomlyBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // Handle the charging stations
-        try {
-            GeneralUtils.handleChargingStations(agentState, agentCommunication);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } 
+        // Communicate the charging stations with all the other agents
+        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
+
+        // Communicate the destination locations with agents in perception
+        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+
     }
 
     @Override
-    public void act(AgentState agentState, AgentAction agentAction) { 
-        try {        
-            // Check the perception of the agent
-            GeneralUtils.checkPerception(agentState);
+    public void act(AgentState agentState, AgentAction agentAction) {
+        // Check the perception of the agent
+        GeneralUtils.checkPerception(agentState);
 
-            // Build the graph
-            GraphUtils.build(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
+        // Build the graph
+        GraphUtils.build(agentState);
+
         // Move the agent randomly
         ActionUtils.moveRandomly(agentState, agentAction);
     }

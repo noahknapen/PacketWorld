@@ -1,8 +1,5 @@
 package agent.behavior.assignment_3.changes;
 
-import java.awt.Color;
-import java.util.*;
-
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import util.assignments.comparators.PacketComparator;
@@ -11,15 +8,14 @@ import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
-import util.assignments.task.Task;
-import util.assignments.task.TaskType;
 
-/**
- * A behavior change class that checks if a new task can be defined
- */
-public class TaskDefinitionPossible extends BehaviorChange{
+import java.awt.*;
+import java.util.ArrayList;
 
-    private boolean taskDefinitionPossible = false;
+
+public class NotEnoughEnergyToWork extends BehaviorChange {
+
+    private boolean notEnoughEnergyToWork = false;
 
     ///////////////
     // OVERRIDES //
@@ -29,28 +25,25 @@ public class TaskDefinitionPossible extends BehaviorChange{
     public void updateChange() {
         AgentState agentState = this.getAgentState();
 
-        // Handle the possible task definition
-        taskDefinitionPossible = checkTaskDefinition(agentState);
+        // Check if the agent has enough energy to work
+        notEnoughEnergyToWork = isNotEnoughEnergyToWork(agentState);
 
     }
 
     @Override
     public boolean isSatisfied() {
-        return taskDefinitionPossible;
+        return notEnoughEnergyToWork;
     }
 
-    /////////////
-    // METHODS //
-    /////////////
-
     /**
-     * Check if a task can be defined and do so if yes
+     * A function used to determine whether an agent should continue working or if they should move randomly,
+     * explore, or go to the charging station.
      *
-     * @param agentState The current state of the agent
-     * @return True if the task definition is possible and was done, otherwise false
+     * @param agentState: The state of the agent
      *
+     * @return True if the agent can continue to work, false otherwise
      */
-    private boolean checkTaskDefinition(AgentState agentState) {
+    private boolean isNotEnoughEnergyToWork(AgentState agentState) {
         // Get the discovered packets and discovered destinations
         ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
         ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
@@ -60,38 +53,27 @@ public class TaskDefinitionPossible extends BehaviorChange{
         discoveredPackets.sort(packetComparator);
 
         // Loop over the sorted discovered packets
-        for(int i = 0; i < discoveredPackets.size(); i++) {
-            // Get a candidate packet
-            Packet candidatePacket= discoveredPackets.get(i);
+        for (Packet candidatePacket : discoveredPackets) {
 
             // Get the color of the candidate packet
             Color candidatePacketColor = candidatePacket.getColor();
 
             // Loop over the discovered destinations
             for (Destination candidateDestination : discoveredDestinations) {
+
                 // Get the color of the candidate destination
                 Color candidateDestinationColor = candidateDestination.getColor();
 
                 // Check if the colors correspond
                 if (!candidatePacketColor.equals(candidateDestinationColor)) continue;
 
-                // If the agent hasn't got enough energy to work on it, it will not start the work
-                if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
-
-                // Remove the packet from the discovered packets
-                candidatePacket = discoveredPackets.remove(i);
-
-                // Define the task
-                Task task = new Task(TaskType.MOVE_TO_PACKET, candidatePacket, candidateDestination);
-
-                // Update the memory
-                MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
-
-                return true;
+                // Check if the agent has enough energy left
+                if (GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) return false;
 
             }
         }
 
-        return false;
+        return true;
     }
+
 }

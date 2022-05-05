@@ -254,8 +254,6 @@ public class ActionUtils {
             // Perform a step
             agentAction.step(agentNewX, agentNewY);
 
-            // Inform
-            System.out.printf("%s: Moved to position (%d,%d)\n", agentState.getName(), agentNewX, agentNewY);
         }
         else ActionUtils.moveRandomly(agentState, agentAction);
     }

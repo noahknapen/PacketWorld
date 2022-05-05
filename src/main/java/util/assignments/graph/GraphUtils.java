@@ -46,8 +46,8 @@ public class GraphUtils {
                 if(cellPerception == null) continue;
 
                 // Check if the cell contains no packet nor destination and is not walkable and continue with the next cell if so
-                if(!(cellPerception.containsPacket() || cellPerception.containsAnyDestination() || cellPerception.containsEnergyStation() || cellPerception.containsWall())) continue;
-                if (!cellPerception.isWalkable()) continue;
+                if(!(cellPerception.containsPacket() || cellPerception.containsAnyDestination() || cellPerception.containsEnergyStation()) && !cellPerception.isWalkable())
+                    continue;
 
                 // Get the position of the cell
                 int cellX = cellPerception.getX();

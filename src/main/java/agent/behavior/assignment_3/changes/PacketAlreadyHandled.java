@@ -1,10 +1,5 @@
 package agent.behavior.assignment_3.changes;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.CellPerception;
@@ -31,11 +26,7 @@ public class PacketAlreadyHandled extends BehaviorChange{
         AgentState agentState = this.getAgentState();
         
         // Check if the packet was already handled
-        try {
-            packetAlreadyHandled = checkPacketAlreadyHandled(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        packetAlreadyHandled = checkPacketAlreadyHandled(agentState);
     }
 
     @Override
@@ -51,23 +42,18 @@ public class PacketAlreadyHandled extends BehaviorChange{
      * Check if the packet was already handled by another agent
      * 
      * @param agentState The current state of the agent
+     *
      * @return True is packet is not at initial place, otherwise false
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private boolean checkPacketAlreadyHandled(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
+    private boolean checkPacketAlreadyHandled(AgentState agentState) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
         // Check if the task is null and return false if so
         if(task == null) return false;
 
-        // Check if the task has no packet and return false if so
-        if(!task.getPacket().isPresent()) return false;
-
         // Get the position of the packet
-        Packet packet= task.getPacket().get();
+        Packet packet= task.getPacket();
         int packetX = packet.getCoordinate().getX();
         int packetY = packet.getCoordinate().getY();
 
