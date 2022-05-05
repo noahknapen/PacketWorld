@@ -1,13 +1,11 @@
 package util.assignments.general;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import agent.AgentAction;
 import agent.AgentState;
-import com.google.common.collect.Table;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
@@ -22,20 +20,20 @@ public class ActionUtils {
     // MOVEMENT //
     //////////////
 
-        final static List<Coordinate> RELATIVE_POSITIONS = new ArrayList<>(List.of(
-            new Coordinate(1, 1), 
-            new Coordinate(-1, -1),
-            new Coordinate(1, 0), 
-            new Coordinate(-1, 0),
-            new Coordinate(0, 1), 
-            new Coordinate(0, -1),
-            new Coordinate(1, -1), 
-            new Coordinate(-1, 1)
-        ));
+    final static List<Coordinate> RELATIVE_POSITIONS = new ArrayList<>(List.of(
+        new Coordinate(1, 1), 
+        new Coordinate(-1, -1),
+        new Coordinate(1, 0), 
+        new Coordinate(-1, 0),
+        new Coordinate(0, 1), 
+        new Coordinate(0, -1),
+        new Coordinate(1, -1), 
+        new Coordinate(-1, 1)
+    ));
 
-    //////////////
-    // RANDOMLY //
-    //////////////
+        //////////////
+        // RANDOMLY //
+        //////////////
 
     /**
      * A function to make the agent move randomly. The agent will however prioritize position that aren't located
@@ -97,9 +95,9 @@ public class ActionUtils {
             Coordinate move = calculateMoveAStar(agentState, coordinate);
             makeMove(agentState, agentAction, move);
         }
-        // If not in the graph, move closer to the position
         else {
-            ActionUtils.MoveRandomToPosition(agentState, agentAction, coordinate);
+            // If not in the graph, move closer to the position
+            moveRandomToPosition(agentState, agentAction, coordinate);
         }
     }
 
@@ -107,11 +105,11 @@ public class ActionUtils {
      * When the targeted position isn't in the graph, the agents needs to walk randomly to that position. It does so by
      * calculating the lowest distance from its possibilities
      *
-     * @param agentState: The state of the agent
-     * @param agentAction: The action interface for the agent
-     * @param targetCoordinate: The position we want to go to
+     * @param agentState The current state of the agent
+     * @param agentAction The action interface for the agent
+     * @param targetCoordinate The position we want to go to
      */
-    private static void MoveRandomToPosition(AgentState agentState, AgentAction agentAction, Coordinate targetCoordinate) {
+    private static void moveRandomToPosition(AgentState agentState, AgentAction agentAction, Coordinate targetCoordinate) {
         // Make the agent position
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
 

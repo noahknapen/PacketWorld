@@ -28,10 +28,10 @@ public class PickUpPacketBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Communicate the charging stations with all the other agents
-        GeneralUtils.handleChargingStations(agentState, agentCommunication);
+        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
         // Communicate the destination locations with agents in perception
-        GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
+        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
     }
 
     @Override
@@ -60,11 +60,11 @@ public class PickUpPacketBehavior extends Behavior {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
-        // Check if the task has other task type than MOVE_TO_PACKET or has no packet and raise exception if so
-        if(task.getType() != TaskType.MOVE_TO_PACKET || task.getPacket().isEmpty()) agentAction.skip();
+        // Check if the task has other task type than MOVE_TO_PACKET and raise exception if so
+        if(task.getType() != TaskType.MOVE_TO_PACKET) throw new IllegalArgumentException("Task type is not MOVE_TO_PACKET");
 
         // Get the coordinate of the packet
-        Packet packet= task.getPacket().get();
+        Packet packet= task.getPacket();
         Coordinate packetCoordinate = packet.getCoordinate();
 
         // Pick up the packet

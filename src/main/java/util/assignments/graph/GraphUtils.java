@@ -1,14 +1,9 @@
 package util.assignments.graph;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.PriorityQueue;
-
-import agent.behavior.assignment_1_B.utils.NodeType;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentState;
 import environment.CellPerception;
@@ -105,11 +100,19 @@ public class GraphUtils {
     // SEARCH //
     ////////////
 
+    /**
+     * A function to perform A* search, finding a such a path between the agent's current position
+     * and the target coordinate
+     * 
+     * @param agentState The current state of the agent
+     * @param target The target position that should be reached
+     * @return The coordinate (first of path) to which the agent should move
+     */
     public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) {
         // Get the position of the agent
         int agentX = agentState.getX();
         int agentY = agentState.getY();
-        Coordinate agentCoordinate = new Coordinate(agentX, agentY);
+        Coordinate agentPosition = new Coordinate(agentX, agentY);
 
         // Get the graph
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
@@ -118,7 +121,7 @@ public class GraphUtils {
         if(graph == null) return null;
 
         // Define the nodes
-        Node startNode = new Node(agentCoordinate);
+        Node startNode = new Node(agentPosition);
         Node targetNode = new Node(target);
 
         // Define priority queues
@@ -206,5 +209,4 @@ public class GraphUtils {
 
         return GeneralUtils.calculateEuclideanDistance(referenceCoordinate, nodeCoordinate);
     }
-
 }

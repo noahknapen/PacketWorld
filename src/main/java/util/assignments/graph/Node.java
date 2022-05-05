@@ -17,13 +17,15 @@ public class Node implements Comparable<Node> {
     private double hCost;
     private Node parent;
 
-
     //////////////////
     // CONSTRUCTORS //
     //////////////////
 
     public Node(Coordinate coordinate) {
         this.setCoordinate(coordinate);
+        this.setGCost(0);
+        this.setHCost(0);
+        this.setParent(null);
     }
 
     @JsonCreator
@@ -74,16 +76,6 @@ public class Node implements Comparable<Node> {
         this.parent = parent;
     }
 
-    /////////////
-    // METHODS //
-    /////////////
-
-    public void resetPathFindingVariables() {
-        this.setGCost(Double.MAX_VALUE);
-        this.setHCost(Double.MAX_VALUE);
-        this.setParent(null);
-    }
-
     ///////////////
     // OVERRIDES //
     ///////////////
@@ -105,12 +97,12 @@ public class Node implements Comparable<Node> {
     }
 
     @Override
-    public int hashCode() {
-        return coordinate.hashCode();
+    public int compareTo(Node node) {
+        return Double.compare(this.getFCost(), node.getFCost());
     }
 
     @Override
-    public int compareTo(Node node) {
-        return Double.compare(this.getFCost(), node.getFCost());
+    public int hashCode() {
+        return coordinate.hashCode();
     }
 }

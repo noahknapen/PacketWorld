@@ -16,10 +16,10 @@ public class MoveRandomlyBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Communicate the charging stations with all the other agents
-        GeneralUtils.handleChargingStations(agentState, agentCommunication);
+        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
         // Communicate the destination locations with agents in perception
-        GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
+        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
 
     }
 

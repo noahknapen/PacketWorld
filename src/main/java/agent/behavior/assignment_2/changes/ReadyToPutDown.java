@@ -51,11 +51,8 @@ public class ReadyToPutDown extends BehaviorChange{
         // Check if the task is null and return false if so
         if(task == null) return false;
 
-        // Check if the task has no destination and return false if so
-        if(task.getDestination().isEmpty()) return false;
-
         // Get the coordinate of the destination
-        Destination destination= task.getDestination().get();
+        Destination destination= task.getDestination();
         Coordinate destinationCoordinate = destination.getCoordinate();
 
         // Return if the agent has reached the position

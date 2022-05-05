@@ -10,7 +10,6 @@ import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
-import environment.world.agent.AgentRep;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
 import util.assignments.graph.Graph;
@@ -22,8 +21,7 @@ import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 
-import java.awt.*;
-import java.util.Optional;
+import java.awt.Color;
 
 /**
  * A class that implements general functions
@@ -33,6 +31,10 @@ public class GeneralUtils {
     // Energy values
     public static final int WALK_WITHOUT_PACKET = 10;
     public static final int WALK_WITH_PACKET = 25;
+
+    ////////////////
+    // PERCEPTION //
+    ////////////////
 
     /**
      * Check the perception of the agent. Perform the appropriate action when there is something in a cell in the
@@ -70,11 +72,11 @@ public class GeneralUtils {
     /**
      * A function that adds a packet to its memory.
      *
-     * @param agentState: The state of the agent
-     * @param cellPerception: The perception of the cell
-     * @param cellCoordinate: The coordinates of the cell
+     * @param agentState The current state of the agent
+     * @param cellPerception The perception of the cell
+     * @param packetCoordinate The coordinates of the packet
      */
-    private static void addPacket(AgentState agentState, CellPerception cellPerception, Coordinate cellCoordinate) {
+    private static void addPacket(AgentState agentState, CellPerception cellPerception, Coordinate packetCoordinate) {
         // Retrieve memory fragments
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
         ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
@@ -84,13 +86,13 @@ public class GeneralUtils {
         int packetRgbColor = packetColor.getRGB();
 
         // Create the corresponding packet
-        Packet packet = new Packet(cellCoordinate, packetRgbColor);
+        Packet packet = new Packet(packetCoordinate, packetRgbColor);
 
         // Check if the packet was already discovered and continue with the next cell if so
         if(discoveredPackets.contains(packet)) return;
 
         // Check if packet is currently handled and continue with the next cell if so because it should not be added to list again
-        if(task != null && task.getPacket().isPresent() && task.getPacket().get().equals(packet)) return;
+        if(task != null && task.getPacket().equals(packet)) return;
 
         // Add the packet to the list of discovered packets
         discoveredPackets.add(packet);
@@ -103,39 +105,13 @@ public class GeneralUtils {
     }
 
     /**
-     * A function that adds a charging stattion to its memory.
-     *
-     * @param agentState: The state of the agent
-     * @param cellCoordinate: The coordinates of the cell
-     */
-    private static void addChargingStation(AgentState agentState, Coordinate cellCoordinate) {
-        // Retrieve the memory fragment
-        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
-
-        // Create the corresponding charging station
-        ChargingStation chargingStation = new ChargingStation(cellCoordinate);
-
-        // Check if the charging station was already discovered and continue with next cell if so
-        if(discoveredChargingStations.contains(chargingStation)) return;
-
-        // Add the charging station to the list of discovered charging stations
-        discoveredChargingStations.add(chargingStation);
-
-        // Inform
-        System.out.printf("%s: Discovered a new charging station (%s) [%s]\n", agentState.getName(), chargingStation, discoveredChargingStations.size());
-
-        // Update memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations, MemoryKeys.UPDATED_STATIONS, true));
-    }
-
-    /**
      * A function that adds a destination to its memory.
      *
-     * @param agentState: The state of the agent
-     * @param cellPerception: The perception of the cell
-     * @param cellCoordinate: The coordinates of the cell
+     * @param agentState The current state of the agent
+     * @param cellPerception The perception of the cell
+     * @param destinationCoordinate The coordinates of the destination
      */
-    private static void addDestination(AgentState agentState, CellPerception cellPerception, Coordinate cellCoordinate) {
+    private static void addDestination(AgentState agentState, CellPerception cellPerception, Coordinate destinationCoordinate) {
         // Retrieve the memory fragments
         ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
 
@@ -143,7 +119,7 @@ public class GeneralUtils {
         int destinationRgbColor = cellPerception.getRepOfType(DestinationRep.class).getColor().getRGB();
 
         // Create the corresponding destination
-        Destination destination = new Destination(cellCoordinate, destinationRgbColor);
+        Destination destination = new Destination(destinationCoordinate, destinationRgbColor);
 
         // Check if the destination was already discovered
         if(discoveredDestinations.contains(destination)) return;
@@ -159,26 +135,114 @@ public class GeneralUtils {
     }
 
     /**
-     * A function that is used to communicate the location of destinations.
+     * A function that adds a charging station to its memory.
      *
-     * @param agentState: The state of the agent
-     * @param agentCommunication: The interface for communication
+     * @param agentState The current state of the agent
+     * @param chargingStationCoordinate The coordinates of the charging station
      */
-    public static void handleDestinationLocations(AgentState agentState, AgentCommunication agentCommunication) {
+    private static void addChargingStation(AgentState agentState, Coordinate chargingStationCoordinate) {
+        // Retrieve the memory fragment
+        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+
+        // Create the corresponding charging station
+        ChargingStation chargingStation = new ChargingStation(chargingStationCoordinate);
+
+        // Check if the charging station was already discovered and continue with next cell if so
+        if(discoveredChargingStations.contains(chargingStation)) return;
+
+        // Add the charging station to the list of discovered charging stations
+        discoveredChargingStations.add(chargingStation);
+
+        // Inform
+        System.out.printf("%s: Discovered a new charging station (%s) [%s]\n", agentState.getName(), chargingStation, discoveredChargingStations.size());
+
+        // Update memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations, MemoryKeys.UPDATED_STATIONS, true));
+    }
+
+    /////////////////////////
+    // INFORMATION SHARING //
+    /////////////////////////
+
+        /////////////
+        // GENERAL //
+        /////////////
+
+    /**
+     * A function that is used to communicate information about the destination.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    public static void handleDestinationsCommunication(AgentState agentState, AgentCommunication agentCommunication) {
         // Share the destinations
-        shareDestinationsInformation(agentState, agentCommunication);
+        shareDestinations(agentState, agentCommunication);
 
         // Update list
-        updateDestinationsInformation(agentState, agentCommunication);
+        updateDestinations(agentState, agentCommunication);
     }
 
     /**
-     * A function that updates the destination information with the information received from other agents.
+     * A function that is used to communicate information about the charging stations.
      *
-     * @param agentState: The state of the agent
-     * @param agentCommunication: The interface for communication
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
      */
-    private static void updateDestinationsInformation(AgentState agentState, AgentCommunication agentCommunication) {
+    public static void handleChargingStationsCommunication(AgentState agentState, AgentCommunication agentCommunication) {
+        // Get if the list of discovered charging stations was updated
+        boolean updatedStations = Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.UPDATED_STATIONS, Boolean.class));
+
+        // Check if the list of discovered charging stations was updated
+        if(updatedStations) {
+            // Share information about the charging stations
+            shareChargingStations(agentState, agentCommunication);
+
+            // Update the memory
+            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.UPDATED_STATIONS, false));
+        }
+        else {
+            // Look at messages, If we shared something the others can not have changed something or give priority to true statements
+            updateChargingStations(agentState, agentCommunication);
+        }
+    }
+
+        ///////////
+        // SHARE //
+        ///////////
+
+    /**
+     * A function that is used to share the destinations with other agents in its perception.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    private static void shareDestinations(AgentState agentState, AgentCommunication agentCommunication) {
+        // Send messages with the list of discovered destinations
+        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS);
+    }
+
+    /**
+     * A function that is used to share the charging stations with other agents.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    private static void shareChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
+        // Broadcast the list of discovered charging stations
+        CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
+    }
+
+        ////////////
+        // UPDATE //
+        ////////////
+
+    /**
+     * A function that updates the list of discovered destinations with the information received from other agents.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    private static void updateDestinations(AgentState agentState, AgentCommunication agentCommunication) {
         // Get the current destinations
         ArrayList<Destination> currentDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
 
@@ -187,14 +251,14 @@ public class GeneralUtils {
 
         // Loop over updated destinations
         for(Destination updatedDestination: updatedDestinations) {
-            // Check if the destinations is not included in the current list and add it if so skip
+            // Check if the destinations is included in the current list and continue with the next destination if so
             if (currentDestinations.contains(updatedDestination)) continue;
 
-            // Add the new destinations to the charging stations
+            // Add the new destination to the list
             currentDestinations.add(updatedDestination);
 
             // Inform
-            System.out.printf("%s: Add a new destination from communication (%s) [%s]\n", agentState.getName(), updatedDestination, currentDestinations.size());
+            System.out.printf("%s: Added a new destination from communication (%s) [%s]\n", agentState.getName(), updatedDestination, currentDestinations.size());
         }
 
         // Update the current destinations
@@ -202,84 +266,12 @@ public class GeneralUtils {
     }
 
     /**
-     * A function that is used to share the destinations with other agents in its perception.
+     * A function that updates the list of discovered charging stations with the information received from other agents.
      *
-     * @param agentState: The state of the agent
-     * @param agentCommunication: The interface for communication
-     */
-    private static void shareDestinationsInformation(AgentState agentState, AgentCommunication agentCommunication) {
-        // Retrieve the perception
-        Perception agentPerception = agentState.getPerception();
-
-        // Loop over the whole perception
-        for (int x = 0; x < agentPerception.getWidth(); x++) {
-            for (int y = 0; y < agentPerception.getHeight(); y++) {
-                CellPerception cellPerception = agentPerception.getCellAt(x, y);
-
-                // Check if the cell is null and continue with the next cell if so
-                if (cellPerception == null) continue;
-
-                // Retrieve the agent representation on the cell
-                Optional<AgentRep> agentRep = cellPerception.getAgentRepresentation();
-
-                // If no agent on the cell, go to the next cell
-                if (agentRep.isEmpty()) continue;
-
-                // If the agentRep is us, continue to next cell
-                // TODO: Improve this so it isn't name based
-                if (agentRep.get().getName().equals(agentState.getName())) continue;
-
-                // Create a message string to send to the agent on the cell
-                String memoryFragmentString = agentState.getMemoryFragment(MemoryKeys.DISCOVERED_DESTINATIONS);
-                String messageString = CommunicationUtils.makeMessageString(memoryFragmentString, MemoryKeys.DISCOVERED_DESTINATIONS);
-
-                // Communicate the message to the agent
-                agentCommunication.sendMessage(agentRep.get(), messageString);
-
-                // Display a message to dev
-                System.out.printf("%s: Sends it's destinations to agent: %s\n", agentState.getName(), agentRep.get().getName());
-            }
-        }
-    }
-
-
-        /**
-         * A function that is used for updating and sharing the charging stations.
-         *
-         * @param agentState The current state of the agent
-         * @param agentCommunication Perform communication with the agent
-         */
-    public static void handleChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
-        // Check if we changed something
-        boolean changed = Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.UPDATED_STATIONS, Boolean.class));
-
-        // Broadcast if we changed something
-        if (changed) {
-            shareChargingStationsInformation(agentState, agentCommunication);
-            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.UPDATED_STATIONS, false));
-        }
-
-        // Look at messages, If we shared something the others can not have changed something or give priority to true statements
-        if (!changed) updateChargingStationsInformation(agentState, agentCommunication);
-    }
-
-    /**
-     * Share own charging station information
-     * 
      * @param agentState The current state of the agent
-     * @param agentCommunication Perform communication with the agent
+     * @param agentCommunication The interface for communication
      */
-    private static void shareChargingStationsInformation(AgentState agentState, AgentCommunication agentCommunication) {
-        CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
-    }
-
-    /**
-     * Update own charging station information by means of message exchange with other agents
-     * 
-     * @param agentState The current state of the agent
-     * @param agentCommunication Perform communication with the agent
-     */
-    private static void updateChargingStationsInformation(AgentState agentState, AgentCommunication agentCommunication) {
+    private static void updateChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
         // Get the current charging stations
         ArrayList<ChargingStation> currentChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
 
@@ -288,13 +280,14 @@ public class GeneralUtils {
 
         // Loop over updated charging stations
         for(ChargingStation updatedChargingStation: updatedChargingStations) {
-            // Check if the charging station is not included in the current list and add it if so
+            // Check if the charging station is not included in the current list
             if(!currentChargingStations.contains(updatedChargingStation)) {
                 // Add the new charging station to the charging stations
                 currentChargingStations.add(updatedChargingStation);
 
                 // Inform
-                System.out.printf("%s: Add a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
+                System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
+                
                 continue;
             }            
 
@@ -315,6 +308,10 @@ public class GeneralUtils {
         // Update the current charging stations
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, currentChargingStations));
     }
+
+    ///////////
+    // UTILS //
+    ///////////
     
     /**
      * A function to know if the agent has reached the position
@@ -444,38 +441,5 @@ public class GeneralUtils {
 
         // Calculate the distance
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
-    }
-
-    /**
-     * A function that is used to figure out if the agent is on the charging station.
-     *
-     * @param agentState: The state of the agent
-     *
-     * @return true if the agent is an the charging station, false otherwise.
-     */
-    public static boolean isOnChargingPad(AgentState agentState) {
-        // Retrieve the coordinates of the agent
-        int agentX = agentState.getX();
-        int agentY = agentState.getY();
-        Coordinate agentPosition = new Coordinate(agentX, agentY);
-
-        // Retrieve the charging stations from memory
-        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
-
-        // Iterate through all stations
-        for (ChargingStation station : discoveredChargingStations) {
-
-            // Calculate the coordinates of the station
-            int stationX = station.getCoordinate().getX();
-            int stationY = station.getCoordinate().getY() - 1;
-            Coordinate stationPosition = new Coordinate(stationX, stationY);
-
-            // If the positions are equal, the agent is on a charging station
-            if (stationPosition.equals(agentPosition)) return true;
-        }
-
-        // If the loop finished, the agent isn't on a charging station
-        return false;
-
     }
 }

@@ -26,10 +26,10 @@ public class MoveToDestinationBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Communicate the charging stations with all the other agents
-        GeneralUtils.handleChargingStations(agentState, agentCommunication);
+        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
         // Communicate the destination locations with agents in perception
-        GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
+        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
     }
 
     @Override
@@ -61,14 +61,11 @@ public class MoveToDestinationBehavior extends Behavior {
         // Check if the task is null and raise exception if so
         if(task == null) throw new IllegalArgumentException("Task is null");
 
-        // Check if the task has task type MOVE_TO_PACKET but has no packet and raise exception if so
-        if(task.getType() == TaskType.MOVE_TO_PACKET && task.getPacket().isEmpty()) throw new IllegalArgumentException("Task has no packet");
-
-        // Check if the task has other task type than MOVE_TO_DESTINATION or has no destination and raise exception if so
-        if(task.getType() != TaskType.MOVE_TO_DESTINATION || task.getDestination().isEmpty()) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION or task has no destination");
+        // Check if the task has other task type than MOVE_TO_DESTINATION and raise exception if so
+        if(task.getType() != TaskType.MOVE_TO_DESTINATION) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION");
 
         // Get the coordinate of the destination
-        Destination destination = task.getDestination().get();
+        Destination destination = task.getDestination();
         Coordinate destinationCoordinate = destination.getCoordinate();
 
         // Perform move to the position of the destination

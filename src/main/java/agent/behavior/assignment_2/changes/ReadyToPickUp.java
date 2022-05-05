@@ -1,10 +1,5 @@
 package agent.behavior.assignment_2.changes;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.Coordinate;
@@ -56,11 +51,8 @@ public class ReadyToPickUp extends BehaviorChange{
         // Check if the task is null and return false if so
         if(task == null) return false;
 
-        // Check if the task has no packet and return false if so
-        if(task.getPacket().isEmpty()) return false;
-
         // Get the coordinate of the packet
-        Packet packet = task.getPacket().get();
+        Packet packet = task.getPacket();
         Coordinate packetCoordinate = packet.getCoordinate();
 
         // Return if the agent has reached the position

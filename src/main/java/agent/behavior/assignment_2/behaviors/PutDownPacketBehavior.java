@@ -26,10 +26,10 @@ public class PutDownPacketBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Communicate the charging stations with all the other agents
-        GeneralUtils.handleChargingStations(agentState, agentCommunication);
+        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
         // Communicate the destination locations with agents in perception
-        GeneralUtils.handleDestinationLocations(agentState, agentCommunication);
+        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
     }
 
     @Override
@@ -55,11 +55,11 @@ public class PutDownPacketBehavior extends Behavior {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
-        // Check if the task has other task type than MOVE_TO_DESTINATION or has no destination and raise exception if so
-        if(task.getType() != TaskType.MOVE_TO_DESTINATION || !task.getDestination().isPresent()) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION or task has no destination");
+        // Check if the task has other task type than MOVE_TO_DESTINATION and raise exception if so
+        if(task.getType() != TaskType.MOVE_TO_DESTINATION) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION");
 
         // Get the coordinate of the destination
-        Destination destination= task.getDestination().get();
+        Destination destination= task.getDestination();
         Coordinate destinationCoordinate = destination.getCoordinate();
 
         // Put down the packet

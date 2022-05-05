@@ -82,7 +82,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
                 candidatePacket = discoveredPackets.remove(i);
 
                 // Define the task
-                Task task = new Task(TaskType.MOVE_TO_PACKET, Optional.of(candidatePacket), Optional.of(candidateDestination));
+                Task task = new Task(TaskType.MOVE_TO_PACKET, candidatePacket, candidateDestination);
 
                 // Update the memory
                 MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
