@@ -9,7 +9,6 @@ import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
-import util.assignments.exceptions.NoMoveFoundException;
 import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
