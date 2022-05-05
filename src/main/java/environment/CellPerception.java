@@ -113,6 +113,10 @@ public class CellPerception {
         return this.getRepOfType(AgentRep.class) != null;
     }
 
+    public boolean containsGlassWall() {
+        return !this.isWalkable() && !this.containsAgent() && !this.containsAnyDestination() && !this.containsPacket();
+    }
+
     /**
      * Retrieve the Agent in this cell perception (if present).
      * @return The Agent representation if present, Optional.empty() otherwise.
