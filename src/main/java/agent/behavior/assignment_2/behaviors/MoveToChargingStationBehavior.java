@@ -7,6 +7,7 @@ import agent.behavior.Behavior;
 import environment.Coordinate;
 import environment.Perception;
 import util.assignments.general.ActionUtils;
+import util.assignments.general.CommunicationUtils;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
@@ -28,6 +29,9 @@ public class MoveToChargingStationBehavior extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+
+        // If energy lower than a threshold, send emergency message
+        sendEmergencyMessage(agentState, agentCommunication);
     }
 
     @Override
@@ -40,7 +44,6 @@ public class MoveToChargingStationBehavior extends Behavior {
 
         // Move the agent to the target
         moveToChargingStation(agentState, agentAction);
-
     }
 
     /**
@@ -87,12 +90,33 @@ public class MoveToChargingStationBehavior extends Behavior {
             int distance = Perception.distance(agentPosition.getX(), agentPosition.getY(), bestPosition.getX(), bestPosition.getY());
 
             // Skip to conserve energy if station in use, and we are too close
-            if (distance < 5 & bestStation.isInUse()) ActionUtils.skipTurn(agentAction);
+            if (distance < 4 & bestStation.isInUse()) ActionUtils.skipTurn(agentAction);
             else ActionUtils.moveToPosition(agentState, agentAction, bestPosition);
         } else {
             // Move random if the best position is null
             ActionUtils.moveRandomly(agentState, agentAction);
         }
+    }
+
+
+    /**
+     * A function that sends an emergency message to the agent that is using the charging station to tell them there
+     * battery is extremely low.
+     *
+     * @param agentState: The state of the agent
+     * @param agentCommunication: The interface for communication
+     */
+    private void sendEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication) {
+        // Check if the battery level is low enough to send emergency notification
+        if (75 < agentState.getBatteryState()) return;
+
+        // Construct message
+        String msg = "true";
+        String type = "boolean";
+        boolean sent = CommunicationUtils.sendEmergencyMessage(agentState, agentCommunication, msg, type);
+
+        // Inform dev
+        if (sent) System.out.printf("%s: Message sent\n", agentState.getName());
     }
 
 }

@@ -5,9 +5,11 @@ import java.util.Map;
 import java.util.Optional;
 
 
+import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.Coordinate;
+import org.checkerframework.checker.units.qual.A;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
@@ -24,11 +26,20 @@ public class MustLeaveChargingStation extends BehaviorChange {
         // Retrieve agent state
         AgentState agentState = this.getAgentState();
 
-        // If the agent has enough battery
-        hasEnoughBattery =  this.getAgentState().getBatteryState() >= 900;
+        // Check whether the agent has enough battery
+        boolean enoughBattery = determineIfAgentHasEnoughBattery(agentState);
 
-        // Guard clause to ensure the agent has enough battery before updating the station.
-        if(!hasEnoughBattery) return;
+        // Check whether an emergency notification was received
+        boolean emergencyNotification = emergencyMessageReceived(agentState);
+
+        // HasEnoughBattery is true if the battery level is high enough or if there is an emergency or both
+        hasEnoughBattery = enoughBattery || emergencyNotification;
+
+        // Reset memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
+
+        // Guard clause to ensure that we are going to leave the station before updating the charging stations
+        if (!hasEnoughBattery) return;
 
         // Update the charging station
         updateChargingStation(agentState);
@@ -73,5 +84,27 @@ public class MustLeaveChargingStation extends BehaviorChange {
 
         // Update memory for charging stations
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, chargingStations));
+    }
+
+    /**
+     * Small helpfunction to determine whether the agent has enough battery or not.
+     *
+     * @param agentState: The state of the agent
+     *
+     * @return true if the agent has enough battery, false otherwise
+     */
+    private boolean determineIfAgentHasEnoughBattery(AgentState agentState) {
+        return this.getAgentState().getBatteryState() >= 900;
+    }
+
+    /**
+     * Small helpfunction to determine whether the agent has an emergency message in its memory or not
+     *
+     * @param agentState: The state of the agent
+     *
+     * @return true if the agent has an emergency message, false otherwise
+     */
+    private boolean emergencyMessageReceived(AgentState agentState) {
+        return Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.EMERGENCY, Boolean.class));
     }
 }

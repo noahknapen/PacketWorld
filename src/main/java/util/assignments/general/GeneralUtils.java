@@ -5,8 +5,10 @@ import java.util.Map;
 
 import java.util.List;
 
+import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
+import agent.behavior.assignment_2.behaviors.ChargingBehavior;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
@@ -442,4 +444,5 @@ public class GeneralUtils {
         // Calculate the distance
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
     }
+
 }

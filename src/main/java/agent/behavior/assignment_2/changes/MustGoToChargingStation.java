@@ -10,6 +10,7 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -42,16 +43,16 @@ public class MustGoToChargingStation extends BehaviorChange {
                 continue;
             }
 
-            // A guard clause to check if the station is empty or will be empty when the agent arrives
+/*            // A guard clause to check if the station is empty or will be empty when the agent arrives
             if (station.isInUse() && !emptyWhenWeArrive(station)) {
                 mustGoCharge = false;
                 continue;
             }
 
+ */
             mustGoCharge = true;
             break;
         }
-
     }
 
     @Override

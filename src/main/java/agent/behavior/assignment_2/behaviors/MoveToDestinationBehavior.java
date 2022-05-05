@@ -14,6 +14,8 @@ import util.assignments.targets.Destination;
 import util.assignments.task.Task;
 import util.assignments.task.TaskType;
 
+import java.util.Map;
+
 /**
  * A behavior where the agent moves towards a destination carrying a packet
  */
@@ -42,6 +44,7 @@ public class MoveToDestinationBehavior extends Behavior {
 
         // Move the agent to the target
         handleMove(agentState, agentAction);
+
     }
 
     /////////////
