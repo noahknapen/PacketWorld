@@ -5,8 +5,10 @@ import java.util.Map;
 
 import java.util.List;
 
+import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
+import agent.behavior.assignment_2.behaviors.ChargingBehavior;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
@@ -441,5 +443,25 @@ public class GeneralUtils {
 
         // Calculate the distance
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
+    }
+
+    public static void handleEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication) {
+        // Check if the battery level is low enough to send emergency notification
+        if (agentState.getBatteryState() <= 50) {
+            String msg = "Emergency";
+            String type = "String";
+            CommunicationUtils.sendEmergencyMessage(agentState, agentCommunication, msg, type);
+        }
+
+        // Guard clause to ensure the behavior is the chargingBehavior
+        if (!agentState.getCurrentBehavior().getClass().equals(ChargingBehavior.class)) return;
+
+        // Retrieve the msg from the communication channel
+        String msg = CommunicationUtils.getObjectFromMails(agentCommunication, "String", String.class);
+
+        if (msg == null || !msg.equals("Emergency")) return;
+
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, true));
+
     }
 }

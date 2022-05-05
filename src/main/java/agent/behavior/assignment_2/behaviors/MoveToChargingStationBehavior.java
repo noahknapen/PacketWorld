@@ -28,6 +28,9 @@ public class MoveToChargingStationBehavior extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+
+        // If energy lower than a threshold, send emergency message
+        GeneralUtils.handleEmergencyMessage(agentState, agentCommunication);
     }
 
     @Override
