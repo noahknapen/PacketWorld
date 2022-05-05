@@ -5,6 +5,7 @@ import java.util.*;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
+import environment.Perception;
 import util.assignments.comparators.PacketComparator;
 import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
@@ -58,10 +59,15 @@ public class TaskDefinitionPossible extends BehaviorChange{
         PacketComparator packetComparator = new PacketComparator(agentState, discoveredDestinations);
         discoveredPackets.sort(packetComparator);
 
+        // Some variables used to find the closest destination
+        int packageIndex = Integer.MAX_VALUE;
+        double bestDistance = Integer.MAX_VALUE;
+        Destination closestDestination = null;
+
         // Loop over the sorted discovered packets
         for(int i = 0; i < discoveredPackets.size(); i++) {
             // Get a candidate packet
-            Packet candidatePacket= discoveredPackets.get(i);
+            Packet candidatePacket = discoveredPackets.get(i);
 
             // Get the color of the candidate packet
             Color candidatePacketColor = candidatePacket.getColor();
@@ -77,18 +83,40 @@ public class TaskDefinitionPossible extends BehaviorChange{
                 // If the agent hasn't got enough energy to work on it, it will not start the work
                 if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
 
+
                 // Remove the packet from the discovered packets
-                candidatePacket = discoveredPackets.remove(i);
+                candidatePacket = discoveredPackets.get(i);
 
-                // Define the task
-                Task task = new Task(TaskType.MOVE_TO_PACKET, candidatePacket, candidateDestination);
+                // Calculate the distance to the destination from the packet
+                double tempDistance = Perception.distance(
+                        candidatePacket.getCoordinate().getX(),
+                        candidatePacket.getCoordinate().getY(),
+                        candidateDestination.getCoordinate().getX(),
+                        candidateDestination.getCoordinate().getY()
+                );
 
-                // Update the memory
-                MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
+                // Ensure that the distance for this destination is closer than the previous one
+                if (tempDistance > bestDistance) continue;
 
-                return true;
-
+                // Update the variables
+                bestDistance = tempDistance;
+                closestDestination = candidateDestination;
+                packageIndex = i;
             }
+
+            // If no destination is found, continue with a next packet
+            if (closestDestination == null) continue;
+
+            // Define the task
+            Task task = new Task(TaskType.MOVE_TO_PACKET, candidatePacket, closestDestination);
+
+            // Remove the packet at packet index from the discovered packets. No idea why this error exist because line 104 changes packageIndex
+            if (packageIndex != Integer.MAX_VALUE) discoveredPackets.remove(packageIndex);
+
+            // Update the memory
+            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
+
+            return true;
         }
 
         return false;
