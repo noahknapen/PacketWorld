@@ -44,9 +44,6 @@ public class MoveToChargingStationBehavior extends Behavior {
 
         // Move the agent to the target
         moveToChargingStation(agentState, agentAction);
-
-        // Update behavior
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
     }
 
     /**

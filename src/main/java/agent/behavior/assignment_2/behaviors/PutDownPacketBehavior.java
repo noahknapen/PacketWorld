@@ -44,9 +44,6 @@ public class PutDownPacketBehavior extends Behavior {
 
         // Put down the packet
         handlePutDown(agentState, agentAction);
-
-        // Update behavior
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
     }
 
     /////////////

@@ -47,9 +47,6 @@ public class PickUpPacketBehavior extends Behavior {
 
         // Update task
         updateTask(agentState);
-
-        // Update behavior
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
     }
 
     /////////////

@@ -49,8 +49,6 @@ public class MoveToDestinationBehavior extends Behavior {
         // Move the agent to the target
         handleMove(agentState, agentAction);
 
-        // Update behavior
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
     }
 
     /////////////

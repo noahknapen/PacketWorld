@@ -2,6 +2,10 @@ package agent.behavior.assignment_2.changes;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
+import util.assignments.memory.MemoryKeys;
+import util.assignments.memory.MemoryUtils;
+
+import java.util.Map;
 
 /**
  * A behavior change class that checks if the agent carries a packet

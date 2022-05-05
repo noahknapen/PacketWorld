@@ -31,7 +31,6 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
         // Handle the possible task definition
         taskDefinitionPossible = checkTaskDefinition(agentState);
-
     }
 
     @Override
