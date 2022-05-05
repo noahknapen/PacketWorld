@@ -24,6 +24,9 @@ public class ChargingBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
+        // Handle emergency message
+        GeneralUtils.handleEmergencyMessage(agentState, agentCommunication);
+
         // Update the current charging stations in memory
         updateChargingStation(agentState);
 

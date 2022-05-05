@@ -26,15 +26,15 @@ public class MustLeaveChargingStation extends BehaviorChange {
 
         // Receive emergency from memory
         boolean emergency = Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.EMERGENCY, Boolean.class));
+        System.out.printf("Emergency: %s, Agent: %s\n", emergency, agentState.getName());
 
         // If the agent has enough battery
         hasEnoughBattery =  this.getAgentState().getBatteryState() >= 900;
 
         // If emergency set hasEnough to true
-        if (emergency) {
-            hasEnoughBattery = true;
-            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
-        }
+        if (emergency) hasEnoughBattery = true;
+
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
 
         // Guard clause to ensure the agent has enough battery before updating the station.
         if(!hasEnoughBattery) return;

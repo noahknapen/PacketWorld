@@ -42,12 +42,13 @@ public class MustGoToChargingStation extends BehaviorChange {
                 continue;
             }
 
-            // A guard clause to check if the station is empty or will be empty when the agent arrives
+/*            // A guard clause to check if the station is empty or will be empty when the agent arrives
             if (station.isInUse() && !emptyWhenWeArrive(station)) {
                 mustGoCharge = false;
                 continue;
             }
 
+ */
             mustGoCharge = true;
             break;
         }

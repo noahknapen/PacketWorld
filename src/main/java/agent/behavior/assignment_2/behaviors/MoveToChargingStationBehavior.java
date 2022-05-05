@@ -14,6 +14,7 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MoveToChargingStationBehavior extends Behavior {
 
@@ -44,6 +45,8 @@ public class MoveToChargingStationBehavior extends Behavior {
         // Move the agent to the target
         moveToChargingStation(agentState, agentAction);
 
+        // Update behavior
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
     }
 
     /**

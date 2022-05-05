@@ -215,15 +215,22 @@ public class CommunicationUtils {
             for (int y = 0; y <= agentPerception.getHeight(); y++) {
                 // Get the perception of the cell
                 CellPerception cellPerception = agentPerception.getCellAt(x, y);
+                CellPerception stationCellPerception = agentPerception.getCellAt(x, y + 1);
 
                 // Check if the cell is null and continue with the next cell if so
                 if (cellPerception == null) continue;
+
+                // Check if the cell beneath the cellPerception is null
+                if (stationCellPerception == null) continue;
 
                 // Get the agent representation of the cell
                 Optional<AgentRep> agentRep = cellPerception.getAgentRepresentation();
 
                 // Check if there is no agent on the cell and continue with the next cell if so
                 if (agentRep.isEmpty()) continue;
+
+                // Only send message to the agent on the charging station
+                if (!stationCellPerception.containsEnergyStation()) continue;
 
                 // Check if the position of the agent corresponds to the agent's own position and continue with the next cell if so
                 if (agentRep.get().getX() == agentState.getX() && agentRep.get().getY() == agentState.getY()) continue;

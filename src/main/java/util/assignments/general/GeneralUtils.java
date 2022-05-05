@@ -447,21 +447,21 @@ public class GeneralUtils {
 
     public static void handleEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication) {
         // Check if the battery level is low enough to send emergency notification
-        if (agentState.getBatteryState() <= 50) {
-            String msg = "Emergency";
-            String type = "String";
+        if (0 < agentState.getBatteryState() && agentState.getBatteryState() <= 50) {
+            String msg = "true";
+            String type = "boolean";
             CommunicationUtils.sendEmergencyMessage(agentState, agentCommunication, msg, type);
+            System.out.printf("Message sent, Agent: %s\n", agentState.getName());
         }
 
         // Guard clause to ensure the behavior is the chargingBehavior
         if (!agentState.getCurrentBehavior().getClass().equals(ChargingBehavior.class)) return;
 
         // Retrieve the msg from the communication channel
-        String msg = CommunicationUtils.getObjectFromMails(agentCommunication, "String", String.class);
+        boolean msg = Boolean.TRUE.equals(CommunicationUtils.getObjectFromMails(agentCommunication, "boolean", Boolean.class));
 
-        if (msg == null || !msg.equals("Emergency")) return;
-
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, true));
+        // If the msg is false, no emergency has been sent
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, msg));
 
     }
 }

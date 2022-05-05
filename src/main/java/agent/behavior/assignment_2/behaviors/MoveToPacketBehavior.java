@@ -14,6 +14,8 @@ import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 import util.assignments.task.TaskType;
 
+import java.util.Map;
+
 /**
  * A behavior where the agent moves towards a packet
  */
@@ -30,6 +32,9 @@ public class MoveToPacketBehavior extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+
+        // Handle emergency message
+        GeneralUtils.handleEmergencyMessage(agentState, agentCommunication);
     }
 
     @Override
@@ -42,6 +47,9 @@ public class MoveToPacketBehavior extends Behavior {
 
         // Move the agent to the target
         handleMove(agentState, agentAction);
+
+        // Update behavior
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
     }
 
     /////////////

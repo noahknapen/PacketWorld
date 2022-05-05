@@ -32,6 +32,9 @@ public class PickUpPacketBehavior extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+
+        // Handle emergency message
+        GeneralUtils.handleEmergencyMessage(agentState, agentCommunication);
     }
 
     @Override
@@ -44,6 +47,9 @@ public class PickUpPacketBehavior extends Behavior {
 
         // Update task
         updateTask(agentState);
+
+        // Update behavior
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
     }
 
     /////////////
