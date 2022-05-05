@@ -27,6 +27,9 @@ public class MoveRandomlyBehavior extends Behavior {
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
 
+        // Communicate the graph with agents in perception  
+        GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
+
         // Check if multiple messages were sent and ignore
         checkForEmergencyNotificationsAndIgnore(agentState, agentCommunication);
     }

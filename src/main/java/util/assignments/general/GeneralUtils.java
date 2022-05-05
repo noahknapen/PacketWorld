@@ -1,6 +1,7 @@
 package util.assignments.general;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
 import util.assignments.graph.Graph;
+import util.assignments.graph.GraphUtils;
 import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
@@ -208,6 +210,20 @@ public class GeneralUtils {
         }
     }
 
+    /**
+     * A function that is used to communicate information about the graph.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    public static void handleGraphCommunication(AgentState agentState, AgentCommunication agentCommunication) {
+        // Share the graph
+        shareGraph(agentState, agentCommunication);
+
+        // Update graph
+        updateGraph(agentState, agentCommunication);
+    }
+
         ///////////
         // SHARE //
         ///////////
@@ -232,6 +248,17 @@ public class GeneralUtils {
     private static void shareChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
         // Broadcast the list of discovered charging stations
         CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
+    }
+
+    /**
+     * A function that is used to share the graph with other agents.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    private static void shareGraph(AgentState agentState, AgentCommunication agentCommunication) {
+        // Send messages with the graph
+        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.GRAPH);
     }
 
         ////////////
@@ -309,6 +336,35 @@ public class GeneralUtils {
 
         // Update the current charging stations
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, currentChargingStations));
+    }
+
+    /**
+     * A function that updates the graph with the information received from other agents.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    private static void updateGraph(AgentState agentState, AgentCommunication agentCommunication) {
+        // Get the updated graph
+        HashMap<String, Graph> graphMessages = CommunicationUtils.getObjectFromMails(agentCommunication, MemoryKeys.GRAPH, Graph.class);
+
+        // No messages about the graph received
+        if (graphMessages == null) return;
+
+        // If the message comes from the agent return
+        if (graphMessages.containsKey(agentState.getName())) return;
+
+        // Loop over the received messages
+        for (String sender : graphMessages.keySet()) {
+            // Get an update of the graphs
+            Graph updatedGraph = graphMessages.get(sender);
+
+            // Update the current graph
+            GraphUtils.update(agentState, updatedGraph);
+
+            // Inform
+            System.out.printf("%s: Updated the graph from communication\n", agentState.getName());
+        }
     }
 
     ///////////

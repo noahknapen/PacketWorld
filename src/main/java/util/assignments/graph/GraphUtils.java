@@ -96,6 +96,57 @@ public class GraphUtils {
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
     }
 
+    /**
+     * Update the graph based on another one
+     * 
+     * @param agentState The current state of the agent
+     */
+    public static void update(AgentState agentState, Graph updatedGraph) {
+        // Get the currentgraph
+        Graph currentGraph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
+
+        // Check if current graph is null and create one if so
+        if(currentGraph == null) currentGraph = new Graph();
+        
+        // Loop over the whole updated graph
+        for(Node node: updatedGraph.getMap().keySet()) {
+            // Get the position of the node
+            int nodeX = node.getCoordinate().getX();
+            int nodeY = node.getCoordinate().getY();
+
+            // Check if the current graph already contains the node and continue with next node if so
+            if(currentGraph.getMap().containsKey(node)) continue;
+
+            // Add the node to the current graph
+            currentGraph.addNode(node);
+
+            // Loop over neighbourhood to add edges
+            for(int i = -1; i <= 1; i++) {
+                for(int j = -1; j <= 1; j++) {
+                    // Get the position of the neighbour cell
+                    int neighbourCellX = nodeX + i;
+                    int neighbourCellY = nodeY + j;
+                    Coordinate neightbourCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
+
+                    // Define neighbour node
+                    Node neighbourNode = new Node(neightbourCoordinate);
+
+                    // Check if neighbour node is not contained in the graph and continue with next neighbour if so
+                    if(!currentGraph.getMap().containsKey(neighbourNode)) continue;
+
+                    // Check if node is equal to neighbour and continue with the next neighbour if so
+                    if(node.equals(neighbourNode)) continue;
+
+                    // Add the edges between the cells
+                    currentGraph.addEdge(node, neighbourNode);
+                }
+            }
+        }
+
+        // Update the memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, currentGraph));
+    }
+
     ////////////
     // SEARCH //
     ////////////
