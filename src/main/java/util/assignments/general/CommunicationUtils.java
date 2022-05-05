@@ -81,6 +81,9 @@ public class CommunicationUtils {
      */
     public static <T> ArrayList<T> getListFromMails(AgentState agentState, AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
         try {
+            // If no messages, return empty list
+            if (agentCommunication.getNbMessages() == 0) return new ArrayList<>();
+
             // Get the received mails
             ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
 

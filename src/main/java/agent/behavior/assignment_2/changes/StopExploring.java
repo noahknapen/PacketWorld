@@ -7,7 +7,7 @@ import util.assignments.memory.MemoryUtils;
 
 import java.util.Map;
 
-public class MapWithNoEnergy extends BehaviorChange{
+public class StopExploring extends BehaviorChange{
 
     private boolean stopExploring;
 
@@ -24,7 +24,7 @@ public class MapWithNoEnergy extends BehaviorChange{
 
         if (exploringTurns2 == null) return;
 
-        stopExploring = ((int) exploringTurns2 )>= 50;
+        stopExploring = ((int) exploringTurns2 ) >= 60;
 
         System.out.println(stopExploring);
     }
