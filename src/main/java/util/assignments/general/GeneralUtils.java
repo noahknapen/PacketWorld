@@ -234,8 +234,6 @@ public class GeneralUtils {
      */
     private static void shareChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
         // Broadcast the list of discovered charging stations
-        if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, Destination.class).size() == 0) return;
-
         CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
     }
 
@@ -409,7 +407,7 @@ public class GeneralUtils {
     }
 
     /**
-     * A function that determines whether the agents has enough energy left to pick up the given packet en deliver it
+     * A function that determines whether the agent has enough energy left to pick up the given packet en deliver it
      * to the given destination. The cost is based on where the agent is currently standing.
      *
      * @param agentState: The state of the agent
