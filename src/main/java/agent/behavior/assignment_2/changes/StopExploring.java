@@ -5,8 +5,6 @@ import agent.behavior.BehaviorChange;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 
-import java.util.Map;
-
 public class StopExploring extends BehaviorChange{
 
     private boolean stopExploring;
@@ -20,13 +18,11 @@ public class StopExploring extends BehaviorChange{
         // Retrieve the agent state
         AgentState agentState = this.getAgentState();
 
-        Object exploringTurns2 = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.EXPLORING_TURNS, Integer.class);
+        Object exploringTurns = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.EXPLORING_TURNS, Integer.class);
 
-        if (exploringTurns2 == null) return;
+        if (exploringTurns == null) return;
 
-        stopExploring = ((int) exploringTurns2 ) >= 60;
-
-        System.out.println(stopExploring);
+        stopExploring = ((int) exploringTurns ) >= 60;
     }
 
     @Override

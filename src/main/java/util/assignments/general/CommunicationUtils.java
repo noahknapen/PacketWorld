@@ -113,7 +113,7 @@ public class CommunicationUtils {
                 }
             }
             return result;
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             e.printStackTrace();
         }
 

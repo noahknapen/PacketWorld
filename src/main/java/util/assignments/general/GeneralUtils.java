@@ -220,6 +220,8 @@ public class GeneralUtils {
      */
     private static void shareDestinations(AgentState agentState, AgentCommunication agentCommunication) {
         // Send messages with the list of discovered destinations
+        if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class).size() == 0) return;
+
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS);
     }
 
@@ -232,6 +234,8 @@ public class GeneralUtils {
      */
     private static void shareChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
         // Broadcast the list of discovered charging stations
+        if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, Destination.class).size() == 0) return;
+
         CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
     }
 
