@@ -2,15 +2,16 @@ package util.assignments.general;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Optional;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import agent.AgentCommunication;
 import agent.AgentState;
+import environment.CellPerception;
 import environment.Mail;
+import environment.Perception;
+import environment.world.agent.AgentRep;
 import util.Message;
 import util.assignments.jackson.JacksonUtils;
 
@@ -27,36 +28,37 @@ public class CommunicationUtils {
      * A function to get an object from the received mails
      * 
      * @param <T> The type of the object 
-     * @param agentCommunication Perform communication with the agent
+     * @param agentCommunication The interface for communication
      * @param memoryKey The memory key
      * @param objectClass The class of the object
      * @return The object or null if no object was found
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    public static <T> T getObjectFromMails(AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) throws JsonParseException, JsonMappingException, IOException {
-        // Get the received mails
-        ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
-    
-        // Loop over all the received mails
-        ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
-        for(int i = 0; i < mails.size(); i++) {
-            // Get the mail
-            Mail mail = mails.get(i);
+    public static <T> T getObjectFromMails(AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
+        try {
+            // Get the received mails
+            ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
 
-            // Get the message
-            String messageString = mail.getMessage();
-            Message message = objectMapper.readValue(messageString, Message.class);
-            
-            // Check if type corresponds
-            if(message.getType().equals(memoryKey)) {
-                // Remove the message from the mails
-                agentCommunication.removeMessage(i);
+            // Loop over all the received mails
+            ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+            for(int i = 0; i < mails.size(); i++) {
+                // Get the mail
+                Mail mail = mails.get(i);
 
-                // Transform the message and return
-                return objectMapper.readValue(message.getMessage(), objectClass);
+                // Get the message
+                String messageString = mail.getMessage();
+                Message message = objectMapper.readValue(messageString, Message.class);
+
+                // Check if type corresponds
+                if(message.getType().equals(memoryKey)) {
+                    // Remove the message from the mails
+                    agentCommunication.removeMessage(i);
+
+                    // Transform the message and return
+                    return objectMapper.readValue(message.getMessage(), objectClass);
+                }
             }
+        } catch(IOException e) {
+            e.printStackTrace();
         }
 
         return null;
@@ -66,45 +68,92 @@ public class CommunicationUtils {
      * A function to get a list from the received mails
      * 
      * @param <T> The type of the objects contained in the list
-     * @param agentCommunication Perform communication with the agent
+     * @param agentCommunication The interface for communication
      * @param memoryKey The memory key
      * @param objectClass The class of the objects contained in the list
      * @return The list of objects or null if no list was found
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    public static <T> ArrayList<T> getListFromMails(AgentState agentState, AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) throws JsonParseException, JsonMappingException, IOException {
-        // Get the received mails
-        ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
-    
-        // Loop over all the received mails
-        ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
-        ArrayList<T> result = new ArrayList<>();
-        for(int i = 0; i < mails.size(); i++) {
-            // Get the mail
-            Mail mail = mails.get(i);
+    public static <T> ArrayList<T> getListFromMails(AgentState agentState, AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
+        try {
+            // Get the received mails
+            ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
 
-            // Check if the mails is one of its own and continue with the next mail is so
-            if(agentState.getName().equals(mail.getFrom())) continue;
+            // Loop over all the received mails
+            ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+            ArrayList<T> result = new ArrayList<>();
+            for(int i = 0; i < mails.size(); i++) {
+                // Get the mail
+                Mail mail = mails.get(i);
 
-            // Get the message
-            String messageString = mail.getMessage();
-            Message message = objectMapper.readValue(messageString, Message.class);
-            
-            // Check if type corresponds
-            if(message.getType().equals(memoryKey)) {
-                // Transform the message and return
-                result = objectMapper.readValue(message.getMessage(), objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, objectClass));
+                // Check if the mails is one of its own and continue with the next mail is so
+                if(agentState.getName().equals(mail.getFrom())) continue;
 
-                // Remove the message from the mails
-                agentCommunication.removeMessage(i);
+                // Get the message
+                String messageString = mail.getMessage();
+                Message message = objectMapper.readValue(messageString, Message.class);
 
-                break;
+                // Check if type corresponds
+                if(message.getType().equals(memoryKey)) {
+                    // Transform the message and return
+                    result = objectMapper.readValue(message.getMessage(), objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, objectClass));
+
+                    // Remove the message from the mails
+                    agentCommunication.removeMessage(i);
+
+                    break;
+                }
             }
+            return result;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        return result;
+        return new ArrayList<>();
+    }
+
+    //////////
+    // SEND //
+    //////////
+
+    public static void sendMemoryFragment(AgentState agentState, AgentCommunication agentCommunication, String memoryKey) {
+        // Get the perception of the agent
+        Perception agentPerception = agentState.getPerception();
+
+        // Get the position of the agent
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+
+        // Get the memory fragment in JSON string
+        String memoryFragmentString = agentState.getMemoryFragment(memoryKey);
+
+        // Loop over the whole perception
+        for (int x = 0; x < agentPerception.getWidth(); x++) {
+            for (int y = 0; y < agentPerception.getHeight(); y++) {
+                // Get the perception of the cell
+                CellPerception cellPerception = agentPerception.getCellAt(x, y);
+
+                // Check if the cell is null and continue with the next cell if so
+                if (cellPerception == null) continue;
+
+                // Get the agent representation of the cell
+                Optional<AgentRep> agentRep = cellPerception.getAgentRepresentation();
+
+                // Check if there is no agent on the cell and continue with the next cell if so
+                if (agentRep.isEmpty()) continue;
+
+                // Check if the position of the agent corresponds to the agent's own position and continue with the next cell if so
+                if (agentRep.get().getX() == agentX && agentRep.get().getY() == agentY) continue;
+
+                // Create a message string
+                String messageString = makeMessageString(memoryFragmentString, memoryKey);
+
+                // Communicate the message to the agent
+                agentCommunication.sendMessage(agentRep.get(), messageString);
+
+                // Inform
+                System.out.println(String.format("%s: Sends its %s to agent: %s", agentState.getName(), memoryKey, agentRep.get().getName()));
+            }
+        } 
     }
 
 
@@ -112,21 +161,47 @@ public class CommunicationUtils {
     // BROADCAST //
     ///////////////
 
-    public static void broadcastMemoryFragment(AgentState agentState, AgentCommunication agentCommunication, String memoryKey) throws JsonProcessingException {
+    /**
+     * A function that is used to broadcast memory fragments. It is only used for broadcasting charging stations.
+     *
+     * @param agentState: State of the agent
+     * @param agentCommunication The interface for communication
+     * @param memoryKey: The key to find the memory fragment
+     */
+    public static void broadcastMemoryFragment(AgentState agentState, AgentCommunication agentCommunication, String memoryKey) {
         // Get the memory fragment in JSON string
         String memoryFragmentString = agentState.getMemoryFragment(memoryKey);
 
         // Check if the memory fragment is null and return if so
-        if(memoryFragmentString == null) return;
-
-        
+        if (memoryFragmentString == null) return;
 
         // Create a message string
-        ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
-        Message message = new Message(memoryFragmentString, memoryKey);
-        String messageString = objectMapper.writeValueAsString(message);       
+        String messageString = makeMessageString(memoryFragmentString, memoryKey);
 
         // Broadcast the message
         agentCommunication.broadcastMessage(messageString);
+    }
+
+    ///////////
+    // UTILS //
+    ///////////
+
+    /**
+     * A function that makes a message string.
+     *
+     * @param memoryFragmentString The memory fragment as a string
+     * @param memoryKey The memory key
+     * @return The string that can be sent
+     */
+    private static String makeMessageString(String memoryFragmentString, String memoryKey) {
+        try {
+            // Define a message, transform it to a JSON and return it
+            ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+            Message message = new Message(memoryFragmentString, memoryKey);
+            return objectMapper.writeValueAsString(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }

@@ -8,11 +8,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import environment.Coordinate;
 
 /**
- * A class that represents a packet
+ * A class that represents a charging station
  */
 public class ChargingStation extends Target{
 
+    // A variable to check if the battery station is in use or not
     private boolean inUse;
+    // A variable holding the battery of the user currently using the charging station
     private Optional<Integer> batteryOfUser;
 
     //////////////////
@@ -21,15 +23,15 @@ public class ChargingStation extends Target{
 
     public ChargingStation(Coordinate coordinate) {
         super(coordinate);
-        this.inUse = false;
-        this.batteryOfUser = Optional.empty();
+        this.setInUse(false);
+        this.setBatteryOfUser(Optional.empty());
     }
 
     @JsonCreator
     public ChargingStation(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("inUse") boolean inUse, @JsonProperty("batteryOfUser") Optional<Integer> batteryOfUser) {
         super(coordinate);
-        this.inUse = inUse;
-        this.batteryOfUser = batteryOfUser;
+        this.setInUse(inUse);
+        this.setBatteryOfUser(batteryOfUser);
     }
 
     ///////////////////////
@@ -48,8 +50,8 @@ public class ChargingStation extends Target{
         this.inUse = inUse;
     }
 
-    public void setBatteryOfUser(Optional<Integer> optional) {
-        this.batteryOfUser = optional;
+    public void setBatteryOfUser(Optional<Integer> batteryOfUser) {
+        this.batteryOfUser = batteryOfUser;
     }
 
     ///////////////

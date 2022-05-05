@@ -1,12 +1,8 @@
 package util.assignments.general;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentAction;
 import agent.AgentState;
@@ -24,23 +20,24 @@ public class ActionUtils {
     // MOVEMENT //
     //////////////
 
-        final static List<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
-            new Coordinate(1, 1), 
-            new Coordinate(-1, -1),
-            new Coordinate(1, 0), 
-            new Coordinate(-1, 0),
-            new Coordinate(0, 1), 
-            new Coordinate(0, -1),
-            new Coordinate(1, -1), 
-            new Coordinate(-1, 1)
-        ));
+    final static List<Coordinate> RELATIVE_POSITIONS = new ArrayList<>(List.of(
+        new Coordinate(1, 1), 
+        new Coordinate(-1, -1),
+        new Coordinate(1, 0), 
+        new Coordinate(-1, 0),
+        new Coordinate(0, 1), 
+        new Coordinate(0, -1),
+        new Coordinate(1, -1), 
+        new Coordinate(-1, 1)
+    ));
 
         //////////////
         // RANDOMLY //
         //////////////
 
     /**
-     * A function to make the agent move randomly
+     * A function to make the agent move randomly. The agent will however prioritize position that aren't located
+     * in the graph.
      * 
      * @param agentState The current state of the agent
      * @param agentAction Used to perform an action with the agent
@@ -48,40 +45,30 @@ public class ActionUtils {
     public static void moveRandomly(AgentState agentState, AgentAction agentAction) {
         // Get the position of the agent
         Perception agentPerception = agentState.getPerception();
-        int agentX = agentState.getX();
-        int agentY = agentState.getY();
 
-        // Get the relative positions
-        List<Coordinate> relativePositions = RELATIVE_POSITIONS;
+        // Retrieves all the neighbours of the agent
+        ArrayList<CellPerception> neighbours = agentPerception.getNeighbours();
 
-        Collections.shuffle(relativePositions);
+        // Shuffle for randomness
+        Collections.shuffle(neighbours);
 
-        // Loop over all relative positions
-        for (Coordinate relativePosition : relativePositions) {
-            // Get candidate cell
-            int relativePositionX = relativePosition.getX();
-            int relativePositionY = relativePosition.getY();
-            CellPerception cellPerception = agentPerception.getCellPerceptionOnRelPos(relativePositionX, relativePositionY);
+        // Iterate through all the neighbours
+        for (CellPerception neighbour : neighbours) {
+            // If the neighbour isn't walkable or is null -> skip
+            if (neighbour == null || !neighbour.isWalkable()) continue;
 
-            // Check if the cell is walkable
-            if (cellPerception != null && cellPerception.isWalkable()) {
-                // Calculate the move
-                int agentNewX = agentX + relativePositionX;
-                int agentNewY = agentY + relativePositionY;
+            // Perform step
+            agentAction.step(neighbour.getX(), neighbour.getY());
 
-                // Perform a step
-                agentAction.step(agentNewX, agentNewY);
+            // Inform dev
+            System.out.printf("%s: Moved randomly to %s %s\n", agentState.getName(),neighbour.getX(), neighbour.getY());
 
-                // Inform
-                String message = String.format("%s: Moved randomly", agentState.getName());
-                System.out.println(message);
+            return;
 
-                return;
-            }
         }
 
         // Skip if no walkable cell was found
-        agentAction.skip();
+        skipTurn(agentAction);
     }
 
         /////////////////
@@ -89,28 +76,97 @@ public class ActionUtils {
         /////////////////
 
     /**
-     * A function to make the agent move to a position
+     * A function to make the agent move towards a position. If the position is in the perception, calculate a default move.
+     * If the position is in the graph, follow the graph. If the position is neither in the graph nor perception,
+     * move random to the position.
      * 
      * @param agentAction Perform an action with the agent
      * @param coordinate The coordinate of the position to move to
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    public static void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate coordinate) throws JsonParseException, JsonMappingException, IOException {
+    public static void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate coordinate) {
+
         // Check if the position is in the perception of the agent
         if(GeneralUtils.positionInPerception(agentState, coordinate)) {
             Coordinate move = calculateMoveDefault(agentState, coordinate);
-
             makeMove(agentState, agentAction, move);
         }
         // Check if the position is in the graph
         else if(GeneralUtils.positionInGraph(agentState, coordinate)) {
             Coordinate move = calculateMoveAStar(agentState, coordinate);
-
             makeMove(agentState, agentAction, move);
         }
-        else throw new IllegalArgumentException("Target not in perpcetion nor in graph");
+        else {
+            // If not in the graph, move closer to the position
+            moveRandomToPosition(agentState, agentAction, coordinate);
+        }
+    }
+
+    /**
+     * When the targeted position isn't in the graph, the agents needs to walk randomly to that position. It does so by
+     * calculating the lowest distance from its possibilities
+     *
+     * @param agentState The current state of the agent
+     * @param agentAction The action interface for the agent
+     * @param targetCoordinate The position we want to go to
+     */
+    private static void moveRandomToPosition(AgentState agentState, AgentAction agentAction, Coordinate targetCoordinate) {
+        // Make the agent position
+        Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
+
+        // Two variables for determining which is the best coordinate
+        double minDistance = Double.MAX_VALUE;
+        Coordinate bestCoordinate = agentPosition;
+
+        // Iterate through all the relative positions
+        for (Coordinate relativePosition : RELATIVE_POSITIONS) {
+            // Calculate move
+            CellPerception cellPerception = agentState.getPerception().getCellPerceptionOnRelPos(relativePosition.getX(), relativePosition.getY());
+
+            //Check if cell is walkable
+            if (cellPerception == null || !cellPerception.isWalkable()) continue;
+
+            // Create a variable of the position to try
+            int newPositionX = agentState.getX() + relativePosition.getX();
+            int newPositionY = agentState.getY() + relativePosition.getY();
+            Coordinate newPosition = new Coordinate(newPositionX, newPositionY);
+
+            // Check if cell is a better option
+            if (ActionUtils.calculateDistance(newPosition, targetCoordinate) > minDistance) continue;
+
+            // It is a better option so change the min distance and the relative position
+            minDistance = ActionUtils.calculateDistance(newPosition, targetCoordinate);
+            bestCoordinate = relativePosition;
+        }
+
+        // If the bestCoordinate is the agentPosition, move randomly
+        if (agentPosition.equals(bestCoordinate)) moveRandomly(agentState, agentAction);
+        else makeMove(agentState, agentAction, bestCoordinate);
+    }
+
+    /**
+     * A function used to calculate the distance between two cells.
+     *
+     * @param startPosition: The startPosition
+     * @param endPosition: The endPosition
+     *
+     * @return double distance variable
+     */
+    public static double calculateDistance(Coordinate startPosition, Coordinate endPosition) {
+        int distanceX = Math.abs(startPosition.getX() - endPosition.getX());
+        int distanceY = Math.abs(startPosition.getY() - endPosition.getY());
+        int minDistance = Math.min(distanceX, distanceY);
+
+        // Diagonal distance (minDistance) plus the rest (if distanceX or distanceY is larger than the other)
+        return minDistance + Math.abs(distanceX - distanceY);
+    }
+
+    /**
+     * A function to skip a turn.
+     *
+     * @param agentAction: The interface of actions for the agent
+     */
+    public static void skipTurn(AgentAction agentAction) {
+        agentAction.skip();
     }
 
     /**
@@ -131,13 +187,12 @@ public class ActionUtils {
         int dY = targetY - agentY;
 
         // Calculate move
-        int relativePositionX = (dX > 0) ? 1 : ((dX < 0) ? -1 : 0);
-        int relativePositionY = (dY > 0) ? 1 : ((dY < 0) ? -1 : 0);
+        int relativePositionX = Integer.compare(dX, 0);
+        int relativePositionY = Integer.compare(dY, 0);
 
         // Define the move coordinate
-        Coordinate moveCoordinate = new Coordinate(relativePositionX, relativePositionY);
 
-        return moveCoordinate;
+        return new Coordinate(relativePositionX, relativePositionY);
     }
 
     /**
@@ -145,13 +200,12 @@ public class ActionUtils {
      * 
      * @param agentState The current state of the agent
      * @param target The coordinate of the target
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private static Coordinate calculateMoveAStar(AgentState agentState,  Coordinate target) throws JsonParseException, JsonMappingException, IOException {
+    private static Coordinate calculateMoveAStar(AgentState agentState,  Coordinate target) {
         // Perform A* search
         Coordinate pathCoordinate = GraphUtils.performAStarSearch(agentState, target);
+
+        if (pathCoordinate == null) return new Coordinate(agentState.getX(), agentState.getY());
 
         // Get the positions
         int agentX = agentState.getX();
@@ -164,13 +218,11 @@ public class ActionUtils {
         int dY = pathCoordinateY - agentY;
 
         // Calculate move
-        int relativePositionX = (dX > 0) ? 1 : ((dX < 0) ? -1 : 0);
-        int relativePositionY = (dY > 0) ? 1 : ((dY < 0) ? -1 : 0);
+        int relativePositionX = Integer.compare(dX, 0);
+        int relativePositionY = Integer.compare(dY, 0);
 
         // Define the move coordinate
-        Coordinate moveCoordinate = new Coordinate(relativePositionX, relativePositionY);
-
-        return moveCoordinate;
+        return new Coordinate(relativePositionX, relativePositionY);
     }
 
     /**
@@ -203,8 +255,7 @@ public class ActionUtils {
             agentAction.step(agentNewX, agentNewY);
 
             // Inform
-            String message = String.format("%s: Moved to position (%d,%d)", agentState.getName(), agentNewX, agentNewY);
-            System.out.println(message);
+            System.out.printf("%s: Moved to position (%d,%d)\n", agentState.getName(), agentNewX, agentNewY);
         }
         else ActionUtils.moveRandomly(agentState, agentAction);
     }
@@ -218,7 +269,7 @@ public class ActionUtils {
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
-     * @param packeCoordinate The coordinate of the packet to pick up
+     * @param packetCoordinate The coordinate of the packet to pick up
      */
     public static void pickUpPacket(AgentState agentState, AgentAction agentAction, Coordinate packetCoordinate) {
         // Get the position
@@ -229,8 +280,7 @@ public class ActionUtils {
         agentAction.pickPacket(packetX, packetY);
 
         // Inform
-        String message = String.format("%s: Picked up packet %s", agentState.getName(), packetCoordinate.toString());
-        System.out.println(message);
+        System.out.printf("%s: Picked up packet %s\n", agentState.getName(), packetCoordinate);
     }
 
     /**
@@ -245,11 +295,10 @@ public class ActionUtils {
         int destinationX = destinationCoordinate.getX();
         int destinationY = destinationCoordinate.getY();
 
-        // Perfom put down
+        // Perform put down
         agentAction.putPacket(destinationX, destinationY);
 
         // Inform
-        String message = String.format("%s: Put down packet %s", agentState.getName(), destinationCoordinate.toString());
-        System.out.println(message);
+        System.out.printf("%s: Put down packet %s\n", agentState.getName(), destinationCoordinate);
     }
 }
