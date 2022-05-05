@@ -211,6 +211,16 @@ public class CommunicationUtils {
         }
     }
 
+    /**
+     * A help function to send an emergency message to the agent that is using the charging station.
+     *
+     * @param agentState: The state of the agent
+     * @param agentCommunication: The interface for communication
+     * @param msg: The message we want to send
+     * @param type: The type of message
+     *
+     * @return true if the message was sent to somebody, false otherwise
+     */
     public static boolean sendEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication, String msg, String type) {
         Perception agentPerception = agentState.getPerception();
 

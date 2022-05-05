@@ -46,7 +46,15 @@ public class MoveRandomlyBehavior extends Behavior {
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
     }
 
-
+    /**
+     * To avoid the multiple usage of an emergency message, all the emergency messages will be erased in the
+     * moveRandomBehavior. This is due to the fact that the agent came from the charging station due to this message
+     * but it is possible that the message was sent 2 or more times. So the agent removes the message if it isn't
+     * necessary anymore.
+     *
+     * @param agentState: The state of the agent
+     * @param agentCommunication: The interface for communication.
+     */
     private void checkForEmergencyNotificationsAndIgnore(AgentState agentState, AgentCommunication agentCommunication) {
         // Ensure that there are messages before continuing
         if (agentCommunication.getNbMessages() == 0) return;

@@ -99,6 +99,13 @@ public class MoveToChargingStationBehavior extends Behavior {
     }
 
 
+    /**
+     * A function that sends an emergency message to the agent that is using the charging station to tell them there
+     * battery is extremely low.
+     *
+     * @param agentState: The state of the agent
+     * @param agentCommunication: The interface for communication
+     */
     private void sendEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication) {
         // Check if the battery level is low enough to send emergency notification
         if (75 < agentState.getBatteryState()) return;

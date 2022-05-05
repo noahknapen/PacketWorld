@@ -86,10 +86,24 @@ public class MustLeaveChargingStation extends BehaviorChange {
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, chargingStations));
     }
 
+    /**
+     * Small helpfunction to determine whether the agent has enough battery or not.
+     *
+     * @param agentState: The state of the agent
+     *
+     * @return true if the agent has enough battery, false otherwise
+     */
     private boolean determineIfAgentHasEnoughBattery(AgentState agentState) {
         return this.getAgentState().getBatteryState() >= 900;
     }
 
+    /**
+     * Small helpfunction to determine whether the agent has an emergency message in its memory or not
+     *
+     * @param agentState: The state of the agent
+     *
+     * @return true if the agent has an emergency message, false otherwise
+     */
     private boolean emergencyMessageReceived(AgentState agentState) {
         return Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.EMERGENCY, Boolean.class));
     }
