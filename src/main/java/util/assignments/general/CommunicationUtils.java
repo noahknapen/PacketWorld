@@ -155,9 +155,6 @@ public class CommunicationUtils {
 
                 // Communicate the message to the agent
                 agentCommunication.sendMessage(agentRep.get(), messageString);
-
-                // Inform
-                System.out.printf("%s: Sends its %s to agent: %s%n\n", agentState.getName(), memoryKey, agentRep.get().getName());
             }
         } 
     }

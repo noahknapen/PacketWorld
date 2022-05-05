@@ -223,6 +223,7 @@ public class GeneralUtils {
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS);
     }
 
+
     /**
      * A function that is used to share the charging stations with other agents.
      *
@@ -444,5 +445,4 @@ public class GeneralUtils {
         // Calculate the distance
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
     }
-
 }
