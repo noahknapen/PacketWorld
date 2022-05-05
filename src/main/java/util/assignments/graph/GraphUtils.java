@@ -1,13 +1,9 @@
 package util.assignments.graph;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.PriorityQueue;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentState;
 import environment.CellPerception;
@@ -31,11 +27,8 @@ public class GraphUtils {
      * Build the graph based on the perception of the agent
      * 
      * @param agentState The current state of the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    public static void build(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
+    public static void build(AgentState agentState) {
         // Get the perception the agent
         Perception agentPerception = agentState.getPerception();
 
@@ -43,20 +36,20 @@ public class GraphUtils {
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Check if graph is null and create one if so
-        if(graph == null)
-            graph = new Graph();
+        if(graph == null) graph = new Graph();
         
         // Loop over the whole perception to create nodes
-        for (int x = 0; x < agentPerception.getWidth(); x++) {
-            for (int y = 0; y < agentPerception.getHeight(); y++) {
+        for (int x = 0; x <= agentPerception.getWidth(); x++) {
+            for (int y = 0; y <= agentPerception.getHeight(); y++) {
                 CellPerception cellPerception = agentPerception.getCellAt(x,y);
 
                 // Check if the cell is null and continue with the next cell if so
                 if(cellPerception == null) continue;
 
                 // Check if the cell contains no packet nor destination and is not walkable and continue with the next cell if so
-                if(!(cellPerception.containsPacket() || cellPerception.containsAnyDestination()) && !cellPerception.isWalkable()) continue;
-        
+                if(!(cellPerception.containsPacket() || cellPerception.containsAnyDestination() || cellPerception.containsEnergyStation() || cellPerception.containsWall())) continue;
+                if (!cellPerception.isWalkable()) continue;
+
                 // Get the position of the cell
                 int cellX = cellPerception.getX();
                 int cellY = cellPerception.getY();
@@ -108,20 +101,28 @@ public class GraphUtils {
     // SEARCH //
     ////////////
 
-    public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) throws JsonParseException, JsonMappingException, IOException, NoMoveFoundException {
+    /**
+     * A function to perform A* search, finding a such a path between the agent's current position
+     * and the target coordinate
+     * 
+     * @param agentState The current state of the agent
+     * @param target The target position that should be reached
+     * @return The coordinate (first of path) to which the agent should move
+     */
+    public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) {
         // Get the position of the agent
         int agentX = agentState.getX();
         int agentY = agentState.getY();
-        Coordinate agentCoordinate = new Coordinate(agentX, agentY);
+        Coordinate agentPosition = new Coordinate(agentX, agentY);
 
         // Get the graph
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Check if graph is null and raise exception if so
-        if(graph == null) throw new IllegalArgumentException("No graph to perform A* search on");
-        
+        if(graph == null) return null;
+
         // Define the nodes
-        Node startNode = new Node(agentCoordinate);
+        Node startNode = new Node(agentPosition);
         Node targetNode = new Node(target);
 
         // Define priority queues
@@ -174,16 +175,23 @@ public class GraphUtils {
             closeList.add(node);
         }
 
-        if (result == null)
-            throw new NoMoveFoundException("No move found with A* search");
+        // Ensure that result isn't null
+        if (result == null) return new Coordinate(agentX, agentY);
 
         // Calculate the path
         ArrayList<Coordinate> path = new ArrayList<>();
         while(result.getParent() != null) {
             path.add(result.getCoordinate());
             result = result.getParent();
+
+            // Ensure that the result isn't null for the next iteration
+            if (result == null) break;
         }
+
+        // Reverse the path
         Collections.reverse(path);
+
+        System.out.println(path);
 
         // Return the first element of the path (which defines the next move)
         return path.get(0);

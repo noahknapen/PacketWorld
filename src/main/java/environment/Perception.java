@@ -25,7 +25,6 @@ public class Perception {
      */
     private int width;
 
-
     /**
      * The x-coordinate of self within this Perception.
      */
@@ -115,17 +114,19 @@ public class Perception {
      * @return    The Representations neighbouring the AgentRep of the agent that issued this
      *            Perception
      */
-    public CellPerception[] getNeighbours() {
-        CellPerception[] neighbours = new CellPerception[8]; // 8 squares surround the agentRep
-        int next = 0;
+    public ArrayList<CellPerception> getNeighbours() {
+        ArrayList<CellPerception> neighbours = new ArrayList<>(); // 8 squares surround the agentRep
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
-                if (i != 0 || j != 0) {
-                    neighbours[next] = getCellAt(getSelfX() + i, getSelfY() + j);
-                    next++;
-                }
+
+                if (i == 0 && j == 0) continue;
+
+                CellPerception cellToAdd = getCellAt(getSelfX() + i, getSelfY() + j);
+
+                if (cellToAdd != null) neighbours.add(cellToAdd);
             }
         }
+
         return neighbours;
     }
 

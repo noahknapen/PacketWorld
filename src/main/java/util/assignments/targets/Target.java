@@ -35,7 +35,7 @@ public abstract class Target {
 
     @Override
     public String toString() {
-        return this.coordinate.toString();
+        return String.format("%s", coordinate);
     }
 
     @Override

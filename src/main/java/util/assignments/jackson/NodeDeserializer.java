@@ -10,6 +10,9 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import util.assignments.graph.Node;
 
+/**
+ * A class that implements a function to deserialize a the Node class
+ */
 public class NodeDeserializer extends KeyDeserializer {
 
     @Override

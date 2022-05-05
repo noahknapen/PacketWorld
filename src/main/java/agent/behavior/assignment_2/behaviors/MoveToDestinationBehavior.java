@@ -1,10 +1,5 @@
 package agent.behavior.assignment_2.behaviors;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
@@ -30,28 +25,23 @@ public class MoveToDestinationBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // Handle the charging stations
-        try {
-            GeneralUtils.handleChargingStations(agentState, agentCommunication);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } 
+        // Communicate the charging stations with all the other agents
+        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
+
+        // Communicate the destination locations with agents in perception
+        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
     }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {      
-        try {
-            // Check the perception of the agent
-            GeneralUtils.checkPerception(agentState);
+        // Check the perception of the agent
+        GeneralUtils.checkPerception(agentState);
 
-            // Build the graph
-            GraphUtils.build(agentState);
+        // Build the graph
+        GraphUtils.build(agentState);
 
-            // Move the agent to the target
-            handleMove(agentState, agentAction);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Move the agent to the target
+        handleMove(agentState, agentAction);
     }
 
     /////////////
@@ -59,29 +49,23 @@ public class MoveToDestinationBehavior extends Behavior {
     /////////////
 
     /**
-     * A function to let the agent move
+     * A function that is used to make the agent move.
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private void handleMove(AgentState agentState, AgentAction agentAction) throws JsonParseException, JsonMappingException, IOException {
+    private void handleMove(AgentState agentState, AgentAction agentAction) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
         // Check if the task is null and raise exception if so
         if(task == null) throw new IllegalArgumentException("Task is null");
 
-        // Check if the task has task type MOVE_TO_PACKET but has no packet and raise exception if so
-        if(task.getType() == TaskType.MOVE_TO_PACKET && !task.getPacket().isPresent()) throw new IllegalArgumentException("Task has no packet");
-
-        // Check if the task has other task type than MOVE_TO_DESTINATION or has no destination and raise exception if so
-        if(task.getType() != TaskType.MOVE_TO_DESTINATION || !task.getDestination().isPresent()) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION or task has no destination");
+        // Check if the task has other task type than MOVE_TO_DESTINATION and raise exception if so
+        if(task.getType() != TaskType.MOVE_TO_DESTINATION) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION");
 
         // Get the coordinate of the destination
-        Destination destination= task.getDestination().get();
+        Destination destination = task.getDestination();
         Coordinate destinationCoordinate = destination.getCoordinate();
 
         // Perform move to the position of the destination

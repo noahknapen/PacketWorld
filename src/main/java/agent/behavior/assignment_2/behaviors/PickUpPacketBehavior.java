@@ -1,10 +1,6 @@
 package agent.behavior.assignment_2.behaviors;
 
-import java.io.IOException;
 import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import agent.AgentAction;
 import agent.AgentCommunication;
@@ -12,6 +8,8 @@ import agent.AgentState;
 import agent.behavior.Behavior;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
+import util.assignments.general.GeneralUtils;
+import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Packet;
@@ -29,21 +27,23 @@ public class PickUpPacketBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // TODO Auto-generated method stub
-        
+        // Communicate the charging stations with all the other agents
+        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
+
+        // Communicate the destination locations with agents in perception
+        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
     }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        try {
-            // Pick up the packet
-            handlePickUp(agentState, agentAction);
+        // Pick up the packet
+        handlePickUp(agentState, agentAction);
 
-            // Update task
-            updateTask(agentState);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Build the graph
+        GraphUtils.build(agentState);
+
+        // Update task
+        updateTask(agentState);
     }
 
     /////////////
@@ -55,19 +55,16 @@ public class PickUpPacketBehavior extends Behavior {
      * 
      * @param agentState The current state of the agent
      * @param agentAction Perform an action with the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private void handlePickUp(AgentState agentState, AgentAction agentAction) throws JsonParseException, JsonMappingException, IOException {
+    private void handlePickUp(AgentState agentState, AgentAction agentAction) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
-        // Check if the task has other task type than MOVE_TO_PACKET or has no packet and raise exception if so
-        if(task.getType() != TaskType.MOVE_TO_PACKET || !task.getPacket().isPresent()) throw new IllegalArgumentException("Task type is not MOVE_TO_PACKET or task has no packet");
+        // Check if the task has other task type than MOVE_TO_PACKET and raise exception if so
+        if(task.getType() != TaskType.MOVE_TO_PACKET) throw new IllegalArgumentException("Task type is not MOVE_TO_PACKET");
 
         // Get the coordinate of the packet
-        Packet packet= task.getPacket().get();
+        Packet packet= task.getPacket();
         Coordinate packetCoordinate = packet.getCoordinate();
 
         // Pick up the packet
@@ -78,16 +75,13 @@ public class PickUpPacketBehavior extends Behavior {
      * A function to update the task type to MOVE_TO_DESTINATION
      * 
      * @param agentState The current state of the agent
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
      */
-    private void updateTask(AgentState agentState) throws JsonParseException, JsonMappingException, IOException {
+    private void updateTask(AgentState agentState) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
         // Check if the task is null and raise exception if so
-        if(task == null) throw new IllegalArgumentException("Task is null");
+        if(task == null) return;
 
         // Update the task type
         task.setType(TaskType.MOVE_TO_DESTINATION);
