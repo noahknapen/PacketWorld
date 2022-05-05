@@ -87,7 +87,7 @@ public class MoveToChargingStationBehavior extends Behavior {
             int distance = Perception.distance(agentPosition.getX(), agentPosition.getY(), bestPosition.getX(), bestPosition.getY());
 
             // Skip to conserve energy if station in use, and we are too close
-            if (distance < 5 & bestStation.isInUse()) ActionUtils.skipTurn(agentAction);
+            if (distance < 4 & bestStation.isInUse()) ActionUtils.skipTurn(agentAction);
             else ActionUtils.moveToPosition(agentState, agentAction, bestPosition);
         } else {
             // Move random if the best position is null

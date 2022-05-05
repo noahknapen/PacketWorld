@@ -48,14 +48,14 @@ public class CommunicationUtils {
                 String messageString = mail.getMessage();
                 Message message = objectMapper.readValue(messageString, Message.class);
 
-                // Check if type corresponds
-                if(message.getType().equals(memoryKey)) {
-                    // Remove the message from the mails
-                    agentCommunication.removeMessage(i);
+                // Guard clause to ensure the type corresponds
+                if(!message.getType().equals(memoryKey)) continue;
 
-                    // Transform the message and return
-                    return objectMapper.readValue(message.getMessage(), objectClass);
-                }
+                // Remove the message from the mails
+                agentCommunication.removeMessage(i);
+
+                // Transform the message and return
+                return objectMapper.readValue(message.getMessage(), objectClass);
             }
         } catch(IOException e) {
             e.printStackTrace();
@@ -202,6 +202,35 @@ public class CommunicationUtils {
         } catch (IOException e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+    public static void sendEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication, String msg, String type) {
+        Perception agentPerception = agentState.getPerception();
+
+        // Create a message string
+        String messageString = makeMessageString(msg, type);
+
+        for (int x = 0; x <= agentPerception.getWidth(); x++) {
+            for (int y = 0; y <= agentPerception.getHeight(); y++) {
+                // Get the perception of the cell
+                CellPerception cellPerception = agentPerception.getCellAt(x, y);
+
+                // Check if the cell is null and continue with the next cell if so
+                if (cellPerception == null) continue;
+
+                // Get the agent representation of the cell
+                Optional<AgentRep> agentRep = cellPerception.getAgentRepresentation();
+
+                // Check if there is no agent on the cell and continue with the next cell if so
+                if (agentRep.isEmpty()) continue;
+
+                // Check if the position of the agent corresponds to the agent's own position and continue with the next cell if so
+                if (agentRep.get().getX() == agentState.getX() && agentRep.get().getY() == agentState.getY()) continue;
+
+                // Communicate the message to the agent
+                agentCommunication.sendMessage(agentRep.get(), messageString);
+            }
         }
     }
 }
