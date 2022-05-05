@@ -5,6 +5,7 @@ import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
 import environment.Coordinate;
+import util.assignments.general.CommunicationUtils;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
@@ -13,6 +14,7 @@ import util.assignments.memory.MemoryUtils;
 import java.util.ArrayList;
 import util.assignments.targets.ChargingStation;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -24,9 +26,6 @@ public class ChargingBehavior extends Behavior {
 
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
-        // Handle emergency message
-        GeneralUtils.handleEmergencyMessage(agentState, agentCommunication);
-
         // Update the current charging stations in memory
         updateChargingStation(agentState);
 
@@ -35,6 +34,10 @@ public class ChargingBehavior extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+
+        // Check for emergency notifications
+        checkForEmergencyNotifications(agentState, agentCommunication);
+
     }
 
     @Override
@@ -80,5 +83,32 @@ public class ChargingBehavior extends Behavior {
 
         // Update memory for charging stations
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, chargingStations));
+    }
+
+    private void checkForEmergencyNotifications(AgentState agentState, AgentCommunication agentCommunication) {
+        // Ensure that there are messages before continuing
+        if (agentCommunication.getNbMessages() == 0) return;
+
+        // Retrieve the messages
+        HashMap<String, Boolean> receivedMessage = CommunicationUtils.getObjectFromMails(agentCommunication, "boolean", Boolean.class);
+
+        // No messages received so no emergency
+        if (receivedMessage == null) return;
+
+        // If the emergency camo from us, skip it
+        if (receivedMessage.containsKey(agentState.getName())) return;
+
+        for (String sender : receivedMessage.keySet()) {
+            boolean emergency = receivedMessage.get(sender);
+            // If no emergency skip
+            if (!(emergency)) continue;
+
+            System.out.printf("%s: Message Received from: %s\n", agentState.getName(), sender);
+            // Change the memory due to the emergency
+            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, true));
+        }
+
+        // inform dev
+        System.out.printf("%s: Message Received\n", agentState.getName());
     }
 }

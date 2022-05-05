@@ -5,9 +5,11 @@ import java.util.Map;
 import java.util.Optional;
 
 
+import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.Coordinate;
+import org.checkerframework.checker.units.qual.A;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
@@ -24,20 +26,20 @@ public class MustLeaveChargingStation extends BehaviorChange {
         // Retrieve agent state
         AgentState agentState = this.getAgentState();
 
-        // Receive emergency from memory
-        boolean emergency = Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.EMERGENCY, Boolean.class));
-        System.out.printf("Emergency: %s, Agent: %s\n", emergency, agentState.getName());
+        // Check whether the agent has enough battery
+        boolean enoughBattery = determineIfAgentHasEnoughBattery(agentState);
 
-        // If the agent has enough battery
-        hasEnoughBattery =  this.getAgentState().getBatteryState() >= 900;
+        // Check whether an emergency notification was received
+        boolean emergencyNotification = emergencyMessageReceived(agentState);
 
-        // If emergency set hasEnough to true
-        if (emergency) hasEnoughBattery = true;
+        // HasEnoughBattery is true if the battery level is high enough or if there is an emergency or both
+        hasEnoughBattery = enoughBattery || emergencyNotification;
 
+        // Reset memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
 
-        // Guard clause to ensure the agent has enough battery before updating the station.
-        if(!hasEnoughBattery) return;
+        // Guard clause to ensure that we are going to leave the station before updating the charging stations
+        if (!hasEnoughBattery) return;
 
         // Update the charging station
         updateChargingStation(agentState);
@@ -82,5 +84,13 @@ public class MustLeaveChargingStation extends BehaviorChange {
 
         // Update memory for charging stations
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, chargingStations));
+    }
+
+    private boolean determineIfAgentHasEnoughBattery(AgentState agentState) {
+        return this.getAgentState().getBatteryState() >= 900;
+    }
+
+    private boolean emergencyMessageReceived(AgentState agentState) {
+        return Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.EMERGENCY, Boolean.class));
     }
 }

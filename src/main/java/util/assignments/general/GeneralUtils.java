@@ -445,24 +445,4 @@ public class GeneralUtils {
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
     }
 
-    public static void handleEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication) {
-        // Check if the battery level is low enough to send emergency notification
-        if (0 < agentState.getBatteryState() && agentState.getBatteryState() <= 75 && !agentState.getCurrentBehavior().getClass().equals(ChargingBehavior.class) ) {
-            String msg = "true";
-            String type = "boolean";
-            CommunicationUtils.sendEmergencyMessage(agentState, agentCommunication, msg, type);
-            System.out.printf("Message sent, Agent: %s\n", agentState.getName());
-        }
-
-        // Guard clause to ensure the behavior is the chargingBehavior
-        if (!agentState.getCurrentBehavior().getClass().equals(ChargingBehavior.class)) return;
-
-        // Retrieve the msg from the communication channel
-        boolean msg = Boolean.TRUE.equals(CommunicationUtils.getObjectFromMails(agentCommunication, "boolean", Boolean.class));
-
-        // If the msg is false, no emergency has been sent
-        if (msg) MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, true));
-        else MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, false));
-
-    }
 }

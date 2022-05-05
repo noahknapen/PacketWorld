@@ -32,10 +32,6 @@ public class MoveToDestinationBehavior extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
-
-        // Handle emergency message
-        GeneralUtils.handleEmergencyMessage(agentState, agentCommunication);
-
     }
 
     @Override

@@ -2,6 +2,7 @@ package util.assignments.general;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,10 +34,12 @@ public class CommunicationUtils {
      * @param objectClass The class of the object
      * @return The object or null if no object was found
      */
-    public static <T> T getObjectFromMails(AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
+    public static <T> HashMap<String, T > getObjectFromMails(AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
         try {
             // Get the received mails
             ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
+
+            HashMap<String, T> result = new HashMap<>();
 
             // Loop over all the received mails
             ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
@@ -46,6 +49,7 @@ public class CommunicationUtils {
 
                 // Get the message
                 String messageString = mail.getMessage();
+                String sender = mail.getFrom();
                 Message message = objectMapper.readValue(messageString, Message.class);
 
                 // Guard clause to ensure the type corresponds
@@ -55,7 +59,9 @@ public class CommunicationUtils {
                 agentCommunication.removeMessage(i);
 
                 // Transform the message and return
-                return objectMapper.readValue(message.getMessage(), objectClass);
+                result.put(sender, objectMapper.readValue(message.getMessage(), objectClass));
+
+                return result;
             }
         } catch(IOException e) {
             e.printStackTrace();
@@ -205,11 +211,12 @@ public class CommunicationUtils {
         }
     }
 
-    public static void sendEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication, String msg, String type) {
+    public static boolean sendEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication, String msg, String type) {
         Perception agentPerception = agentState.getPerception();
 
         // Create a message string
         String messageString = makeMessageString(msg, type);
+        boolean sent = false;
 
         for (int x = 0; x <= agentPerception.getWidth(); x++) {
             for (int y = 0; y <= agentPerception.getHeight(); y++) {
@@ -237,7 +244,12 @@ public class CommunicationUtils {
 
                 // Communicate the message to the agent
                 agentCommunication.sendMessage(agentRep.get(), messageString);
+
+                // Update sent variable
+                sent = true;
             }
         }
+
+        return sent;
     }
 }

@@ -32,9 +32,6 @@ public class PutDownPacketBehavior extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
-
-        // Handle emergency message
-        GeneralUtils.handleEmergencyMessage(agentState, agentCommunication);
     }
 
     @Override
