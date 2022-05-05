@@ -71,7 +71,7 @@ public class GraphUtils {
                         CellPerception neighbourCellPerception = agentPerception.getCellPerceptionOnAbsPos(neighbourCellX, neighbourCellY);
 
                         // Check if the neighbour cell is null or not walkable and continue with the next cell if so
-                        if(neighbourCellPerception == null || !neighbourCellPerception.isWalkable()) continue;
+                        if(neighbourCellPerception == null) continue;
                         
                         // Check if the neighbour cell contains no packet nor destination and is not walkable and continue with the next cell if so
                         if(!(neighbourCellPerception.containsPacket() || neighbourCellPerception.containsAnyDestination()) && !neighbourCellPerception.isWalkable()) continue;
