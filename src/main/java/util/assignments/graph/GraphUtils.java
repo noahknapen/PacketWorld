@@ -190,8 +190,6 @@ public class GraphUtils {
         // Reverse the path
         Collections.reverse(path);
 
-        System.out.println(path);
-
         // Return the first element of the path (which defines the next move)
         return path.get(0);
     }

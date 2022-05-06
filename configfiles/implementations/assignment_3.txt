@@ -5,19 +5,19 @@ description "Delivery with different behaviors and energy consumption"
 # ------------------------------------------------
 nbStates 5
 
-1 agent.behavior.assignment_2.behaviors.MoveRandomlyBehavior    
+1 agent.behavior.assignment_3.behaviors.MoveRandomlyBehavior    
 nbArgs 0
 
-2 agent.behavior.assignment_2.behaviors.MoveToPacketBehavior    
+2 agent.behavior.assignment_3.behaviors.MoveToPacketBehavior    
 nbArgs 0
 
-3 agent.behavior.assignment_2.behaviors.PickUpPacketBehavior    
+3 agent.behavior.assignment_3.behaviors.PickUpPacketBehavior    
 nbArgs 0
 
-4 agent.behavior.assignment_2.behaviors.MoveToDestinationBehavior    
+4 agent.behavior.assignment_3.behaviors.MoveToDestinationBehavior    
 nbArgs 0
 
-5 agent.behavior.assignment_2.behaviors.PutDownPacketBehavior    
+5 agent.behavior.assignment_3.behaviors.PutDownPacketBehavior    
 nbArgs 0
 
 # ---------------------------------------------------------------
@@ -28,7 +28,7 @@ nbChanges 7
 
 ### SOURCE 1: MoveRandomlyBehavior ###
 
-agent.behavior.assignment_2.changes.TaskDefinitionPossible
+agent.behavior.assignment_3.changes.TaskDefinitionPossible
 nbArgs 0
 priority 0
 source 1
@@ -36,13 +36,13 @@ target 2
 
 ### SOURCE 2: MoveToPacketBehavior ###
 
-agent.behavior.assignment_2.changes.ReadyToPickUp
+agent.behavior.assignment_3.changes.ReadyToPickUp
 nbArgs 0
 priority 0
 source 2
 target 3
 
-agent.behavior.assignment_2.changes.PacketAlreadyHandled
+agent.behavior.assignment_3.changes.PacketAlreadyHandled
 nbArgs 0
 priority 1
 source 2
@@ -50,7 +50,7 @@ target 1
 
 ### SOURCE 3: PickUpPacketBehavior ###
 
-agent.behavior.assignment_2.changes.HasCarry
+agent.behavior.assignment_3.changes.HasCarry
 nbArgs 0
 priority 0
 source 3
@@ -58,7 +58,7 @@ target 4
 
 ### SOURCE 4: MoveToDestinationBehavior ###
 
-agent.behavior.assignment_2.changes.ReadyToPutDown
+agent.behavior.assignment_3.changes.ReadyToPutDown
 nbArgs 0
 priority 0
 source 4
@@ -66,13 +66,13 @@ target 5
 
 ### SOURCE 5: PutDownPacketBehavior ###
 
-agent.behavior.assignment_2.changes.TaskDefinitionNotPossible
+agent.behavior.assignment_3.changes.TaskDefinitionNotPossible
 nbArgs 0
 priority 0
 source 5
 target 1
 
-agent.behavior.assignment_2.changes.TaskDefinitionPossible
+agent.behavior.assignment_3.changes.TaskDefinitionPossible
 nbArgs 0
 priority 1
 source 5
