@@ -6,10 +6,8 @@ import java.util.Map;
 
 import java.util.List;
 
-import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
-import agent.behavior.assignment_2.behaviors.ChargingBehavior;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;

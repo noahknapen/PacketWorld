@@ -12,4 +12,5 @@ public class MemoryKeys {
     public static final String UPDATED_STATIONS = "UPDATED_STATIONS";
     public static final String EMERGENCY = "EMERGENCY";
     public static final String EXPLORING_TURNS = "EXPLORING_TURNS";
+    public static final String RAND0M_DIRECTION = "RANDOM_DIRECTION";
 }
