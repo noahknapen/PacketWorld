@@ -157,6 +157,7 @@ public class GraphUtils {
     // SEARCH //
     ////////////
 
+    /*
     /**
      * A function to perform A* search, finding a such a path between the agent's current position
      * and the target coordinate
@@ -202,30 +203,30 @@ public class GraphUtils {
             if(node.equals(targetNode)) {
                 result = node;
                 break;
-            }   
+            }
 
-            for(Node neighbourNode: graph.getMap().get(node)) {
+            // Check if node is walkable
+            if (graph.nodeWalkable(node)) {
+                for (Node neighbourNode : graph.getMap().get(node)) {
 
-                // Check if node is walkable
-                if (!neighbourNode.isWalkable()) continue;
+                    double totalGCost = node.getGCost() + 1;
 
-                double totalGCost = node.getGCost() + 1;
-
-                if(!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)){
-                    neighbourNode.setParent(node);
-                    neighbourNode.setGCost(totalGCost);
-                    neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-
-                    openList.add(neighbourNode);
-                } else {
-                    if(totalGCost < neighbourNode.getGCost()){
+                    if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
                         neighbourNode.setParent(node);
                         neighbourNode.setGCost(totalGCost);
                         neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-    
-                        if(closeList.contains(neighbourNode)){
-                            closeList.remove(neighbourNode);
-                            openList.add(neighbourNode);
+
+                        openList.add(neighbourNode);
+                    } else {
+                        if (totalGCost < neighbourNode.getGCost()) {
+                            neighbourNode.setParent(node);
+                            neighbourNode.setGCost(totalGCost);
+                            neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+
+                            if (closeList.contains(neighbourNode)) {
+                                closeList.remove(neighbourNode);
+                                openList.add(neighbourNode);
+                            }
                         }
                     }
                 }
@@ -254,6 +255,7 @@ public class GraphUtils {
         // Return the first element of the path (which defines the next move)
         return path.get(0);
     }
+
 
     /**
      * A function to calculate the heuristic value of a node with a given reference
