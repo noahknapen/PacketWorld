@@ -1,29 +1,87 @@
-width 10
-height 10
+width 6
+height 4
 
 nbAgents 1
 environment.world.agent.Agent
-nbArgs 5
-Integer 0
+nbArgs 6
 Integer 0
 Integer 1
-Integer 1
-String "Alice"
+Integer 8
+Integer 2
+String "Zoe"
+String "blue"
 
-nbPackets 1
+nbPackets 2
 environment.world.packet.Packet
 nbArgs 3
 Integer 2
-Integer 0
+Integer 1
+String "red"
+environment.world.packet.Packet
+nbArgs 3
+Integer 3
+Integer 1
 String "blue"
 
 nbDestinations 1
 environment.world.destination.Destination
 nbArgs 3
-Integer 2
-Integer 2
+Integer 5
+Integer 1
 String "blue"
 
-nbWalls 0
+nbWalls 12
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 0
+Integer 0
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 0
+Integer 2
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 1
+Integer 0
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 1
+Integer 2
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 2
+Integer 0
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 2
+Integer 2
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 3
+Integer 0
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 3
+Integer 2
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 4
+Integer 0
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 4
+Integer 2
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 5
+Integer 0
+environment.world.wall.SolidWall
+nbArgs 2
+Integer 5
+Integer 2
 
 nbEnergyStations 0
+
+nbPacketGenerators 0
+
+nbConveyors 0

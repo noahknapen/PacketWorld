@@ -125,6 +125,10 @@ public class CommunicationUtils {
     //////////
 
     public static void sendMemoryFragment(AgentState agentState, AgentCommunication agentCommunication, String memoryKey) {
+
+        // Check if memoryKey exists
+        if(!agentState.getMemoryFragmentKeys().contains(memoryKey)) return;
+
         // Get the perception of the agent
         Perception agentPerception = agentState.getPerception();
 

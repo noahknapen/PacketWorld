@@ -16,6 +16,7 @@ public class Node implements Comparable<Node> {
     private double gCost;
     private double hCost;
     private Node parent;
+    private boolean walkable;
 
     //////////////////
     // CONSTRUCTORS //
@@ -26,14 +27,21 @@ public class Node implements Comparable<Node> {
         this.setGCost(0);
         this.setHCost(0);
         this.setParent(null);
+        this.setWalkable(true);
+    }
+
+    public Node(Coordinate coordinate, boolean walkable) {
+        this(coordinate);
+        this.setWalkable(walkable);
     }
 
     @JsonCreator
-    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent) {
+    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent, @JsonProperty("walkable") boolean walkable) {
         this.coordinate = coordinate;
         this.gCost = gCost;
         this.hCost = hCost;
         this.parent = parent;
+        this.walkable = walkable;
     }
 
     ///////////////////////
@@ -60,6 +68,10 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
+    public boolean isWalkable() {
+        return this.walkable;
+    }
+
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
     }
@@ -76,13 +88,18 @@ public class Node implements Comparable<Node> {
         this.parent = parent;
     }
 
+    public void setWalkable(boolean walkable) {
+        this.walkable = walkable;
+    }
+
+
     ///////////////
     // OVERRIDES //
     ///////////////
 
     @Override
     public String toString() {
-        return String.format("%s %s %s %s", coordinate, gCost, hCost, parent);
+        return String.format("%s %s %s %s %s", coordinate, gCost, hCost, parent, walkable);
     }
 
     @Override
