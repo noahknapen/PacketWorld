@@ -35,14 +35,10 @@ public class Graph2{
     }
 
     public void addNode(Node node) {
-        if (nodes.contains(node)) return;
-
         nodes.add(node);
     }
 
     public void removeNode(Node node) {
-        if (!nodes.contains(node)) return;
-
         nodes.remove(node);
     }
 

@@ -104,6 +104,6 @@ public class MustGoToChargingStation extends BehaviorChange {
         double energySurplus = getAgentState().getBatteryState() - energyUsedToGetToStation;
 
         // Take a small buffer of eight turns into account
-        return energySurplus > 80;
+        return energySurplus > 150;
     }
 }

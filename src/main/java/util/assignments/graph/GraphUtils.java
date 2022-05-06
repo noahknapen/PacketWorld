@@ -53,7 +53,7 @@ public class GraphUtils {
                 Node cellNode;
 
                 // Create a node
-                if (cellPerception.containsPacket() || cellPerception.containsEnergyStation() || cellPerception.containsAnyDestination()) {
+                if (cellPerception.containsPacket() || cellPerception.containsAnyDestination()) {
                     cellNode = new Node(cellCoordinate, false);
                 } else {
                     cellNode = new Node(cellCoordinate, true);
@@ -84,7 +84,7 @@ public class GraphUtils {
                         // Create a node
                         Node neighbourNode;
 
-                        if (cellPerception.containsPacket() || cellPerception.containsEnergyStation() || cellPerception.containsAnyDestination()) {
+                        if (cellPerception.containsPacket() || cellPerception.containsAnyDestination()) {
                             neighbourNode = new Node(neighbourCellCoordinate, false);
                         } else {
                             neighbourNode = new Node(neighbourCellCoordinate, true);
@@ -118,10 +118,6 @@ public class GraphUtils {
         
         // Loop over the whole updated graph
         for(Node node: updatedGraph.getMap().keySet()) {
-            // Get the position of the node
-            int nodeX = node.getCoordinate().getX();
-            int nodeY = node.getCoordinate().getY();
-
             // Check if the current graph already contains the node and continue with next node if so
             if(currentGraph.getMap().containsKey(node)) continue;
 
@@ -231,6 +227,8 @@ public class GraphUtils {
         System.out.printf("%s: %s", agentState.getName(), path);
         // Return the first element of the path (which defines the next move)
         return path.get(0);
+
+
     }
 
         /**
