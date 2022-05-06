@@ -26,9 +26,6 @@ public class Explorer extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
-
-        // Communicate the graph with agents in perception
-        GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
     }
 
     @Override
