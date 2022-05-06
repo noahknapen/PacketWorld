@@ -2,6 +2,7 @@ package util.assignments.general;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,10 +34,12 @@ public class CommunicationUtils {
      * @param objectClass The class of the object
      * @return The object or null if no object was found
      */
-    public static <T> T getObjectFromMails(AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
+    public static <T> HashMap<String, T > getObjectFromMails(AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
         try {
             // Get the received mails
             ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
+
+            HashMap<String, T> result = new HashMap<>();
 
             // Loop over all the received mails
             ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
@@ -46,16 +49,19 @@ public class CommunicationUtils {
 
                 // Get the message
                 String messageString = mail.getMessage();
+                String sender = mail.getFrom();
                 Message message = objectMapper.readValue(messageString, Message.class);
 
-                // Check if type corresponds
-                if(message.getType().equals(memoryKey)) {
-                    // Remove the message from the mails
-                    agentCommunication.removeMessage(i);
+                // Guard clause to ensure the type corresponds
+                if(!message.getType().equals(memoryKey)) continue;
 
-                    // Transform the message and return
-                    return objectMapper.readValue(message.getMessage(), objectClass);
-                }
+                // Remove the message from the mails
+                agentCommunication.removeMessage(i);
+
+                // Transform the message and return
+                result.put(sender, objectMapper.readValue(message.getMessage(), objectClass));
+
+                return result;
             }
         } catch(IOException e) {
             e.printStackTrace();
@@ -75,6 +81,9 @@ public class CommunicationUtils {
      */
     public static <T> ArrayList<T> getListFromMails(AgentState agentState, AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
         try {
+            // If no messages, return empty list
+            if (agentCommunication.getNbMessages() == 0) return new ArrayList<>();
+
             // Get the received mails
             ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
 
@@ -104,7 +113,7 @@ public class CommunicationUtils {
                 }
             }
             return result;
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             e.printStackTrace();
         }
 
@@ -116,6 +125,10 @@ public class CommunicationUtils {
     //////////
 
     public static void sendMemoryFragment(AgentState agentState, AgentCommunication agentCommunication, String memoryKey) {
+
+        // Check if memoryKey exists
+        if(!agentState.getMemoryFragmentKeys().contains(memoryKey)) return;
+
         // Get the perception of the agent
         Perception agentPerception = agentState.getPerception();
 
@@ -149,9 +162,6 @@ public class CommunicationUtils {
 
                 // Communicate the message to the agent
                 agentCommunication.sendMessage(agentRep.get(), messageString);
-
-                // Inform
-                System.out.println(String.format("%s: Sends its %s to agent: %s", agentState.getName(), memoryKey, agentRep.get().getName()));
             }
         } 
     }
@@ -203,5 +213,57 @@ public class CommunicationUtils {
             e.printStackTrace();
             return "";
         }
+    }
+
+    /**
+     * A help function to send an emergency message to the agent that is using the charging station.
+     *
+     * @param agentState: The state of the agent
+     * @param agentCommunication: The interface for communication
+     * @param msg: The message we want to send
+     * @param type: The type of message
+     *
+     * @return true if the message was sent to somebody, false otherwise
+     */
+    public static boolean sendEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication, String msg, String type) {
+        Perception agentPerception = agentState.getPerception();
+
+        // Create a message string
+        String messageString = makeMessageString(msg, type);
+        boolean sent = false;
+
+        for (int x = 0; x <= agentPerception.getWidth(); x++) {
+            for (int y = 0; y <= agentPerception.getHeight(); y++) {
+                // Get the perception of the cell
+                CellPerception cellPerception = agentPerception.getCellAt(x, y);
+                CellPerception stationCellPerception = agentPerception.getCellAt(x, y + 1);
+
+                // Check if the cell is null and continue with the next cell if so
+                if (cellPerception == null) continue;
+
+                // Check if the cell beneath the cellPerception is null
+                if (stationCellPerception == null) continue;
+
+                // Get the agent representation of the cell
+                Optional<AgentRep> agentRep = cellPerception.getAgentRepresentation();
+
+                // Check if there is no agent on the cell and continue with the next cell if so
+                if (agentRep.isEmpty()) continue;
+
+                // Only send message to the agent on the charging station
+                if (!stationCellPerception.containsEnergyStation()) continue;
+
+                // Check if the position of the agent corresponds to the agent's own position and continue with the next cell if so
+                if (agentRep.get().getX() == agentState.getX() && agentRep.get().getY() == agentState.getY()) continue;
+
+                // Communicate the message to the agent
+                agentCommunication.sendMessage(agentRep.get(), messageString);
+
+                // Update sent variable
+                sent = true;
+            }
+        }
+
+        return sent;
     }
 }

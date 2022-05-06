@@ -60,6 +60,10 @@ public class ActionUtils {
             // Perform step
             agentAction.step(neighbour.getX(), neighbour.getY());
 
+            // Inform dev
+            if (GeneralUtils.PRINT)
+                System.out.printf("%s: Moved randomly to %s %s\n", agentState.getName(),neighbour.getX(), neighbour.getY());
+
             return;
 
         }
@@ -251,6 +255,9 @@ public class ActionUtils {
             // Perform a step
             agentAction.step(agentNewX, agentNewY);
 
+            // Inform
+            if (GeneralUtils.PRINT)
+                System.out.printf("%s: Moved to position (%d,%d)\n", agentState.getName(), agentNewX, agentNewY);
         }
         else ActionUtils.moveRandomly(agentState, agentAction);
     }
@@ -273,6 +280,10 @@ public class ActionUtils {
 
         // Perform pick up
         agentAction.pickPacket(packetX, packetY);
+
+        // Inform
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Picked up packet %s\n", agentState.getName(), packetCoordinate);
     }
 
     /**
@@ -289,5 +300,9 @@ public class ActionUtils {
 
         // Perform put down
         agentAction.putPacket(destinationX, destinationY);
+
+        // Inform
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Put down packet %s\n", agentState.getName(), destinationCoordinate);
     }
 }

@@ -14,6 +14,8 @@ import util.assignments.targets.Destination;
 import util.assignments.task.Task;
 import util.assignments.task.TaskType;
 
+import java.util.Map;
+
 /**
  * A behavior where the agent puts down a packet
  */
@@ -30,6 +32,9 @@ public class PutDownPacketBehavior extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+
+        // Communicate the graph with agents in perception
+        GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
     }
 
     @Override

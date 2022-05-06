@@ -1,18 +1,22 @@
 package util.assignments.general;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import java.util.List;
 
+import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
+import agent.behavior.assignment_2.behaviors.ChargingBehavior;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
 import environment.world.packet.PacketRep;
 import util.assignments.graph.Graph;
+import util.assignments.graph.GraphUtils;
 import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
@@ -31,6 +35,7 @@ public class GeneralUtils {
     // Energy values
     public static final int WALK_WITHOUT_PACKET = 10;
     public static final int WALK_WITH_PACKET = 25;
+    public static final boolean PRINT = true;
 
     ////////////////
     // PERCEPTION //
@@ -98,7 +103,8 @@ public class GeneralUtils {
         discoveredPackets.add(packet);
 
         // Inform
-        System.out.printf("%s: Discovered a new packet (%s) [%s]\n", agentState.getName(), packet, discoveredPackets.size());
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Discovered a new packet (%s) [%s]\n", agentState.getName(), packet, discoveredPackets.size());
 
         // Update memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
@@ -128,7 +134,8 @@ public class GeneralUtils {
         discoveredDestinations.add(destination);
 
         // Inform
-        System.out.printf("%s: Discovered a new destination (%s) [%s]\n", agentState.getName(), destination, discoveredDestinations.size());
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Discovered a new destination (%s) [%s]\n", agentState.getName(), destination, discoveredDestinations.size());
 
         // Update memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations, MemoryKeys.UPDATED_STATIONS, true));
@@ -154,7 +161,8 @@ public class GeneralUtils {
         discoveredChargingStations.add(chargingStation);
 
         // Inform
-        System.out.printf("%s: Discovered a new charging station (%s) [%s]\n", agentState.getName(), chargingStation, discoveredChargingStations.size());
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Discovered a new charging station (%s) [%s]\n", agentState.getName(), chargingStation, discoveredChargingStations.size());
 
         // Update memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations, MemoryKeys.UPDATED_STATIONS, true));
@@ -206,6 +214,20 @@ public class GeneralUtils {
         }
     }
 
+    /**
+     * A function that is used to communicate information about the graph.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    public static void handleGraphCommunication(AgentState agentState, AgentCommunication agentCommunication) {
+        // Share the graph
+        shareGraph(agentState, agentCommunication);
+
+        // Update graph
+        updateGraph(agentState, agentCommunication);
+    }
+
         ///////////
         // SHARE //
         ///////////
@@ -218,8 +240,11 @@ public class GeneralUtils {
      */
     private static void shareDestinations(AgentState agentState, AgentCommunication agentCommunication) {
         // Send messages with the list of discovered destinations
+        if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class).size() == 0) return;
+
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS);
     }
+
 
     /**
      * A function that is used to share the charging stations with other agents.
@@ -230,6 +255,17 @@ public class GeneralUtils {
     private static void shareChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
         // Broadcast the list of discovered charging stations
         CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
+    }
+
+    /**
+     * A function that is used to share the graph with other agents.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    private static void shareGraph(AgentState agentState, AgentCommunication agentCommunication) {
+        // Send messages with the graph
+        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.GRAPH);
     }
 
         ////////////
@@ -258,7 +294,8 @@ public class GeneralUtils {
             currentDestinations.add(updatedDestination);
 
             // Inform
-            System.out.printf("%s: Added a new destination from communication (%s) [%s]\n", agentState.getName(), updatedDestination, currentDestinations.size());
+            if (GeneralUtils.PRINT)
+                System.out.printf("%s: Added a new destination from communication (%s) [%s]\n", agentState.getName(), updatedDestination, currentDestinations.size());
         }
 
         // Update the current destinations
@@ -286,7 +323,8 @@ public class GeneralUtils {
                 currentChargingStations.add(updatedChargingStation);
 
                 // Inform
-                System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
+                if (GeneralUtils.PRINT)
+                    System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
                 
                 continue;
             }            
@@ -300,13 +338,44 @@ public class GeneralUtils {
                     currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
                 
                     // Inform
-                    System.out.printf("%s: Updated a known charging station from communication (%s)\n", agentState.getName(), currentChargingStation);
+                    if (GeneralUtils.PRINT)
+                        System.out.printf("%s: Updated a known charging station from communication (%s)\n", agentState.getName(), currentChargingStation);
                 }
             }
         }
 
         // Update the current charging stations
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, currentChargingStations));
+    }
+
+    /**
+     * A function that updates the graph with the information received from other agents.
+     *
+     * @param agentState The current state of the agent
+     * @param agentCommunication The interface for communication
+     */
+    private static void updateGraph(AgentState agentState, AgentCommunication agentCommunication) {
+        // Get the updated graph
+        HashMap<String, Graph> graphMessages = CommunicationUtils.getObjectFromMails(agentCommunication, MemoryKeys.GRAPH, Graph.class);
+
+        // No messages about the graph received
+        if (graphMessages == null) return;
+
+        // If the message comes from the agent return
+        if (graphMessages.containsKey(agentState.getName())) return;
+
+        // Loop over the received messages
+        for (String sender : graphMessages.keySet()) {
+            // Get an update of the graphs
+            Graph updatedGraph = graphMessages.get(sender);
+
+            // Update the current graph
+            GraphUtils.update(agentState, updatedGraph);
+
+            // Inform
+            if (GeneralUtils.PRINT)
+                System.out.printf("%s: Updated the graph from communication\n", agentState.getName());
+        }
     }
 
     ///////////
@@ -402,7 +471,7 @@ public class GeneralUtils {
     }
 
     /**
-     * A function that determines whether the agents has enough energy left to pick up the given packet en deliver it
+     * A function that determines whether the agent has enough energy left to pick up the given packet en deliver it
      * to the given destination. The cost is based on where the agent is currently standing.
      *
      * @param agentState: The state of the agent

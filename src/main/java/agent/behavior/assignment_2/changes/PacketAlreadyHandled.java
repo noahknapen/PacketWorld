@@ -9,6 +9,8 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 
+import java.util.Map;
+
 /**
  * A behavior change class that checks if the packet towards which the agent is moving 
  * hasn't already been picked up by another agent
@@ -72,7 +74,7 @@ public class PacketAlreadyHandled extends BehaviorChange{
                 int cellX = cellPerception.getX();
                 int cellY = cellPerception.getY();
                 
-                // Check if the positions correpond
+                // Check if the positions correspond
                 if(cellX == packetX && cellY == packetY) {
                     // Return if the cell does not contain a packet
                     return !cellPerception.containsPacket();

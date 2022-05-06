@@ -5,14 +5,9 @@ import agent.behavior.BehaviorChange;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 
-import java.util.Map;
+public class StopExploring extends BehaviorChange{
 
-/**
- * A behavior change class that checks if the agent carries a packet
- */
-public class HasCarry extends BehaviorChange{
-
-    private boolean hasCarry = false;
+    private boolean stopExploring;
 
     ///////////////
     // OVERRIDES //
@@ -23,12 +18,15 @@ public class HasCarry extends BehaviorChange{
         // Retrieve the agent state
         AgentState agentState = this.getAgentState();
 
-        // If the agent carries something, hasCarry is true
-        hasCarry = agentState.hasCarry();
+        Object exploringTurns = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.EXPLORING_TURNS, Integer.class);
+
+        if (exploringTurns == null) return;
+
+        stopExploring = ((int) exploringTurns ) >= 60;
     }
 
     @Override
     public boolean isSatisfied() {
-        return hasCarry;
+        return stopExploring;
     }
-}  
+}

@@ -11,6 +11,7 @@ import util.assignments.targets.Packet;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Map;
 
 
 public class NotEnoughEnergyToWork extends BehaviorChange {
@@ -27,7 +28,6 @@ public class NotEnoughEnergyToWork extends BehaviorChange {
 
         // Check if the agent has enough energy to work
         notEnoughEnergyToWork = isNotEnoughEnergyToWork(agentState);
-
     }
 
     @Override
