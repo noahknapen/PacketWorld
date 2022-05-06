@@ -3,7 +3,9 @@ package agent.behavior.assignment_2.changes;
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.CellPerception;
+import environment.Coordinate;
 import environment.Perception;
+import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Packet;
@@ -76,6 +78,10 @@ public class PacketAlreadyHandled extends BehaviorChange{
                 
                 // Check if the positions correspond
                 if(cellX == packetX && cellY == packetY) {
+                    // If the packet is gone, do update your graph
+                    if (!cellPerception.containsPacket())
+                        GeneralUtils.upDateGraphWhenPacketIsGone(agentState, new Coordinate(packetX, packetY));
+
                     // Return if the cell does not contain a packet
                     return !cellPerception.containsPacket();
                 }

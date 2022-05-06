@@ -1,9 +1,6 @@
 package util.assignments.graph;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 
 import agent.AgentState;
 import environment.CellPerception;
@@ -53,8 +50,14 @@ public class GraphUtils {
                 int cellY = cellPerception.getY();
                 Coordinate cellCoordinate = new Coordinate(cellX, cellY);
 
+                Node cellNode;
+
                 // Create a node
-                Node cellNode = new Node(cellCoordinate);
+                if (cellPerception.containsPacket() || cellPerception.containsEnergyStation() || cellPerception.containsAnyDestination()) {
+                    cellNode = new Node(cellCoordinate, false);
+                } else {
+                    cellNode = new Node(cellCoordinate, true);
+                }
 
                 // Add the node to the graph
                 graph.addNode(cellNode);
@@ -79,7 +82,13 @@ public class GraphUtils {
                         Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                         // Create a node
-                        Node neighbourNode = new Node(neighbourCellCoordinate);
+                        Node neighbourNode;
+
+                        if (cellPerception.containsPacket() || cellPerception.containsEnergyStation() || cellPerception.containsAnyDestination()) {
+                            neighbourNode = new Node(neighbourCellCoordinate, false);
+                        } else {
+                            neighbourNode = new Node(neighbourCellCoordinate, true);
+                        }
 
                         // Check if node is equal to cell and continue with the next cell if so
                         if(cellNode.equals(neighbourNode)) continue;
@@ -119,26 +128,8 @@ public class GraphUtils {
             // Add the node to the current graph
             currentGraph.addNode(node);
 
-            // Loop over neighbourhood to add edges
-            for(int i = -1; i <= 1; i++) {
-                for(int j = -1; j <= 1; j++) {
-                    // Get the position of the neighbour cell
-                    int neighbourCellX = nodeX + i;
-                    int neighbourCellY = nodeY + j;
-                    Coordinate neighbourCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
-
-                    // Define neighbour node
-                    Node neighbourNode = new Node(neighbourCoordinate);
-
-                    // Check if neighbour node is not contained in the graph and continue with next neighbour if so
-                    if(!currentGraph.getMap().containsKey(neighbourNode)) continue;
-
-                    // Check if node is equal to neighbour and continue with the next neighbour if so
-                    if(node.equals(neighbourNode)) continue;
-
-                    // Add the edges between the cells
-                    currentGraph.addEdge(node, neighbourNode);
-                }
+            for(Node edge : updatedGraph.getMap().get(node)) {
+                currentGraph.addEdge(node, edge);
             }
         }
 
@@ -160,9 +151,7 @@ public class GraphUtils {
      */
     public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) {
         // Get the position of the agent
-        int agentX = agentState.getX();
-        int agentY = agentState.getY();
-        Coordinate agentPosition = new Coordinate(agentX, agentY);
+        Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
 
         // Get the graph
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
@@ -170,13 +159,15 @@ public class GraphUtils {
         // Check if graph is null and raise exception if so
         if(graph == null) return null;
 
-        // Define the nodes
-        Node startNode = new Node(agentPosition);
-        Node targetNode = new Node(target);
+        // Define the start and end node
+        Node startNode = new Node(agentPosition, true);
+        Node targetNode = new Node(target, true);
 
         // Define priority queues
-        PriorityQueue<Node> closeList = new PriorityQueue<>();
         PriorityQueue<Node> openList = new PriorityQueue<>();
+        HashMap<Node, Double> openListWithCost = new HashMap<>();
+        PriorityQueue<Node> closeList = new PriorityQueue<>();
+        HashMap<Node, Double> closeListWithCost = new HashMap<>();
 
         // Set costs of start node
         startNode.setGCost(0);
@@ -190,42 +181,40 @@ public class GraphUtils {
 
         // Perform A*
         while(!openList.isEmpty()) {
-            Node node = openList.peek();
+            Node node = openList.poll();
 
             if(node.equals(targetNode)) {
                 result = node;
                 break;
-            }   
-
-            for(Node neighbourNode: graph.getMap().get(node)) {
-                double totalGCost = node.getGCost() + 1;
-
-                if(!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)){
-                    neighbourNode.setParent(node);
-                    neighbourNode.setGCost(totalGCost);
-                    neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-
-                    openList.add(neighbourNode);
-                } else {
-                    if(totalGCost < neighbourNode.getGCost()){
-                        neighbourNode.setParent(node);
-                        neighbourNode.setGCost(totalGCost);
-                        neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-    
-                        if(closeList.contains(neighbourNode)){
-                            closeList.remove(neighbourNode);
-                            openList.add(neighbourNode);
-                        }
-                    }
-                }
             }
 
-            openList.remove(node);
+            for(Node neighbourNode: graph.getMap().get(node)) {
+
+                if (!neighbourNode.isWalkable()) continue;
+
+                neighbourNode.setParent(node);
+                neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+                neighbourNode.setGCost(node.getGCost() + 1);
+
+                if (openListWithCost.containsKey(neighbourNode)) {
+                    if (neighbourNode.getFCost() > openListWithCost.get(neighbourNode)) continue;
+                }
+
+                if (closeListWithCost.containsKey(neighbourNode)) {
+                    if (neighbourNode.getFCost() > closeListWithCost.get(neighbourNode)) continue;
+                }
+
+                openList.add(neighbourNode);
+                openListWithCost.put(neighbourNode, neighbourNode.getFCost());
+
+            }
+
             closeList.add(node);
+            closeListWithCost.put(node, node.getFCost());
         }
 
         // Ensure that result isn't null
-        if (result == null) return new Coordinate(agentX, agentY);
+        if (result == null) return agentPosition;
 
         // Calculate the path
         ArrayList<Coordinate> path = new ArrayList<>();
@@ -239,18 +228,18 @@ public class GraphUtils {
 
         // Reverse the path
         Collections.reverse(path);
-
+        System.out.printf("%s: %s", agentState.getName(), path);
         // Return the first element of the path (which defines the next move)
         return path.get(0);
     }
 
-    /**
-     * A function to calculate the heuristic value of a node with a given reference
-     * 
-     * @param reference The reference by means of which the heuristic value is calculated
-     * @param node The node for which the heuristic value should be calculated
-     * @return The heuristic value of a node
-     */
+        /**
+         * A function to calculate the heuristic value of a node with a given reference
+         *
+         * @param reference The reference by means of which the heuristic value is calculated
+         * @param node The node for which the heuristic value should be calculated
+         * @return The heuristic value of a node
+         */
     private static double calculateHeuristic(Node reference, Node node) {
         Coordinate referenceCoordinate = reference.getCoordinate();
         Coordinate nodeCoordinate = node.getCoordinate();

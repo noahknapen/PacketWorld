@@ -1,5 +1,7 @@
 package agent.behavior.assignment_2.behaviors;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import agent.AgentAction;
@@ -9,7 +11,9 @@ import agent.behavior.Behavior;
 import environment.Coordinate;
 import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
+import util.assignments.graph.Graph;
 import util.assignments.graph.GraphUtils;
+import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Packet;
@@ -67,11 +71,14 @@ public class PickUpPacketBehavior extends Behavior {
         if(task.getType() != TaskType.MOVE_TO_PACKET) throw new IllegalArgumentException("Task type is not MOVE_TO_PACKET");
 
         // Get the coordinate of the packet
-        Packet packet= task.getPacket();
+        Packet packet = task.getPacket();
         Coordinate packetCoordinate = packet.getCoordinate();
 
         // Pick up the packet
         ActionUtils.pickUpPacket(agentState, agentAction, packetCoordinate);
+
+        // Update graph to let it now the packetCoordinate cell is walkable
+        GeneralUtils.upDateGraphWhenPacketIsGone(agentState, packetCoordinate);
     }
 
     /**

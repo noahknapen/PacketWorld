@@ -511,4 +511,35 @@ public class GeneralUtils {
         // Calculate the distance
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
     }
+
+    /**
+     * A function that is used to update the packet coordinates in the graph
+     *
+     * @param agentState: The state of the agent
+     * @param packetCoordinate: The coordinates of the node
+     */
+    public static void upDateGraphWhenPacketIsGone(AgentState agentState, Coordinate packetCoordinate) {
+        // Update the graph that the packet is gone
+        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
+
+        // Ensure graph is ther
+        if (graph == null) return;
+
+        // Get the graph
+        Map<Node, List<Node>> nodes = graph.getMap();
+
+        // Create old and new node
+        Node oldNode = new Node(packetCoordinate, false);
+        Node newNode = new Node(packetCoordinate, true);
+
+        // Get the connections of the old node
+        List<Node> connections = nodes.get(oldNode);
+
+        // Remove old node and put new node in
+        graph.getMap().remove(oldNode);
+        graph.getMap().put(newNode, connections);
+
+        // Update memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
+    }
 }
