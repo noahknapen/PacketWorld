@@ -35,7 +35,7 @@ public class GeneralUtils {
     // Energy values
     public static final int WALK_WITHOUT_PACKET = 10;
     public static final int WALK_WITH_PACKET = 25;
-    public static final boolean PRINT = false;
+    public static final boolean PRINT = true;
 
     ////////////////
     // PERCEPTION //
