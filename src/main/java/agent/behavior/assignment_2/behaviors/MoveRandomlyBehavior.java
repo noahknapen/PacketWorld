@@ -62,10 +62,7 @@ public class MoveRandomlyBehavior extends Behavior {
         // Ensure that there are messages before continuing
         if (agentCommunication.getNbMessages() == 0) return;
 
-        // Retrieve the messages
-        HashMap<String, Boolean> receivedMessage = CommunicationUtils.getObjectFromMails(agentCommunication, "boolean", Boolean.class);
-
-        // inform dev
-        System.out.printf("%s: Message Received and deleted\n", agentState.getName());
+        // Retrieve the messages and delete them
+        CommunicationUtils.getObjectFromMails(agentCommunication, "boolean", Boolean.class);
     }
 }

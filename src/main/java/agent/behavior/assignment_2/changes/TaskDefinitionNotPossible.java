@@ -2,7 +2,6 @@ package agent.behavior.assignment_2.changes;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 

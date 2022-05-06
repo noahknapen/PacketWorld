@@ -113,12 +113,8 @@ public class ChargingBehavior extends Behavior {
             // If no emergency skip
             if (!(emergency)) continue;
 
-            System.out.printf("%s: Message Received from: %s\n", agentState.getName(), sender);
             // Change the memory due to the emergency
             MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.EMERGENCY, true));
         }
-
-        // inform dev
-        System.out.printf("%s: Message Received\n", agentState.getName());
     }
 }

@@ -61,7 +61,8 @@ public class ActionUtils {
             agentAction.step(neighbour.getX(), neighbour.getY());
 
             // Inform dev
-            System.out.printf("%s: Moved randomly to %s %s\n", agentState.getName(),neighbour.getX(), neighbour.getY());
+            if (GeneralUtils.PRINT)
+                System.out.printf("%s: Moved randomly to %s %s\n", agentState.getName(),neighbour.getX(), neighbour.getY());
 
             return;
 
@@ -255,7 +256,8 @@ public class ActionUtils {
             agentAction.step(agentNewX, agentNewY);
 
             // Inform
-            System.out.printf("%s: Moved to position (%d,%d)\n", agentState.getName(), agentNewX, agentNewY);
+            if (GeneralUtils.PRINT)
+                System.out.printf("%s: Moved to position (%d,%d)\n", agentState.getName(), agentNewX, agentNewY);
         }
         else ActionUtils.moveRandomly(agentState, agentAction);
     }
@@ -280,7 +282,8 @@ public class ActionUtils {
         agentAction.pickPacket(packetX, packetY);
 
         // Inform
-        System.out.printf("%s: Picked up packet %s\n", agentState.getName(), packetCoordinate);
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Picked up packet %s\n", agentState.getName(), packetCoordinate);
     }
 
     /**
@@ -299,6 +302,7 @@ public class ActionUtils {
         agentAction.putPacket(destinationX, destinationY);
 
         // Inform
-        System.out.printf("%s: Put down packet %s\n", agentState.getName(), destinationCoordinate);
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Put down packet %s\n", agentState.getName(), destinationCoordinate);
     }
 }

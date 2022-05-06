@@ -35,6 +35,7 @@ public class GeneralUtils {
     // Energy values
     public static final int WALK_WITHOUT_PACKET = 10;
     public static final int WALK_WITH_PACKET = 25;
+    public static final boolean PRINT = false;
 
     ////////////////
     // PERCEPTION //
@@ -102,7 +103,8 @@ public class GeneralUtils {
         discoveredPackets.add(packet);
 
         // Inform
-        System.out.printf("%s: Discovered a new packet (%s) [%s]\n", agentState.getName(), packet, discoveredPackets.size());
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Discovered a new packet (%s) [%s]\n", agentState.getName(), packet, discoveredPackets.size());
 
         // Update memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
@@ -132,7 +134,8 @@ public class GeneralUtils {
         discoveredDestinations.add(destination);
 
         // Inform
-        System.out.printf("%s: Discovered a new destination (%s) [%s]\n", agentState.getName(), destination, discoveredDestinations.size());
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Discovered a new destination (%s) [%s]\n", agentState.getName(), destination, discoveredDestinations.size());
 
         // Update memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations, MemoryKeys.UPDATED_STATIONS, true));
@@ -158,7 +161,8 @@ public class GeneralUtils {
         discoveredChargingStations.add(chargingStation);
 
         // Inform
-        System.out.printf("%s: Discovered a new charging station (%s) [%s]\n", agentState.getName(), chargingStation, discoveredChargingStations.size());
+        if (GeneralUtils.PRINT)
+            System.out.printf("%s: Discovered a new charging station (%s) [%s]\n", agentState.getName(), chargingStation, discoveredChargingStations.size());
 
         // Update memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations, MemoryKeys.UPDATED_STATIONS, true));
@@ -290,7 +294,8 @@ public class GeneralUtils {
             currentDestinations.add(updatedDestination);
 
             // Inform
-            System.out.printf("%s: Added a new destination from communication (%s) [%s]\n", agentState.getName(), updatedDestination, currentDestinations.size());
+            if (GeneralUtils.PRINT)
+                System.out.printf("%s: Added a new destination from communication (%s) [%s]\n", agentState.getName(), updatedDestination, currentDestinations.size());
         }
 
         // Update the current destinations
@@ -318,7 +323,8 @@ public class GeneralUtils {
                 currentChargingStations.add(updatedChargingStation);
 
                 // Inform
-                System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
+                if (GeneralUtils.PRINT)
+                    System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
                 
                 continue;
             }            
@@ -332,7 +338,8 @@ public class GeneralUtils {
                     currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
                 
                     // Inform
-                    System.out.printf("%s: Updated a known charging station from communication (%s)\n", agentState.getName(), currentChargingStation);
+                    if (GeneralUtils.PRINT)
+                        System.out.printf("%s: Updated a known charging station from communication (%s)\n", agentState.getName(), currentChargingStation);
                 }
             }
         }
@@ -366,7 +373,8 @@ public class GeneralUtils {
             GraphUtils.update(agentState, updatedGraph);
 
             // Inform
-            System.out.printf("%s: Updated the graph from communication\n", agentState.getName());
+            if (GeneralUtils.PRINT)
+                System.out.printf("%s: Updated the graph from communication\n", agentState.getName());
         }
     }
 

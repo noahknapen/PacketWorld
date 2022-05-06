@@ -73,7 +73,7 @@ public class GraphUtils {
                         if(neighbourCellPerception == null) continue;
                         
                         // Check if the neighbour cell contains no packet nor destination and is not walkable and continue with the next cell if so
-                        if(!(neighbourCellPerception.containsPacket() || neighbourCellPerception.containsAnyDestination()) && !neighbourCellPerception.isWalkable()) continue;
+                        if(!(neighbourCellPerception.containsPacket() || neighbourCellPerception.containsAnyDestination() || neighbourCellPerception.containsEnergyStation()) && !neighbourCellPerception.isWalkable()) continue;
 
                         // Get the position of the neighbour cell
                         Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
@@ -101,7 +101,7 @@ public class GraphUtils {
      * @param agentState The current state of the agent
      */
     public static void update(AgentState agentState, Graph updatedGraph) {
-        // Get the currentgraph
+        // Get the current graph
         Graph currentGraph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Check if current graph is null and create one if so
@@ -125,10 +125,10 @@ public class GraphUtils {
                     // Get the position of the neighbour cell
                     int neighbourCellX = nodeX + i;
                     int neighbourCellY = nodeY + j;
-                    Coordinate neightbourCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
+                    Coordinate neighbourCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                     // Define neighbour node
-                    Node neighbourNode = new Node(neightbourCoordinate);
+                    Node neighbourNode = new Node(neighbourCoordinate);
 
                     // Check if neighbour node is not contained in the graph and continue with next neighbour if so
                     if(!currentGraph.getMap().containsKey(neighbourNode)) continue;
@@ -239,8 +239,6 @@ public class GraphUtils {
 
         // Reverse the path
         Collections.reverse(path);
-
-        System.out.println(path);
 
         // Return the first element of the path (which defines the next move)
         return path.get(0);
