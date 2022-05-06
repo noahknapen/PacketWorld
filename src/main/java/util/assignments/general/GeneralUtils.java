@@ -236,8 +236,11 @@ public class GeneralUtils {
      */
     private static void shareDestinations(AgentState agentState, AgentCommunication agentCommunication) {
         // Send messages with the list of discovered destinations
+        if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class).size() == 0) return;
+
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS);
     }
+
 
     /**
      * A function that is used to share the charging stations with other agents.
@@ -460,7 +463,7 @@ public class GeneralUtils {
     }
 
     /**
-     * A function that determines whether the agents has enough energy left to pick up the given packet en deliver it
+     * A function that determines whether the agent has enough energy left to pick up the given packet en deliver it
      * to the given destination. The cost is based on where the agent is currently standing.
      *
      * @param agentState: The state of the agent
@@ -500,5 +503,4 @@ public class GeneralUtils {
         // Calculate the distance
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
     }
-
 }

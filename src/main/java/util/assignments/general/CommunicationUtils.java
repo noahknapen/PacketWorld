@@ -81,6 +81,9 @@ public class CommunicationUtils {
      */
     public static <T> ArrayList<T> getListFromMails(AgentState agentState, AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
         try {
+            // If no messages, return empty list
+            if (agentCommunication.getNbMessages() == 0) return new ArrayList<>();
+
             // Get the received mails
             ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
 
@@ -110,7 +113,7 @@ public class CommunicationUtils {
                 }
             }
             return result;
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             e.printStackTrace();
         }
 
@@ -155,9 +158,6 @@ public class CommunicationUtils {
 
                 // Communicate the message to the agent
                 agentCommunication.sendMessage(agentRep.get(), messageString);
-
-                // Inform
-                System.out.printf("%s: Sends its %s to agent: %s%n\n", agentState.getName(), memoryKey, agentRep.get().getName());
             }
         } 
     }
