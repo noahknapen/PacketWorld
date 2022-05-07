@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import environment.Coordinate;
 import util.assignments.jackson.NodeDeserializer;
 import util.assignments.jackson.NodeSerializer;
 
@@ -48,14 +47,13 @@ public class Graph {
      * @param node The coordinate of the node
      * @return boolean (True if walkable)
      */
-    public boolean nodeWalkable(Node node) {
-        if (!getMap().containsKey(node)) return false;
+    public Node getNode(Node node) {
+        if (!getMap().containsKey(node)) return node;
 
         return getMap()
                 .keySet()
                 .stream()
-                .filter(n -> node.getCoordinate().equals(n.getCoordinate())).toList().get(0)
-                .isWalkable();
+                .filter(n -> node.getCoordinate().equals(n.getCoordinate())).toList().get(0);
     }
 
     /////////////

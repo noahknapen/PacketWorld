@@ -138,7 +138,7 @@ public class MoveToChargingStationBehavior extends Behavior {
      */
     private void sendEmergencyMessage(AgentState agentState, AgentCommunication agentCommunication) {
         // Check if the battery level is low enough to send emergency notification
-        if (75 < agentState.getBatteryState()) return;
+        if (85 < agentState.getBatteryState()) return;
         if (0 == agentState.getBatteryState()) return;
 
         // Construct message

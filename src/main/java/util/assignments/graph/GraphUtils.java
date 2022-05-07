@@ -43,7 +43,7 @@ public class GraphUtils {
                 if(cellPerception == null) continue;
 
                 // Check if the cell is not walkable and that it is not because of an agent standing there. If so continue with the next cell
-                if(cellCurrentlyNotWalkable(cellPerception) && !cellPerception.containsAgent()) continue;
+                if(cellOfInterest(cellPerception) && !cellPerception.containsAgent()) continue;
 
                 // Get the position of the cell
                 int cellX = cellPerception.getX();
@@ -51,7 +51,8 @@ public class GraphUtils {
                 Coordinate cellCoordinate = new Coordinate(cellX, cellY);
 
                 // Create a node
-                Node cellNode = new Node(cellCoordinate, cellPerception.isWalkable() || cellPerception.containsAgent());
+                boolean cellWalkable = cellPerception.isWalkable() || cellPerception.containsAgent();
+                Node cellNode = new Node(cellCoordinate, cellWalkable);
 
                 // Add the node to the graph
                 graph.addNode(cellNode);
@@ -70,14 +71,14 @@ public class GraphUtils {
                         if(neighbourCellPerception == null) continue;
 
                         // Check if the cell is not walkable and that it is not because of an agent standing there. If so continue with the next cell
-                        if(cellCurrentlyNotWalkable(neighbourCellPerception) && !neighbourCellPerception.containsAgent()) continue;
+                        if(cellOfInterest(neighbourCellPerception) && !neighbourCellPerception.containsAgent()) continue;
 
                         // Get the position of the neighbour cell
                         Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                         // Create a node
-                        Node neighbourNode = new Node(neighbourCellCoordinate,
-                                neighbourCellPerception.isWalkable() || neighbourCellPerception.containsAgent());
+                        boolean neighbourWalkable = neighbourCellPerception.isWalkable() || neighbourCellPerception.containsAgent();
+                        Node neighbourNode = new Node(neighbourCellCoordinate, neighbourWalkable);
 
                         // Check if node is equal to cell and continue with the next cell if so
                         if(cellNode.equals(neighbourNode)) continue;
@@ -137,8 +138,7 @@ public class GraphUtils {
                     // Check if node is equal to neighbour and continue with the next neighbour if so
                     if(node.equals(neighbourNode)) continue;
 
-
-                    boolean neighbourWalkable = currentGraph.nodeWalkable(neighbourNode);
+                    boolean neighbourWalkable = currentGraph.getNode(neighbourNode).isWalkable();
 
                     // Check if both cell node and neighbour node is not walkable and continue to next neighbour if that's the case
                     if(!node.isWalkable() && !neighbourWalkable) continue;
@@ -206,30 +206,8 @@ public class GraphUtils {
             }
 
             // Check if node is walkable
-            if (graph.nodeWalkable(node)) {
-                for (Node neighbourNode : graph.getMap().get(node)) {
-
-                    double totalGCost = node.getGCost() + 1;
-
-                    if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
-                        neighbourNode.setParent(node);
-                        neighbourNode.setGCost(totalGCost);
-                        neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-
-                        openList.add(neighbourNode);
-                    } else {
-                        if (totalGCost < neighbourNode.getGCost()) {
-                            neighbourNode.setParent(node);
-                            neighbourNode.setGCost(totalGCost);
-                            neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-
-                            if (closeList.contains(neighbourNode)) {
-                                closeList.remove(neighbourNode);
-                                openList.add(neighbourNode);
-                            }
-                        }
-                    }
-                }
+            if (graph.getNode(node).isWalkable()) {
+                extractNeighbours(graph, targetNode, closeList, openList, node);
             }
 
             openList.remove(node);
@@ -237,7 +215,8 @@ public class GraphUtils {
         }
 
         // Ensure that result isn't null
-        if (result == null) return new Coordinate(agentX, agentY);
+        if (result == null)
+            return new Coordinate(agentX, agentY);
 
         // Calculate the path
         ArrayList<Coordinate> path = new ArrayList<>();
@@ -256,6 +235,31 @@ public class GraphUtils {
         return path.get(0);
     }
 
+    private static void extractNeighbours(Graph graph, Node targetNode, PriorityQueue<Node> closeList, PriorityQueue<Node> openList, Node node) {
+        for (Node neighbourNode : graph.getMap().get(node)) {
+            double totalGCost = node.getGCost() + 1;
+
+            if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
+                neighbourNode.setParent(node);
+                neighbourNode.setGCost(totalGCost);
+                neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+
+                openList.add(neighbourNode);
+            } else {
+                if (totalGCost < neighbourNode.getGCost()) {
+                    neighbourNode.setParent(node);
+                    neighbourNode.setGCost(totalGCost);
+                    neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+
+                    if (closeList.contains(neighbourNode)) {
+                        closeList.remove(neighbourNode);
+                        openList.add(neighbourNode);
+                    }
+                }
+            }
+        }
+    }
+
 
     /**
      * A function to calculate the heuristic value of a node with a given reference
@@ -271,7 +275,12 @@ public class GraphUtils {
         return GeneralUtils.calculateEuclideanDistance(referenceCoordinate, nodeCoordinate);
     }
 
-    private static boolean cellCurrentlyNotWalkable(CellPerception cellPerception) {
+    /**
+     * Checks if cell is not walkable and that it is not because of a packet, destination or energy station.
+     * @param cellPerception The cell perception
+     * @return boolean
+     */
+    private static boolean cellOfInterest(CellPerception cellPerception) {
         return !(cellPerception.containsPacket() ||
                 cellPerception.containsAnyDestination() ||
                 cellPerception.containsEnergyStation() ||
