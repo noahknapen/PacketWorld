@@ -157,7 +157,7 @@ public class GraphUtils {
     // SEARCH //
     ////////////
 
-    /*
+
     /**
      * A function to perform A* search, finding a such a path between the agent's current position
      * and the target coordinate
@@ -207,7 +207,7 @@ public class GraphUtils {
 
             // Check if node is walkable
             if (graph.getNode(node).isWalkable()) {
-                extractNeighbours(graph, targetNode, closeList, openList, node);
+                extractNeighbours(graph, node, targetNode, openList, closeList);
             }
 
             openList.remove(node);
@@ -235,7 +235,15 @@ public class GraphUtils {
         return path.get(0);
     }
 
-    private static void extractNeighbours(Graph graph, Node targetNode, PriorityQueue<Node> closeList, PriorityQueue<Node> openList, Node node) {
+    /**
+     * Extracts the neighbours around the node and adds them to openList for further evaluation. Used in A* search.
+     * @param graph The graph object
+     * @param node The node that neighbours should be extracted around
+     * @param targetNode The destination node for the search
+     * @param openList The list of open nodes (unvisited nodes)
+     * @param closeList The list of closed nodes (visited nodes)
+     */
+    private static void extractNeighbours(Graph graph, Node node, Node targetNode, PriorityQueue<Node> openList, PriorityQueue<Node> closeList) {
         for (Node neighbourNode : graph.getMap().get(node)) {
             double totalGCost = node.getGCost() + 1;
 
