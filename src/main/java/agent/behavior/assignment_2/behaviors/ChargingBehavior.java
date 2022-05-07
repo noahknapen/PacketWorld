@@ -65,7 +65,7 @@ public class ChargingBehavior extends Behavior {
     private void updateChargingStation(AgentState agentState) {
         // Get agent position, + 1 because the spot to charge is one above the charging station
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY() + 1);
-        
+
         // Get the current charging stations
         ArrayList<ChargingStation> chargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
 

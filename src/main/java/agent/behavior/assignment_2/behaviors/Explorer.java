@@ -26,6 +26,9 @@ public class Explorer extends Behavior {
 
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+
+        // Communicate blocking packages
+        GeneralUtils.handleBlockingPacketCommunication(agentState, agentCommunication);
     }
 
     @Override

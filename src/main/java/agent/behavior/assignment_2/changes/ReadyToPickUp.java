@@ -25,7 +25,7 @@ public class ReadyToPickUp extends BehaviorChange{
     @Override
     public void updateChange() {
         AgentState agentState = this.getAgentState();
-        
+
         // Check if the position is reached
         readyToPickUp = handlePositionReached(agentState);
     }
@@ -41,7 +41,7 @@ public class ReadyToPickUp extends BehaviorChange{
 
     /**
      * Check if the position of the packet is reached by the agent
-     * 
+     *
      * @param agentState The current state of the agent
      *
      * @return True if agent has reached the position of the packet, otherwise false

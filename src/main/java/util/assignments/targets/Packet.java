@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Packet extends Target {
 
     private int rgbColor;
+    private boolean prioPacket;
 
     //////////////////
     // CONSTRUCTORS //
@@ -24,6 +25,7 @@ public class Packet extends Target {
     public Packet(@JsonProperty("coordinate") Coordinate coordinate,  @JsonProperty("rgbColor") int rgbColor) {
         super(coordinate);
         this.setRgbColor(rgbColor);
+        this.setPrioPacket(false);
     }
 
     ///////////////////////
@@ -40,6 +42,14 @@ public class Packet extends Target {
 
     public void setRgbColor(int rgbColor) {
         this.rgbColor = rgbColor;
+    }
+
+    public boolean isPrioPacket() {
+        return prioPacket;
+    }
+
+    public void setPrioPacket(boolean prioPacket) {
+        this.prioPacket = prioPacket;
     }
 
     ///////////////
@@ -60,5 +70,6 @@ public class Packet extends Target {
     public int hashCode() {
         return super.hashCode();
     }
+
 }
 

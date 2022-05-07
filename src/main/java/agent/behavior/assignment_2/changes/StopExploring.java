@@ -22,7 +22,7 @@ public class StopExploring extends BehaviorChange{
 
         if (exploringTurns == null) return;
 
-        stopExploring = ((int) exploringTurns ) >= 60;
+        stopExploring = ((int) exploringTurns ) >= 0;
     }
 
     @Override
