@@ -41,8 +41,7 @@ public class ActionUtils {
     //////////////
 
     /**
-     * A function to make the agent move randomly. The agent will however prioritize position that aren't located
-     * in the graph.
+     * A function to make the agent move randomly. The agent will try to move in the same direction as long as possible.
      * 
      * @param agentState The current state of the agent
      * @param agentAction Used to perform an action with the agent
@@ -61,6 +60,12 @@ public class ActionUtils {
         agentAction.step(agentState.getX()+direction.getX(), agentState.getY()+direction.getY());
     }
 
+    /**
+     * Returns whether the next move is walkable, i.e, if the coordinate where the agent would go to is walkable.
+     * @param agentState The current state of the agent
+     * @param direction The direction the agent is moving in
+     * @return Returns true if a move in the given direction is possible. False otherwise.
+     */
     private static boolean isMoveInDirectionPossible(AgentState agentState, Coordinate direction) {
 
         if (direction == null)
@@ -76,6 +81,12 @@ public class ActionUtils {
         return false;
     }
 
+    /**
+     * Returns a direction in which the agent can move and which is not the same as the current given direction {@code currentRandomDirection}.
+     * @param agentState The current state of the agent
+     * @param currentRandomDirection The current direction the agent is going in when having to move randomly
+     * @return A coordinate representing the new direction the agent will go in
+     */
     private static Coordinate getNewRandomDirection(AgentState agentState, Coordinate currentRandomDirection) {
         
         Perception agentPerception = agentState.getPerception();
