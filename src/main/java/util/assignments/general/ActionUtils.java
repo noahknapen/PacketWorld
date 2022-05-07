@@ -87,11 +87,12 @@ public class ActionUtils {
     public static void moveToPosition(AgentState agentState, AgentAction agentAction, Coordinate coordinate) {
 
         // Check if the position is in the perception of the agent
-        /*if(GeneralUtils.positionInPerception(agentState, coordinate)) {
+
+        /*
+        if(GeneralUtils.positionInPerception(agentState, coordinate)) {
             Coordinate move = calculateMoveDefault(agentState, coordinate);
             makeMove(agentState, agentAction, move);
         }
-
          */
 
         // Check if the position is in the graph
