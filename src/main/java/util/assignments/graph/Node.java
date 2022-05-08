@@ -3,9 +3,6 @@ package util.assignments.graph;
 import com.fasterxml.jackson.annotation.*;
 
 import environment.Coordinate;
-import util.assignments.targets.ChargingStation;
-import util.assignments.targets.Destination;
-import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
 /**
@@ -71,7 +68,7 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
-    public boolean walkableIs() {
+    public boolean nodeWalkable() {
         return this.target == null;
     }
 

@@ -90,7 +90,7 @@ public class GraphUtils {
                         if(cellNode.equals(neighbourNode)) continue;
 
                         // Check if both cell node and neighbour node is not walkable and continue to next neighbour if that's the case
-                        if(!cellNode.walkableIs() && !neighbourNode.walkableIs()) continue;
+                        if(!cellNode.nodeWalkable() && !neighbourNode.nodeWalkable()) continue;
 
                         // Add the edges between the cells
                         graph.addEdge(cellNode, neighbourNode);
@@ -161,10 +161,10 @@ public class GraphUtils {
                     // Check if node is equal to neighbour and continue with the next neighbour if so
                     if(node.equals(neighbourNode)) continue;
 
-                    boolean neighbourWalkable = currentGraph.getNode(neighbourNode).walkableIs();
+                    boolean neighbourWalkable = currentGraph.getNode(neighbourNode).nodeWalkable();
 
                     // Check if both cell node and neighbour node is not walkable and continue to next neighbour if that's the case
-                    if(!node.walkableIs() && !neighbourWalkable) continue;
+                    if(!node.nodeWalkable() && !neighbourWalkable) continue;
 
                     // Add the edges between the cells
                     currentGraph.addEdge(node, neighbourNode);
@@ -229,7 +229,7 @@ public class GraphUtils {
             }
 
             // Check if node is walkable
-            if (graph.getNode(node).walkableIs()) {
+            if (graph.getNode(node).nodeWalkable()) {
                 extractNeighbours(graph, node, targetNode, openList, closeList);
             }
 
