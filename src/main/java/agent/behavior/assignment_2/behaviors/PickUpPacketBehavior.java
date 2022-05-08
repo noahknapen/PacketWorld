@@ -36,8 +36,6 @@ public class PickUpPacketBehavior extends Behavior {
         // Communicate the graph with agents in perception
         GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
 
-        // Communicate blocking packages
-        GeneralUtils.handleBlockingPacketCommunication(agentState, agentCommunication);
     }
 
     @Override

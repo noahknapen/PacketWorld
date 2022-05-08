@@ -31,9 +31,6 @@ public class MoveRandomlyBehavior extends Behavior {
 
         // Check if multiple messages were sent and ignore
         checkForEmergencyNotificationsAndIgnore(agentState, agentCommunication);
-
-        // Communicate blocking packages
-        GeneralUtils.handleBlockingPacketCommunication(agentState, agentCommunication);
     }
 
     @Override

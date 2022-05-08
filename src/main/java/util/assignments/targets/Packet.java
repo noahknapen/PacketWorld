@@ -1,17 +1,18 @@
 package util.assignments.targets;
 
+import com.fasterxml.jackson.annotation.*;
 import environment.Coordinate;
 
 import java.awt.Color;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A class that represents a packet
  */
 @JsonIgnoreProperties(value={"color"})
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        defaultImpl = Packet.class
+)
 public class Packet extends Target {
 
     private int rgbColor;

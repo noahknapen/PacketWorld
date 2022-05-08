@@ -71,42 +71,6 @@ public class CommunicationUtils {
         return null;
     }
 
-    public static <T> HashMap<String, ArrayList<T>> getSenderListFromMails(AgentCommunication agentCommunication, String memoryKey, Class<T> objectClass) {
-        try {
-            // Get the received mails
-            ArrayList<Mail> mails = new ArrayList<>(agentCommunication.getMessages());
-
-            HashMap<String, ArrayList<T>> result = new HashMap<>();
-
-            // Loop over all the received mails
-            ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
-            for(int i = 0; i < mails.size(); i++) {
-                // Get the mail
-                Mail mail = mails.get(i);
-
-                // Get the message
-                String messageString = mail.getMessage();
-                String sender = mail.getFrom();
-                Message message = objectMapper.readValue(messageString, Message.class);
-
-                // Guard clause to ensure the type corresponds
-                if(!message.getType().equals(memoryKey)) continue;
-
-                // Remove the message from the mails
-                agentCommunication.removeMessage(i);
-
-                // Transform the message and return
-                result.put(sender, objectMapper.readValue(message.getMessage(), objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, objectClass)));
-
-                return result;
-            }
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-
-        return new HashMap<>();
-    }
-
     /**
      * A function to get a list from the received mails
      * 

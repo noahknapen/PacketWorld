@@ -2,14 +2,17 @@ package util.assignments.targets;
 
 import java.util.Optional;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 
 import environment.Coordinate;
 
 /**
  * A class that represents a charging station
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        defaultImpl = ChargingStation.class
+)
 public class ChargingStation extends Target{
 
     // A variable to check if the battery station is in use or not

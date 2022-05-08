@@ -6,9 +6,15 @@ import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
+import environment.world.destination.DestinationRep;
+import environment.world.packet.PacketRep;
 import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
+import util.assignments.targets.ChargingStation;
+import util.assignments.targets.Destination;
+import util.assignments.targets.Packet;
+import util.assignments.targets.Target;
 
 /**
  * A class that implements functions regarding the graph
@@ -51,8 +57,8 @@ public class GraphUtils {
                 Coordinate cellCoordinate = new Coordinate(cellX, cellY);
 
                 // Create a node
-                boolean cellWalkable = cellPerception.isWalkable() || cellPerception.containsAgent();
-                Node cellNode = new Node(cellCoordinate, cellWalkable);
+                Target target = getTarget(cellCoordinate, cellPerception);
+                Node cellNode = new Node(cellCoordinate, target);
 
                 // Add the node to the graph
                 graph.addNode(cellNode);
@@ -77,14 +83,14 @@ public class GraphUtils {
                         Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                         // Create a node
-                        boolean neighbourWalkable = neighbourCellPerception.isWalkable() || neighbourCellPerception.containsAgent();
-                        Node neighbourNode = new Node(neighbourCellCoordinate, neighbourWalkable);
+                        Target neighbourTarget = getTarget(neighbourCellCoordinate, neighbourCellPerception);
+                        Node neighbourNode = new Node(neighbourCellCoordinate, neighbourTarget);
 
                         // Check if node is equal to cell and continue with the next cell if so
                         if(cellNode.equals(neighbourNode)) continue;
 
                         // Check if both cell node and neighbour node is not walkable and continue to next neighbour if that's the case
-                        if(!cellNode.isWalkable() && !neighbourNode.isWalkable()) continue;
+                        if(!cellNode.walkableIs() && !neighbourNode.walkableIs()) continue;
 
                         // Add the edges between the cells
                         graph.addEdge(cellNode, neighbourNode);
@@ -95,6 +101,23 @@ public class GraphUtils {
 
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
+    }
+
+    private static Target getTarget(Coordinate coordinate, CellPerception cellPerception) {
+        if (cellPerception.containsPacket()) {
+            return new Packet(coordinate, Objects.requireNonNull(cellPerception.getRepOfType(PacketRep.class)).getColor().getRGB());
+        }
+
+        if (cellPerception.containsAnyDestination()) {
+            return new Destination(coordinate, Objects.requireNonNull(cellPerception.getRepOfType(DestinationRep.class)).getColor().getRGB());
+        }
+
+        if (cellPerception.containsEnergyStation()) {
+            return new ChargingStation(coordinate);
+        }
+
+        // If cell is free
+        return null;
     }
 
     /**
@@ -138,10 +161,10 @@ public class GraphUtils {
                     // Check if node is equal to neighbour and continue with the next neighbour if so
                     if(node.equals(neighbourNode)) continue;
 
-                    boolean neighbourWalkable = currentGraph.getNode(neighbourNode).isWalkable();
+                    boolean neighbourWalkable = currentGraph.getNode(neighbourNode).walkableIs();
 
                     // Check if both cell node and neighbour node is not walkable and continue to next neighbour if that's the case
-                    if(!node.isWalkable() && !neighbourWalkable) continue;
+                    if(!node.walkableIs() && !neighbourWalkable) continue;
 
                     // Add the edges between the cells
                     currentGraph.addEdge(node, neighbourNode);
@@ -206,7 +229,7 @@ public class GraphUtils {
             }
 
             // Check if node is walkable
-            if (graph.getNode(node).isWalkable()) {
+            if (graph.getNode(node).walkableIs()) {
                 extractNeighbours(graph, node, targetNode, openList, closeList);
             }
 

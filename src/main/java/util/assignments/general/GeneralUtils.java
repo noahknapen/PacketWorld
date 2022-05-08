@@ -222,23 +222,6 @@ public class GeneralUtils {
         updateGraph(agentState, agentCommunication);
     }
 
-
-    public static void handleBlockingPacketCommunication(AgentState agentState, AgentCommunication agentCommunication) {
-        ArrayList<Packet> blockadePackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIO_PACKETS_SEND, Packet.class);
-        if (blockadePackets.isEmpty()) {
-            Packet p = new Packet(new Coordinate(1,2),3);
-            p.setPrioPacket(true);
-            blockadePackets.add(p);
-            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PRIO_PACKETS_SEND, blockadePackets));
-        }
-
-        // Share the blockade
-        shareBlockadingPackages(agentState, agentCommunication);
-
-        // Update the blockading packages
-        updatePrioPackage(agentState, agentCommunication);
-    }
-
         ///////////
         // SHARE //
         ///////////
@@ -277,11 +260,8 @@ public class GeneralUtils {
     private static void shareGraph(AgentState agentState, AgentCommunication agentCommunication) {
         // Send messages with the graph
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.GRAPH);
-    }
 
-    private static void shareBlockadingPackages(AgentState agentState, AgentCommunication agentCommunication) {
-        // Send messages with the graph
-        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.PRIO_PACKETS_SEND);
+        // Prio packets added in the graph
     }
 
         ////////////
@@ -362,31 +342,6 @@ public class GeneralUtils {
 
         // Update the current charging stations
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, currentChargingStations));
-    }
-
-    private static void updatePrioPackage(AgentState agentState, AgentCommunication agentCommunication) {
-        // Get the current blockade
-        ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
-
-        // Get the updated destinations
-        HashMap<String, ArrayList<Packet>> incomingSenderPrioPackets = CommunicationUtils.getSenderListFromMails(agentCommunication, MemoryKeys.PRIO_PACKETS_SEND, Packet.class);
-
-        for (String sender : incomingSenderPrioPackets.keySet()) {
-            ArrayList<Packet> incomingPrioPackets = incomingSenderPrioPackets.get(sender);
-
-            for (Packet packet : incomingPrioPackets) {
-                boolean sameColor = agentState.getColor().isPresent() && agentState.getColor().get().equals(packet.getColor());
-                sameColor = true;
-                if (!discoveredPackets.contains(packet) && sameColor) {
-                    discoveredPackets.add(packet);
-                }
-
-            }
-        }
-
-
-        // Update the current prio packets
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
     }
 
     /**

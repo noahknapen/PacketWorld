@@ -37,9 +37,6 @@ public class MoveToChargingStationBehavior extends Behavior {
 
         // If energy lower than a threshold, send emergency message
         sendEmergencyMessage(agentState, agentCommunication);
-
-        // Communicate blocking packages
-        GeneralUtils.handleBlockingPacketCommunication(agentState, agentCommunication);
     }
 
     @Override
