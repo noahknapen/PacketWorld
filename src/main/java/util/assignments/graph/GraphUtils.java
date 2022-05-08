@@ -20,6 +20,9 @@ import util.assignments.targets.Target;
  * A class that implements functions regarding the graph
  */
 public class GraphUtils {
+
+    // The cost for traversing over a packet in a computed path using Astar
+    private static final int PACKET_COST = 0;
     
     ///////////
     // BUILD //
@@ -63,6 +66,11 @@ public class GraphUtils {
                 // Add the node to the graph or update if target exists
                 graph.addNode(cellNode);
 
+                // Check if cellNode is a packet and if its blocked
+                if (cellNode.containsTarget()){
+                    checkBlockadingPackets(agentState, graph, cellNode);
+                }
+
                 // Loop over neighbourhood to add edges
                 for(int i = -1; i <= 1; i++) {
                     for(int j = -1; j <= 1; j++) {
@@ -90,7 +98,7 @@ public class GraphUtils {
                         if(cellNode.equals(neighbourNode)) continue;
 
                         // Only allow edges between free node,
-                        if (!cellNode.nodeWalkable() && !neighbourNode.nodeWalkable() && (!cellNode.containsPacket() || !neighbourNode.containsPacket())) continue;
+                        if (!cellNode.containsTarget() && !neighbourNode.containsTarget() && (!cellNode.containsPacket() || !neighbourNode.containsPacket())) continue;
 
                         // Add the edges between the cells
                         graph.addEdge(cellNode, neighbourNode);
@@ -101,6 +109,47 @@ public class GraphUtils {
 
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
+    }
+
+    private static Graph checkBlockadingPackets(AgentState agentState, Graph graph, Node cellNode) {
+        ArrayList<Node> path = GraphUtils.performAStarSearch(agentState, cellNode.getCoordinate(), true);
+
+        if (path == null) {
+            ArrayList<Node> noPathNodes = MemoryUtils.getListFromMemory(agentState, MemoryKeys.NO_PATH_NODES, Node.class);
+            noPathNodes.add(cellNode);
+            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.NO_PATH_NODES, noPathNodes));
+            return graph;
+        }
+
+        Node firstBlockadingPacket = getFirstPathPacket(path);
+
+        // Check if a packet is blocking the path
+        if (firstBlockadingPacket != null) {
+            Packet packet = (Packet) firstBlockadingPacket.getTarget();
+
+            // Set packet as prio
+            graph.getNode(packet.getCoordinate()).setPrioPacket(true);
+
+            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == packet.getRgbColor()) {
+
+                // I can handle it myself
+                ArrayList<Packet> prioPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIO_PACKETS, Packet.class);
+                if (!prioPackets.contains(packet)) {
+                    prioPackets.add(packet);
+                    MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PRIO_PACKETS, prioPackets));
+                }
+            }
+        }
+
+        return graph;
+    }
+
+    private static Node getFirstPathPacket(ArrayList<Node> path) {
+        for (Node node : path) {
+            if (node.containsPacket()) return node;
+        }
+
+        return null;
     }
 
     /**
@@ -171,7 +220,7 @@ public class GraphUtils {
                     if(node.equals(neighbourNode)) continue;
 
                     // Only allow edges between free node, free nodes and targets and between packets
-                    if (!node.nodeWalkable() && !neighbourNode.nodeWalkable() && (!node.containsPacket() || !neighbourNode.containsPacket())) continue;
+                    if (!node.containsTarget() && !neighbourNode.containsTarget() && (!node.containsPacket() || !neighbourNode.containsPacket())) continue;
 
                     // Add the edges between the cells
                     currentGraph.addEdge(node, neighbourNode);
@@ -194,9 +243,10 @@ public class GraphUtils {
      * 
      * @param agentState The current state of the agent
      * @param target The target position that should be reached
+     * @param includePackets True if you should allow packets in path
      * @return The coordinate (first of path) to which the agent should move
      */
-    public static Coordinate performAStarSearch(AgentState agentState, Coordinate target) {
+    public static ArrayList<Node> performAStarSearch(AgentState agentState, Coordinate target, boolean includePackets) {
         // Get the position of the agent
         int agentX = agentState.getX();
         int agentY = agentState.getY();
@@ -209,7 +259,7 @@ public class GraphUtils {
         if(graph == null) return null;
 
         // Define the nodes
-        Node startNode = new Node(agentPosition);
+        Node startNode = graph.getNode(agentPosition);
         Node targetNode = new Node(target);
 
         // Define priority queues
@@ -235,10 +285,7 @@ public class GraphUtils {
                 break;
             }
 
-            // Check if node is walkable
-            if (graph.getNode(node.getCoordinate()).nodeWalkable()) {
-                extractNeighbours(graph, node, targetNode, openList, closeList);
-            }
+            extractNeighbours(graph, node, targetNode, openList, closeList, includePackets);
 
             openList.remove(node);
             closeList.add(node);
@@ -246,12 +293,12 @@ public class GraphUtils {
 
         // Ensure that result isn't null
         if (result == null)
-            return new Coordinate(agentX, agentY);
+            return null;
 
         // Calculate the path
-        ArrayList<Coordinate> path = new ArrayList<>();
+        ArrayList<Node> path = new ArrayList<>();
         while(result.getParent() != null) {
-            path.add(result.getCoordinate());
+            path.add(result);
             result = result.getParent();
 
             // Ensure that the result isn't null for the next iteration
@@ -262,7 +309,7 @@ public class GraphUtils {
         Collections.reverse(path);
 
         // Return the first element of the path (which defines the next move)
-        return path.get(0);
+        return path;
     }
 
     /**
@@ -272,10 +319,18 @@ public class GraphUtils {
      * @param targetNode The destination node for the search
      * @param openList The list of open nodes (unvisited nodes)
      * @param closeList The list of closed nodes (visited nodes)
+     * @param includePackets
      */
-    private static void extractNeighbours(Graph graph, Node node, Node targetNode, PriorityQueue<Node> openList, PriorityQueue<Node> closeList) {
+    private static void extractNeighbours(Graph graph, Node node, Node targetNode, PriorityQueue<Node> openList, PriorityQueue<Node> closeList, boolean includePackets) {
         for (Node neighbourNode : graph.getMap().get(node)) {
-            double totalGCost = node.getGCost() + 1;
+
+            // Guard clause to check if neighbour is acceptable node
+            if (!neighbourNode.containsTarget() && (!includePackets || !neighbourNode.containsPacket())) continue;
+
+            // Convert boolean to int
+            int containsPacketInt = neighbourNode.containsPacket() ? 1: 0;
+
+            double totalGCost = node.getGCost() + 1 + containsPacketInt * PACKET_COST;
 
             if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
                 neighbourNode.setParent(node);

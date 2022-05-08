@@ -10,6 +10,7 @@ import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import util.assignments.graph.GraphUtils;
+import util.assignments.graph.Node;
 
 /**
  * A class that implements functions regarding the action of the agent
@@ -205,11 +206,16 @@ public class ActionUtils {
      * @param agentState The current state of the agent
      * @param target The coordinate of the target
      */
-    private static Coordinate calculateMoveAStar(AgentState agentState,  Coordinate target) {
+    private static Coordinate calculateMoveAStar(AgentState agentState, Coordinate target) {
         // Perform A* search
-        Coordinate pathCoordinate = GraphUtils.performAStarSearch(agentState, target);
+        ArrayList<Node> path = GraphUtils.performAStarSearch(agentState, target, false);
 
-        if (pathCoordinate == null) return new Coordinate(agentState.getX(), agentState.getY());
+        if (path == null){
+            return null;
+        }
+
+        // Get the first coordinate in path
+        Coordinate pathCoordinate = path.get(0).getCoordinate();
 
         // Get the positions
         int agentX = agentState.getX();
@@ -237,6 +243,13 @@ public class ActionUtils {
      * @param move The coordinate representing the move
      */
     private static void makeMove(AgentState agentState, AgentAction agentAction, Coordinate move) {
+
+        // Check if move is null
+        if (move == null) {
+            moveRandomly(agentState, agentAction);
+            return;
+        }
+
         // Get the perception of the agent
         Perception agentPerception = agentState.getPerception();
 

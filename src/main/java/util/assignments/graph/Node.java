@@ -70,12 +70,19 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
-    public boolean nodeWalkable() {
+    public boolean containsTarget() {
         return this.target == null;
     }
 
     public boolean containsPacket() {
-        return target.getClass() == Packet.class;
+        return target != null && target.getClass() == Packet.class;
+    }
+
+    public void setPrioPacket(boolean prio) {
+        if (containsPacket()) {
+            Packet packet = (Packet) getTarget();
+            packet.setPrioPacket(prio);
+        }
     }
 
     public void setCoordinate(Coordinate coordinate) {
