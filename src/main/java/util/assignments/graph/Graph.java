@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import environment.Coordinate;
 import util.assignments.jackson.NodeDeserializer;
 import util.assignments.jackson.NodeSerializer;
 
@@ -47,13 +48,17 @@ public class Graph {
      * @param node The coordinate of the node
      * @return boolean (True if walkable)
      */
-    public Node getNode(Node node) {
-        if (!getMap().containsKey(node)) return node;
+    public Node getNode(Coordinate coordinate) {
+        Node outputNode = new Node(coordinate);
+        if (!getMap().containsKey(outputNode)) return null;
 
-        return getMap()
+        outputNode =  getMap()
                 .keySet()
                 .stream()
-                .filter(n -> node.getCoordinate().equals(n.getCoordinate())).toList().get(0);
+                .filter(n -> coordinate.equals(n.getCoordinate())).toList().get(0);
+
+        return outputNode;
+
     }
 
     /////////////
@@ -66,8 +71,11 @@ public class Graph {
      * @param node The node to add
      */
     public void addNode(Node node) {
-        // Check if the map contains the node and return if so
-        if(map.containsKey(node)) return;
+        // If node exists -> update target
+        if(map.containsKey(node)) {
+            getNode(node.getCoordinate()).setTarget(node.getTarget());
+            return;
+        }
         
         // Add the node
         map.put(node, new LinkedList<Node>());

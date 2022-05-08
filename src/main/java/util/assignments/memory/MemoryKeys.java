@@ -8,7 +8,7 @@ public class MemoryKeys {
     public static final String GRAPH = "GRAPH";
 
     public static final String PRIO_PACKETS_SEND = "PRIO_PACKETS_SEND";
-    public static final String UNKNOWN_PATH_TARGETS = "UNKNOWN_PATH_TARGETS";
+    public static final String NO_PATH_TARGETS = "UNKNOWN_PATH_TARGETS";
 
     public static final String DISCOVERED_DESTINATIONS = "DISCOVERED_DESTINATIONS";
     public static final String DISCOVERED_PACKETS = "DISCOVERED_PACKETS";

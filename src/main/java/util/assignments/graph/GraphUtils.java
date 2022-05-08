@@ -49,7 +49,7 @@ public class GraphUtils {
                 if(cellPerception == null) continue;
 
                 // Check if the cell is not walkable and that it is not because of an agent standing there. If so continue with the next cell
-                if(cellOfInterest(cellPerception) && !cellPerception.containsAgent()) continue;
+                if(cellPerception.containsWall()) continue;
 
                 // Get the position of the cell
                 int cellX = cellPerception.getX();
@@ -57,10 +57,10 @@ public class GraphUtils {
                 Coordinate cellCoordinate = new Coordinate(cellX, cellY);
 
                 // Create a node
-                Target target = getTarget(cellCoordinate, cellPerception);
+                Target target = extractTarget(cellCoordinate, cellPerception);
                 Node cellNode = new Node(cellCoordinate, target);
 
-                // Add the node to the graph
+                // Add the node to the graph or update if target exists
                 graph.addNode(cellNode);
 
                 // Loop over neighbourhood to add edges
@@ -77,20 +77,20 @@ public class GraphUtils {
                         if(neighbourCellPerception == null) continue;
 
                         // Check if the cell is not walkable and that it is not because of an agent standing there. If so continue with the next cell
-                        if(cellOfInterest(neighbourCellPerception) && !neighbourCellPerception.containsAgent()) continue;
+                        if(neighbourCellPerception.containsWall()) continue;
 
                         // Get the position of the neighbour cell
                         Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                         // Create a node
-                        Target neighbourTarget = getTarget(neighbourCellCoordinate, neighbourCellPerception);
+                        Target neighbourTarget = extractTarget(neighbourCellCoordinate, neighbourCellPerception);
                         Node neighbourNode = new Node(neighbourCellCoordinate, neighbourTarget);
 
                         // Check if node is equal to cell and continue with the next cell if so
                         if(cellNode.equals(neighbourNode)) continue;
 
-                        // Check if both cell node and neighbour node is not walkable and continue to next neighbour if that's the case
-                        if(!cellNode.nodeWalkable() && !neighbourNode.nodeWalkable()) continue;
+                        // Only allow edges between free node,
+                        if (!cellNode.nodeWalkable() && !neighbourNode.nodeWalkable() && (!cellNode.containsPacket() || !neighbourNode.containsPacket())) continue;
 
                         // Add the edges between the cells
                         graph.addEdge(cellNode, neighbourNode);
@@ -103,7 +103,13 @@ public class GraphUtils {
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
     }
 
-    private static Target getTarget(Coordinate coordinate, CellPerception cellPerception) {
+    /**
+     * Extracts the target (Packet, Destination etc) if one exists in the cell perception
+     * @param coordinate Cell coordinate
+     * @param cellPerception The cell perception
+     * @return Target (or null if cell does not contain any target)
+     */
+    private static Target extractTarget(Coordinate coordinate, CellPerception cellPerception) {
         if (cellPerception.containsPacket()) {
             return new Packet(coordinate, Objects.requireNonNull(cellPerception.getRepOfType(PacketRep.class)).getColor().getRGB());
         }
@@ -116,7 +122,6 @@ public class GraphUtils {
             return new ChargingStation(coordinate);
         }
 
-        // If cell is free
         return null;
     }
 
@@ -138,10 +143,14 @@ public class GraphUtils {
             int nodeX = node.getCoordinate().getX();
             int nodeY = node.getCoordinate().getY();
 
-            // Check if the current graph already contains the node and continue with next node if so
-            if(currentGraph.getMap().containsKey(node)) continue;
+            // If node exists in graph -> update target if updatedGraph has newer value
+            if(currentGraph.getMap().containsKey(node)) {
+                Node n = currentGraph.getNode(node.getCoordinate());
+                if (node.getUpdateTime() > n.getUpdateTime()) n.setTarget(node.getTarget());
+                continue;
+            }
 
-            // Add the node to the current graph
+            // Add the node to the current graph (this node is new in the current graph)
             currentGraph.addNode(node);
 
             // Loop over neighbourhood to add edges
@@ -153,18 +162,16 @@ public class GraphUtils {
                     Coordinate neighbourCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                     // Define neighbour node
-                    Node neighbourNode = new Node(neighbourCoordinate);
+                    Node neighbourNode = currentGraph.getNode(neighbourCoordinate);
 
-                    // Check if neighbour node is not contained in the graph and continue with next neighbour if so
-                    if(!currentGraph.getMap().containsKey(neighbourNode)) continue;
+                    // Check if neighbour node is not contained in the graph and continue with next neighbour if so (only connect edges to nodes that is in the current graph)
+                    if(neighbourNode == null) continue;
 
                     // Check if node is equal to neighbour and continue with the next neighbour if so
                     if(node.equals(neighbourNode)) continue;
 
-                    boolean neighbourWalkable = currentGraph.getNode(neighbourNode).nodeWalkable();
-
-                    // Check if both cell node and neighbour node is not walkable and continue to next neighbour if that's the case
-                    if(!node.nodeWalkable() && !neighbourWalkable) continue;
+                    // Only allow edges between free node, free nodes and targets and between packets
+                    if (!node.nodeWalkable() && !neighbourNode.nodeWalkable() && (!node.containsPacket() || !neighbourNode.containsPacket())) continue;
 
                     // Add the edges between the cells
                     currentGraph.addEdge(node, neighbourNode);
@@ -229,7 +236,7 @@ public class GraphUtils {
             }
 
             // Check if node is walkable
-            if (graph.getNode(node).nodeWalkable()) {
+            if (graph.getNode(node.getCoordinate()).nodeWalkable()) {
                 extractNeighbours(graph, node, targetNode, openList, closeList);
             }
 

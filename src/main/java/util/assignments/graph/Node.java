@@ -3,6 +3,7 @@ package util.assignments.graph;
 import com.fasterxml.jackson.annotation.*;
 
 import environment.Coordinate;
+import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
 /**
@@ -15,8 +16,8 @@ public class Node implements Comparable<Node> {
     private Coordinate coordinate;
     private double gCost;
     private double hCost;
+    private long updateTime;
     private Node parent;
-
     private Target target;
 
     //////////////////
@@ -28,6 +29,7 @@ public class Node implements Comparable<Node> {
         this.setGCost(0);
         this.setHCost(0);
         this.setParent(null);
+        this.setUpdateTime();
     }
 
     public Node(Coordinate coordinate, Target target) {
@@ -72,6 +74,10 @@ public class Node implements Comparable<Node> {
         return this.target == null;
     }
 
+    public boolean containsPacket() {
+        return target.getClass() == Packet.class;
+    }
+
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
     }
@@ -94,6 +100,15 @@ public class Node implements Comparable<Node> {
 
     public void setTarget(Target target) {
         this.target = target;
+        setUpdateTime();
+    }
+
+    public long getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime() {
+        this.updateTime = System.currentTimeMillis();
     }
 
     ///////////////
@@ -125,6 +140,5 @@ public class Node implements Comparable<Node> {
     public int hashCode() {
         return coordinate.hashCode();
     }
-
 
 }
