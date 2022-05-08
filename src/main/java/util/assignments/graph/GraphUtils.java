@@ -312,16 +312,4 @@ public class GraphUtils {
 
         return GeneralUtils.calculateEuclideanDistance(referenceCoordinate, nodeCoordinate);
     }
-
-    /**
-     * Checks if cell is not walkable and that it is not because of a packet, destination or energy station.
-     * @param cellPerception The cell perception
-     * @return boolean
-     */
-    private static boolean cellOfInterest(CellPerception cellPerception) {
-        return !(cellPerception.containsPacket() ||
-                cellPerception.containsAnyDestination() ||
-                cellPerception.containsEnergyStation() ||
-                cellPerception.isWalkable());
-    }
 }
