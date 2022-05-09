@@ -97,7 +97,7 @@ public class MustGoToChargingStation extends BehaviorChange {
         double turnsAwayFromStation = Perception.distance(agentPosition.getX(), agentPosition.getY(), stationPosition.getX(), stationPosition.getY());
 
         // Calculate the energy it would cost to go to the station
-        double energyUsedToGetToStation = turnsAwayFromStation * GeneralUtils.WALK_WITHOUT_PACKET;
+        double energyUsedToGetToStation = turnsAwayFromStation * GeneralUtils.COST_WALK_WITHOUT_PACKET;
 
         // Derive the energy surplus of the agent
         double energySurplus = getAgentState().getBatteryState() - energyUsedToGetToStation;

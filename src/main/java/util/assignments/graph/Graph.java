@@ -49,7 +49,7 @@ public class Graph {
     }
 
     /**
-     * Finds the corresponding node key in the map
+     * Finds the corresponding node in the map based on the coordinate
      * 
      * @param node The coordinate of the node
      * @return The node if there exists one, otherwise empty
@@ -58,6 +58,13 @@ public class Graph {
         return map.keySet().stream().filter(n -> n.getCoordinate().equals(coordinate)).findAny();
     }
 
+    /**
+     * Get all the targets of a specific type found in the graph
+     * 
+     * @param <T> The type of the targets
+     * @param targetClass The class of the targets
+     * @return An arraylist of all the targets of a specific type found in the graph
+     */
     public <T extends Target> ArrayList<T> getTargets(Class<T> targetClass) {
         return new ArrayList<>(map.keySet().stream().filter(n -> (n.getTarget().isPresent() && n.getTarget().get().getClass().equals(targetClass))).map(n -> (T) n.getTarget().get()).collect(Collectors.toList()));
     }

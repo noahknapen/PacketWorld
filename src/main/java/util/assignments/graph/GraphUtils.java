@@ -143,10 +143,12 @@ public class GraphUtils {
             int nodeX = node.getCoordinate().getX();
             int nodeY = node.getCoordinate().getY();
 
+
+
             // If node exists in graph -> update target if updatedGraph has newer value
             if(currentGraph.getMap().containsKey(node)) {
                 Optional<Node> n = currentGraph.getNode(node.getCoordinate());
-                if(n.isPresent()) n.get().setTarget(n.get().getTarget().or(() -> node.getTarget()));
+                if (node.getUpdateTime() > n.get().getUpdateTime()) n.get().setTarget(node.getTarget());
                 continue;
             }
 

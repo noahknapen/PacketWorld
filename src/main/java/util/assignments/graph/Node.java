@@ -26,6 +26,9 @@ public class Node implements Comparable<Node> {
     // A datamember holding the parent of the node
     private Node parent;
 
+    // A datamember holding the time at which the node was updated
+    private long updateTime;
+
     //////////////////
     // CONSTRUCTORS //
     //////////////////
@@ -35,6 +38,7 @@ public class Node implements Comparable<Node> {
         this.setGCost(0);
         this.setHCost(0);
         this.setParent(null);
+        this.setUpdateTime();
     }
 
     public Node(Coordinate coordinate, Optional<Target> target) {
@@ -84,12 +88,17 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
+    public long getUpdateTime() {
+        return updateTime;
+    }
+
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
     }
     
     public void setTarget(Optional<Target> target) {
         this.target = target;
+        this.setUpdateTime();
     }
 
     public void setGCost(double gCost) {
@@ -102,6 +111,10 @@ public class Node implements Comparable<Node> {
 
     public void setParent(Node parent) {
         this.parent = parent;
+    }
+
+    public void setUpdateTime() {
+        this.updateTime = System.currentTimeMillis();
     }
 
     ///////////////

@@ -146,7 +146,10 @@ public class MoveToChargingStationBehavior extends Behavior {
         boolean sent = CommunicationUtils.sendEmergencyMessage(agentState, agentCommunication, msg, type);
 
         // Inform dev
-        if (sent) System.out.printf("%s: Message sent\n", agentState.getName());
+        if (sent) {
+            if(GeneralUtils.PRINT)
+                System.out.printf("%s: Message sent\n", agentState.getName());
+        }
     }
 
 }
