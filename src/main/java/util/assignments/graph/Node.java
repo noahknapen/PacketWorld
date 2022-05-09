@@ -1,24 +1,25 @@
 package util.assignments.graph;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.*;
 
 import environment.Coordinate;
-import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
 /**
  * A class that represents a node
  */
 
-@JsonIgnoreProperties(value={"fcost"})
+@JsonIgnoreProperties(value={"walkable", "fcost"})
 public class Node implements Comparable<Node> {
 
     private Coordinate coordinate;
+    private Optional<Target> target;
+
     private double gCost;
     private double hCost;
-    private long updateTime;
     private Node parent;
-    private Target target;
 
     //////////////////
     // CONSTRUCTORS //
@@ -29,16 +30,15 @@ public class Node implements Comparable<Node> {
         this.setGCost(0);
         this.setHCost(0);
         this.setParent(null);
-        this.setUpdateTime();
     }
 
-    public Node(Coordinate coordinate, Target target) {
+    public Node(Coordinate coordinate, Optional<Target> target) {
         this(coordinate);
         this.setTarget(target);
     }
 
     @JsonCreator
-    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent, @JsonProperty("target") Target target) {
+    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent, @JsonProperty("target") Optional<Target> target) {
         this.coordinate = coordinate;
         this.gCost = gCost;
         this.hCost = hCost;
@@ -70,12 +70,8 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
-    public boolean nodeWalkable() {
-        return this.target == null;
-    }
-
-    public boolean containsPacket() {
-        return target.getClass() == Packet.class;
+    public boolean isWalkable() {
+        return !this.target.isPresent();
     }
 
     public void setCoordinate(Coordinate coordinate) {
@@ -94,21 +90,12 @@ public class Node implements Comparable<Node> {
         this.parent = parent;
     }
 
-    public Target getTarget() {
+    public Optional<Target> getTarget() {
         return target;
     }
 
-    public void setTarget(Target target) {
+    public void setTarget(Optional<Target> target) {
         this.target = target;
-        setUpdateTime();
-    }
-
-    public long getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime() {
-        this.updateTime = System.currentTimeMillis();
     }
 
     ///////////////

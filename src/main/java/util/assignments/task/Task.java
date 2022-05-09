@@ -11,7 +11,6 @@ import util.assignments.targets.Packet;
  */
 public class Task {
     
-    private TaskType type;
     private Packet packet;
     private Destination destination;
 
@@ -20,8 +19,7 @@ public class Task {
     //////////////////
     
     @JsonCreator
-    public Task(@JsonProperty("type") TaskType type, @JsonProperty("packet") Packet packet, @JsonProperty("destination") Destination destination) {
-        this.setType(type);
+    public Task(@JsonProperty("packet") Packet packet, @JsonProperty("destination") Destination destination) {
         this.setPacket(packet);
         this.setDestination(destination);
     }
@@ -29,10 +27,6 @@ public class Task {
     ///////////////////////
     // GETTERS & SETTERS //
     ///////////////////////
-    
-    public TaskType getType() {
-        return type;
-    }
 
     public Packet getPacket() {
         return packet;
@@ -50,16 +44,12 @@ public class Task {
         this.destination = destination;
     }
 
-    public void setType(TaskType type) {
-        this.type = type;
-    }
-
     ///////////////
     // OVERRIDES //
     ///////////////
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", type, packet, destination);
+        return String.format("%s %s", packet, destination);
     }
 }

@@ -19,8 +19,6 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
-import util.assignments.task.Task;
-import util.assignments.task.TaskType;
 
 import java.awt.Color;
 
@@ -32,7 +30,7 @@ public class GeneralUtils {
     // Energy values
     public static final int WALK_WITHOUT_PACKET = 10;
     public static final int WALK_WITH_PACKET = 25;
-    public static final boolean PRINT = true;
+    public static final boolean PRINT = false;
 
     ////////////////
     // PERCEPTION //
@@ -59,13 +57,13 @@ public class GeneralUtils {
                 // Get the coordinates of the cell
                 Coordinate cellCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
 
-                // Check if the cell contains a packet
-                if (cellPerception.containsPacket()) 
-                    addPacket(agentState, cellPerception, cellCoordinate);
+                // // Check if the cell contains a packet
+                // if (cellPerception.containsPacket()) 
+                //     addPacket(agentState, cellPerception, cellCoordinate);
 
-                // Check if the cell contains a destination
-                if (cellPerception.containsAnyDestination()) 
-                    addDestination(agentState, cellPerception, cellCoordinate);
+                // // Check if the cell contains a destination
+                // if (cellPerception.containsAnyDestination()) 
+                //     addDestination(agentState, cellPerception, cellCoordinate);
 
                 // Check if the cell contains a charging station
                 if (cellPerception.containsEnergyStation()) 
@@ -74,68 +72,68 @@ public class GeneralUtils {
         }
     }
 
-    /**
-     * A function that adds a packet to its memory.
-     *
-     * @param agentState The current state of the agent
-     * @param cellPerception The perception of the cell
-     * @param packetCoordinate The coordinates of the packet
-     */
-    private static void addPacket(AgentState agentState, CellPerception cellPerception, Coordinate packetCoordinate) {
-        // Retrieve memory fragments
-        ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
+    // /**
+    //  * A function that adds a packet to its memory.
+    //  *
+    //  * @param agentState The current state of the agent
+    //  * @param cellPerception The perception of the cell
+    //  * @param packetCoordinate The coordinates of the packet
+    //  */
+    // private static void addPacket(AgentState agentState, CellPerception cellPerception, Coordinate packetCoordinate) {
+    //     // Retrieve memory fragments
+    //     ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
 
-        // Get the color of the packet
-        Color packetColor = cellPerception.getRepOfType(PacketRep.class).getColor();
-        int packetRgbColor = packetColor.getRGB();
+    //     // Get the color of the packet
+    //     Color packetColor = cellPerception.getRepOfType(PacketRep.class).getColor();
+    //     int packetRgbColor = packetColor.getRGB();
 
-        // Create the corresponding packet
-        Packet packet = new Packet(packetCoordinate, packetRgbColor);
+    //     // Create the corresponding packet
+    //     Packet packet = new Packet(packetCoordinate, packetRgbColor);
 
-        // Check if the packet was already discovered and continue with the next cell if so
-        if(discoveredPackets.contains(packet)) return;
+    //     // Check if the packet was already discovered and continue with the next cell if so
+    //     if(discoveredPackets.contains(packet)) return;
 
-        // Add the packet to the list of discovered packets
-        discoveredPackets.add(packet);
+    //     // Add the packet to the list of discovered packets
+    //     discoveredPackets.add(packet);
 
-        // Inform
-        if (GeneralUtils.PRINT)
-            System.out.printf("%s: Discovered a new packet (%s) [%s]\n", agentState.getName(), packet, discoveredPackets.size());
+    //     // Inform
+    //     if (GeneralUtils.PRINT)
+    //         System.out.printf("%s: Discovered a new packet (%s) [%s]\n", agentState.getName(), packet, discoveredPackets.size());
 
-        // Update memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
-    }
+    //     // Update memory
+    //     MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
+    // }
 
-    /**
-     * A function that adds a destination to its memory.
-     *
-     * @param agentState The current state of the agent
-     * @param cellPerception The perception of the cell
-     * @param destinationCoordinate The coordinates of the destination
-     */
-    private static void addDestination(AgentState agentState, CellPerception cellPerception, Coordinate destinationCoordinate) {
-        // Retrieve the memory fragments
-        ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
+    // /**
+    //  * A function that adds a destination to its memory.
+    //  *
+    //  * @param agentState The current state of the agent
+    //  * @param cellPerception The perception of the cell
+    //  * @param destinationCoordinate The coordinates of the destination
+    //  */
+    // private static void addDestination(AgentState agentState, CellPerception cellPerception, Coordinate destinationCoordinate) {
+    //     // Retrieve the memory fragments
+    //     ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
 
-        // Get the color of the destination
-        int destinationRgbColor = cellPerception.getRepOfType(DestinationRep.class).getColor().getRGB();
+    //     // Get the color of the destination
+    //     int destinationRgbColor = cellPerception.getRepOfType(DestinationRep.class).getColor().getRGB();
 
-        // Create the corresponding destination
-        Destination destination = new Destination(destinationCoordinate, destinationRgbColor);
+    //     // Create the corresponding destination
+    //     Destination destination = new Destination(destinationCoordinate, destinationRgbColor);
 
-        // Check if the destination was already discovered
-        if(discoveredDestinations.contains(destination)) return;
+    //     // Check if the destination was already discovered
+    //     if(discoveredDestinations.contains(destination)) return;
 
-        // Add the destination to the list of discovered destinations
-        discoveredDestinations.add(destination);
+    //     // Add the destination to the list of discovered destinations
+    //     discoveredDestinations.add(destination);
 
-        // Inform
-        if (GeneralUtils.PRINT)
-            System.out.printf("%s: Discovered a new destination (%s) [%s]\n", agentState.getName(), destination, discoveredDestinations.size());
+    //     // Inform
+    //     if (GeneralUtils.PRINT)
+    //         System.out.printf("%s: Discovered a new destination (%s) [%s]\n", agentState.getName(), destination, discoveredDestinations.size());
 
-        // Update memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations, MemoryKeys.UPDATED_STATIONS, true));
-    }
+    //     // Update memory
+    //     MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations, MemoryKeys.UPDATED_STATIONS, true));
+    // }
 
     /**
      * A function that adds a charging station to its memory.
@@ -172,78 +170,78 @@ public class GeneralUtils {
         // GENERAL //
         /////////////
 
-    /**
-     * A function that is used to communicate information about the destination.
-     *
-     * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
-     */
-    public static void handleDestinationsCommunication(AgentState agentState, AgentCommunication agentCommunication) {
-        // Share the destinations
-        shareDestinations(agentState, agentCommunication);
+    // /**
+    //  * A function that is used to communicate information about the destination.
+    //  *
+    //  * @param agentState The current state of the agent
+    //  * @param agentCommunication The interface for communication
+    //  */
+    // public static void handleDestinationsCommunication(AgentState agentState, AgentCommunication agentCommunication) {
+    //     // Share the destinations
+    //     shareDestinations(agentState, agentCommunication);
 
-        // Update list
-        updateDestinations(agentState, agentCommunication);
-    }
+    //     // Update list
+    //     updateDestinations(agentState, agentCommunication);
+    // }
 
-    public static void handleTargetPacketCommunication(AgentState agentState, AgentCommunication agentCommunication) { 
-        // Get the target packet
-        Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
+    // public static void handleTargetPacketCommunication(AgentState agentState, AgentCommunication agentCommunication) { 
+    //     // Get the target packet
+    //     Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
 
-        if (task == null)
-            throw new IllegalArgumentException("task is null");
+    //     if (task == null)
+    //         throw new IllegalArgumentException("task is null");
         
-        Packet packet = task.getPacket();
-        Coordinate packetCoordinate = packet.getCoordinate();
+    //     Packet packet = task.getPacket();
+    //     Coordinate packetCoordinate = packet.getCoordinate();
 
-        // See if another agent is moving towards this packet
-        boolean otherAgentMovingToPacket = isOtherAgentMovingToPacket(agentState, agentCommunication, packetCoordinate);
+    //     // See if another agent is moving towards this packet
+    //     boolean otherAgentMovingToPacket = isOtherAgentMovingToPacket(agentState, agentCommunication, packetCoordinate);
 
-        // If another agent is moving towards this packet, update memory so the agent can see if another task is available.
-        // Otherwise, communicate to other agents that this agent is moving towards the target packet
-        if (otherAgentMovingToPacket)
-        {
-            task.setType(TaskType.CHANGE_PACKET_TO_MOVE_TO);
-            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task));
-        } else
-        {
-            shareTargetPacketThroughTask(agentState, agentCommunication);
-        }
-    }
+    //     // If another agent is moving towards this packet, update memory so the agent can see if another task is available.
+    //     // Otherwise, communicate to other agents that this agent is moving towards the target packet
+    //     if (otherAgentMovingToPacket)
+    //     {
+    //         task.setType(TaskType.CHANGE_PACKET_TO_MOVE_TO);
+    //         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task));
+    //     } else
+    //     {
+    //         shareTargetPacketThroughTask(agentState, agentCommunication);
+    //     }
+    // }
 
-    private static boolean isOtherAgentMovingToPacket(AgentState agentState, AgentCommunication agentCommunication, Coordinate packetCoordinate) {
+    // private static boolean isOtherAgentMovingToPacket(AgentState agentState, AgentCommunication agentCommunication, Coordinate packetCoordinate) {
         
-        List<Coordinate> otherAgentsTargetPackets = getTargetPacketsOfOtherAgents(agentState, agentCommunication);
+    //     List<Coordinate> otherAgentsTargetPackets = getTargetPacketsOfOtherAgents(agentState, agentCommunication);
 
-        for (Coordinate otherPacketCoordinate : otherAgentsTargetPackets)
-        {
-            if (packetCoordinate.equals(otherPacketCoordinate))
-                return true;
-        }
+    //     for (Coordinate otherPacketCoordinate : otherAgentsTargetPackets)
+    //     {
+    //         if (packetCoordinate.equals(otherPacketCoordinate))
+    //             return true;
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
-    private static List<Coordinate> getTargetPacketsOfOtherAgents(AgentState agentState, AgentCommunication agentCommunication) {
+    // private static List<Coordinate> getTargetPacketsOfOtherAgents(AgentState agentState, AgentCommunication agentCommunication) {
 
-        ArrayList<Task> otherTasks = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.TASK, Task.class);
-        ArrayList<Coordinate> otherTargetCoordinates = new ArrayList<>();
+    //     ArrayList<Task> otherTasks = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.TASK, Task.class);
+    //     ArrayList<Coordinate> otherTargetCoordinates = new ArrayList<>();
 
-        for (Task task : otherTasks)
-        {
-            if (task == null)
-                continue;
+    //     for (Task task : otherTasks)
+    //     {
+    //         if (task == null)
+    //             continue;
             
-            // No matter what task type the other agent has, its coordinate of the packet should be retrieved as this agent should not worry about that packet
-            otherTargetCoordinates.add(task.getPacket().getCoordinate());
-        }
+    //         // No matter what task type the other agent has, its coordinate of the packet should be retrieved as this agent should not worry about that packet
+    //         otherTargetCoordinates.add(task.getPacket().getCoordinate());
+    //     }
 
-        return otherTargetCoordinates;
-    }
+    //     return otherTargetCoordinates;
+    // }
 
-    private static void shareTargetPacketThroughTask(AgentState agentState, AgentCommunication agentCommunication) {
-        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.TASK);
-    }
+    // private static void shareTargetPacketThroughTask(AgentState agentState, AgentCommunication agentCommunication) {
+    //     CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.TASK);
+    // }
 
     /**
      * A function that is used to communicate information about the charging stations.
@@ -287,18 +285,18 @@ public class GeneralUtils {
         // SHARE //
         ///////////
 
-    /**
-     * A function that is used to share the destinations with other agents in its perception.
-     *
-     * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
-     */
-    private static void shareDestinations(AgentState agentState, AgentCommunication agentCommunication) {
-        // Send messages with the list of discovered destinations
-        if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class).size() == 0) return;
+    // /**
+    //  * A function that is used to share the destinations with other agents in its perception.
+    //  *
+    //  * @param agentState The current state of the agent
+    //  * @param agentCommunication The interface for communication
+    //  */
+    // private static void shareDestinations(AgentState agentState, AgentCommunication agentCommunication) {
+    //     // Send messages with the list of discovered destinations
+    //     if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class).size() == 0) return;
 
-        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS);
-    }
+    //     CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS);
+    // }
 
 
     /**
@@ -329,35 +327,35 @@ public class GeneralUtils {
         // UPDATE //
         ////////////
 
-    /**
-     * A function that updates the list of discovered destinations with the information received from other agents.
-     *
-     * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
-     */
-    private static void updateDestinations(AgentState agentState, AgentCommunication agentCommunication) {
-        // Get the current destinations
-        ArrayList<Destination> currentDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
+    // /**
+    //  * A function that updates the list of discovered destinations with the information received from other agents.
+    //  *
+    //  * @param agentState The current state of the agent
+    //  * @param agentCommunication The interface for communication
+    //  */
+    // private static void updateDestinations(AgentState agentState, AgentCommunication agentCommunication) {
+    //     // Get the current destinations
+    //     ArrayList<Destination> currentDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
 
-        // Get the updated destinations
-        ArrayList<Destination> updatedDestinations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
+    //     // Get the updated destinations
+    //     ArrayList<Destination> updatedDestinations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
 
-        // Loop over updated destinations
-        for(Destination updatedDestination: updatedDestinations) {
-            // Check if the destinations is included in the current list and continue with the next destination if so
-            if (currentDestinations.contains(updatedDestination)) continue;
+    //     // Loop over updated destinations
+    //     for(Destination updatedDestination: updatedDestinations) {
+    //         // Check if the destinations is included in the current list and continue with the next destination if so
+    //         if (currentDestinations.contains(updatedDestination)) continue;
 
-            // Add the new destination to the list
-            currentDestinations.add(updatedDestination);
+    //         // Add the new destination to the list
+    //         currentDestinations.add(updatedDestination);
 
-            // Inform
-            if (GeneralUtils.PRINT)
-                System.out.printf("%s: Added a new destination from communication (%s) [%s]\n", agentState.getName(), updatedDestination, currentDestinations.size());
-        }
+    //         // Inform
+    //         if (GeneralUtils.PRINT)
+    //             System.out.printf("%s: Added a new destination from communication (%s) [%s]\n", agentState.getName(), updatedDestination, currentDestinations.size());
+    //     }
 
-        // Update the current destinations
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_DESTINATIONS, currentDestinations));
-    }
+    //     // Update the current destinations
+    //     MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_DESTINATIONS, currentDestinations));
+    // }
 
     /**
      * A function that updates the list of discovered charging stations with the information received from other agents.

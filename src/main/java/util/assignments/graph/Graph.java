@@ -1,9 +1,11 @@
 package util.assignments.graph;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -12,6 +14,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import environment.Coordinate;
 import util.assignments.jackson.NodeDeserializer;
 import util.assignments.jackson.NodeSerializer;
+import util.assignments.targets.Target;
 
 /**
  * A class that represents a graph
@@ -59,6 +62,10 @@ public class Graph {
 
         return outputNode;
 
+    }
+
+    public <T extends Target> ArrayList<T> getTargets(Class<T> targetClass) {
+        return new ArrayList<>(map.keySet().stream().filter(n -> (n.getTarget().isPresent() && n.getTarget().get().getClass().equals(targetClass))).map(n -> (T) n.getTarget().get()).collect(Collectors.toList()));
     }
 
     /////////////

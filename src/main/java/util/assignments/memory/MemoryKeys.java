@@ -10,8 +10,8 @@ public class MemoryKeys {
     public static final String PRIO_PACKETS_SEND = "PRIO_PACKETS_SEND";
     public static final String NO_PATH_TARGETS = "UNKNOWN_PATH_TARGETS";
 
-    public static final String DISCOVERED_DESTINATIONS = "DISCOVERED_DESTINATIONS";
-    public static final String DISCOVERED_PACKETS = "DISCOVERED_PACKETS";
+    // public static final String DISCOVERED_DESTINATIONS = "DISCOVERED_DESTINATIONS";
+    // public static final String DISCOVERED_PACKETS = "DISCOVERED_PACKETS";
     public static final String DISCOVERED_CHARGING_STATIONS = "DISCOVERED_CHARGING_STATIONS";
     public static final String UPDATED_STATIONS = "UPDATED_STATIONS";
 
