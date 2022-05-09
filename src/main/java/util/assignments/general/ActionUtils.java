@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.Action;
-
 import agent.AgentAction;
 import agent.AgentState;
 import environment.CellPerception;
@@ -137,12 +135,18 @@ public class ActionUtils {
         // Check if the position is in the perception of the agent
         if(GeneralUtils.positionInPerception(agentState, coordinate)) {
             Coordinate move = calculateMoveDefault(agentState, coordinate);
-            makeMove(agentState, agentAction, move);
+            boolean moveMade = makeMove(agentState, agentAction, move);
+
+            if (!moveMade)
+                moveRandomToPosition(agentState, agentAction, coordinate);
         } 
         // Check if the position is in the graph
         else if(GeneralUtils.positionInGraph(agentState, coordinate)) {
             Coordinate move = calculateMoveAStar(agentState, coordinate);
-            makeMove(agentState, agentAction, move);
+            boolean moveMade = makeMove(agentState, agentAction, move);
+
+            if (!moveMade)
+                moveRandomToPosition(agentState, agentAction, coordinate);
         }
         else {
             // If not in the graph, move closer to the position
@@ -281,7 +285,7 @@ public class ActionUtils {
      * @param agentAction Perform an action with the agent
      * @param move The coordinate representing the move
      */
-    private static void makeMove(AgentState agentState, AgentAction agentAction, Coordinate move) {
+    private static boolean makeMove(AgentState agentState, AgentAction agentAction, Coordinate move) {
         // Get the perception of the agent
         Perception agentPerception = agentState.getPerception();
 
@@ -306,8 +310,11 @@ public class ActionUtils {
             // Inform
             if (GeneralUtils.PRINT)
                 System.out.printf("%s: Moved to position (%d,%d)\n", agentState.getName(), agentNewX, agentNewY);
+
+            return true;
         }
-        else ActionUtils.moveRandomly(agentState, agentAction);
+        else
+            return false;
     }
 
     ////////////
