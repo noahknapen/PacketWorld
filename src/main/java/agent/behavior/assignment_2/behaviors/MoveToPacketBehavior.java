@@ -28,20 +28,20 @@ public class MoveToPacketBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Communicate the charging stations with all the other agents
-        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
+        //GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
         // Communicate the destination locations with agents in perception
-        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+        //GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
 
         // Communicate the graph with agents in perception
-        GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
+        //GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
 
     }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) { 
         // Check the perception of the agent
-        GeneralUtils.checkPerception(agentState);
+        //GeneralUtils.checkPerception(agentState);
 
         // Build the graph
         GraphUtils.build(agentState);
@@ -69,6 +69,7 @@ public class MoveToPacketBehavior extends Behavior {
 
         // Check if the task has other task type than MOVE_TO_PACKET and raise exception if so
         if(task.getType() != TaskType.MOVE_TO_PACKET) throw new IllegalArgumentException("Task type is not MOVE_TO_PACKET");
+
 
         // Get the coordinate of the packet
         Packet packet = task.getPacket();

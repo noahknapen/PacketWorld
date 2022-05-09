@@ -27,22 +27,22 @@ public class MoveToChargingStationBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Communicate the charging stations with all the other agents
-        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
+        //GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
         // Communicate the destination locations with agents in perception
-        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+        //GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
 
         // Communicate the graph with agents in perception
-        GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
+        //GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
 
         // If energy lower than a threshold, send emergency message
-        sendEmergencyMessage(agentState, agentCommunication);
+        //sendEmergencyMessage(agentState, agentCommunication);
     }
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
         // Check the perception of the agent
-        GeneralUtils.checkPerception(agentState);
+        //GeneralUtils.checkPerception(agentState);
 
         // Build the graph
         GraphUtils.build(agentState);

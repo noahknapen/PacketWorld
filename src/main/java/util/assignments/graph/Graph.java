@@ -72,10 +72,7 @@ public class Graph {
      */
     public void addNode(Node node) {
         // If node exists -> update target
-        if(map.containsKey(node)) {
-            getNode(node.getCoordinate()).setTarget(node.getTarget());
-            return;
-        }
+        if(map.containsKey(node)) return;
         
         // Add the node
         map.put(node, new LinkedList<Node>());

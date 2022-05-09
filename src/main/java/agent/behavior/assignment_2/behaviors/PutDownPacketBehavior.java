@@ -28,13 +28,13 @@ public class PutDownPacketBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Communicate the charging stations with all the other agents
-        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
+        //GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
         // Communicate the destination locations with agents in perception
-        GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+        //GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
 
         // Communicate the graph with agents in perception
-        GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
+        //GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
 
     }
 

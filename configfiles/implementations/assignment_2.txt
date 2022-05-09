@@ -37,6 +37,8 @@ nbChanges 14
 
 ### SOURCE 1: Explorer ###
 
+# Add ContinueToPacket and DestinationTask here
+
 agent.behavior.assignment_2.changes.MustGoToChargingStation
 nbArgs 0
 priority 0

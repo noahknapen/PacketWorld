@@ -29,12 +29,12 @@ public class Node implements Comparable<Node> {
         this.setGCost(0);
         this.setHCost(0);
         this.setParent(null);
-        this.setUpdateTime();
+        this.setUpdateTimeToNow();
     }
 
     public Node(Coordinate coordinate, Target target) {
         this(coordinate);
-        this.setTarget(target);
+        this.setTarget(target, false);
     }
 
     @JsonCreator
@@ -105,16 +105,16 @@ public class Node implements Comparable<Node> {
         return target;
     }
 
-    public void setTarget(Target target) {
+    public void setTarget(Target target, boolean timeUpdate) {
         this.target = target;
-        setUpdateTime();
+        if (timeUpdate) setUpdateTimeToNow();
     }
 
     public long getUpdateTime() {
         return updateTime;
     }
 
-    public void setUpdateTime() {
+    public void setUpdateTimeToNow() {
         this.updateTime = System.currentTimeMillis();
     }
 
