@@ -22,6 +22,7 @@ import util.assignments.targets.ChargingStation;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
+import util.assignments.task.TaskType;
 
 import java.awt.Color;
 
@@ -54,20 +55,23 @@ public class GeneralUtils {
             for (int y = 0; y <= agentPerception.getHeight(); y++) {
                 CellPerception cellPerception = agentPerception.getCellAt(x, y);
 
-                // Check if the cell is null and continue with the next cell if so
-                if (cellPerception == null) continue;
+                // Check if the cell is null or the cell is the one the agent is currently standing on and continue with the next cell if so
+                if (cellPerception == null || (x == 0 && y == 0)) continue;
 
                 // Get the coordinates of the cell
                 Coordinate cellCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
 
                 // Check if the cell contains a packet
-                if (cellPerception.containsPacket()) addPacket(agentState, cellPerception, cellCoordinate);
+                if (cellPerception.containsPacket()) 
+                    addPacket(agentState, cellPerception, cellCoordinate);
 
                 // Check if the cell contains a destination
-                if (cellPerception.containsAnyDestination()) addDestination(agentState, cellPerception, cellCoordinate);
+                if (cellPerception.containsAnyDestination()) 
+                    addDestination(agentState, cellPerception, cellCoordinate);
 
                 // Check if the cell contains a charging station
-                if (cellPerception.containsEnergyStation()) addChargingStation(agentState, cellCoordinate);
+                if (cellPerception.containsEnergyStation()) 
+                    addChargingStation(agentState, cellCoordinate);
             }
         }
     }
@@ -81,7 +85,6 @@ public class GeneralUtils {
      */
     private static void addPacket(AgentState agentState, CellPerception cellPerception, Coordinate packetCoordinate) {
         // Retrieve memory fragments
-        Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
         ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
 
         // Get the color of the packet
@@ -93,9 +96,6 @@ public class GeneralUtils {
 
         // Check if the packet was already discovered and continue with the next cell if so
         if(discoveredPackets.contains(packet)) return;
-
-        // Check if packet is currently handled and continue with the next cell if so because it should not be added to list again
-        if(task != null && task.getPacket().equals(packet)) return;
 
         // Add the packet to the list of discovered packets
         discoveredPackets.add(packet);
@@ -186,6 +186,65 @@ public class GeneralUtils {
 
         // Update list
         updateDestinations(agentState, agentCommunication);
+    }
+
+    public static void handleTargetPacketCommunication(AgentState agentState, AgentCommunication agentCommunication) { 
+        // Get the target packet
+        Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
+
+        if (task == null)
+            throw new IllegalArgumentException("task is null");
+        
+        Packet packet = task.getPacket();
+        Coordinate packetCoordinate = packet.getCoordinate();
+
+        // See if another agent is moving towards this packet
+        boolean otherAgentMovingToPacket = isOtherAgentMovingToPacket(agentState, agentCommunication, packetCoordinate);
+
+        // If another agent is moving towards this packet, update memory so the agent can see if another task is available.
+        // Otherwise, communicate to other agents that this agent is moving towards the target packet
+        if (otherAgentMovingToPacket)
+        {
+            task.setType(TaskType.CHANGE_PACKET_TO_MOVE_TO);
+            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task));
+        } else
+        {
+            shareTargetPacketThroughTask(agentState, agentCommunication);
+        }
+    }
+
+    private static boolean isOtherAgentMovingToPacket(AgentState agentState, AgentCommunication agentCommunication, Coordinate packetCoordinate) {
+        
+        List<Coordinate> otherAgentsTargetPackets = getTargetPacketsOfOtherAgents(agentState, agentCommunication);
+
+        for (Coordinate otherPacketCoordinate : otherAgentsTargetPackets)
+        {
+            if (packetCoordinate.equals(otherPacketCoordinate))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static List<Coordinate> getTargetPacketsOfOtherAgents(AgentState agentState, AgentCommunication agentCommunication) {
+
+        ArrayList<Task> otherTasks = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.TASK, Task.class);
+        ArrayList<Coordinate> otherTargetCoordinates = new ArrayList<>();
+
+        for (Task task : otherTasks)
+        {
+            if (task == null)
+                continue;
+            
+            // No matter what task type the other agent has, its coordinate of the packet should be retrieved as this agent should not worry about that packet
+            otherTargetCoordinates.add(task.getPacket().getCoordinate());
+        }
+
+        return otherTargetCoordinates;
+    }
+
+    private static void shareTargetPacketThroughTask(AgentState agentState, AgentCommunication agentCommunication) {
+        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.TASK);
     }
 
     /**

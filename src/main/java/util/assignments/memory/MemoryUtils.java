@@ -8,7 +8,6 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import agent.AgentState;
-import environment.Coordinate;
 import util.assignments.jackson.JacksonUtils;
 
 /**

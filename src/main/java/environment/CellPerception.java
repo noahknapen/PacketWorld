@@ -12,6 +12,7 @@ import environment.world.crumb.CrumbRep;
 import environment.world.destination.DestinationRep;
 import environment.world.energystation.EnergyStationRep;
 import environment.world.flag.FlagRep;
+import environment.world.generator.PacketGeneratorRep;
 import environment.world.gradient.GradientRep;
 import environment.world.packet.PacketRep;
 import environment.world.pheromone.PheromoneRep;
@@ -87,6 +88,10 @@ public class CellPerception {
      */
     public boolean containsPacket() {
         return this.getRepOfType(PacketRep.class) != null;
+    }
+
+    public boolean containsGeneratorPacket() {
+        return this.getRepOfType(PacketGeneratorRep.class) != null;
     }
 
     /**
