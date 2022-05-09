@@ -23,11 +23,11 @@ import util.assignments.targets.Packet;
  */
 public class GeneralUtils {
 
-    // A static datamember holding the cost of a walk without a packet
+    // A static data member holding the cost of a walk without a packet
     public static final int COST_WALK_WITHOUT_PACKET = 10;
-    // A static datamember holding the cost of a walk with a packet
+    // A static data member holding the cost of a walk with a packet
     public static final int COST_WALK_WITH_PACKET = 25;
-    // A static datamember holding if messages should be printed in the output
+    // A static data member holding if messages should be printed in the output
     public static final boolean PRINT = false;
 
     ////////////////

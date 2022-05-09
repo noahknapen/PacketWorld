@@ -15,5 +15,6 @@ public class MemoryKeys {
 
     public static final String EMERGENCY = "EMERGENCY";
     public static final String EXPLORING_TURNS = "EXPLORING_TURNS";
+    public static final String BATTERY_STATE = "BATTERY_STATE";
     public static final String RAND0M_DIRECTION = "RANDOM_DIRECTION";
 }
