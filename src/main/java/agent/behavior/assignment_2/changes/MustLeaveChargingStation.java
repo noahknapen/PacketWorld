@@ -5,11 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 
 
-import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.Coordinate;
-import org.checkerframework.checker.units.qual.A;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;

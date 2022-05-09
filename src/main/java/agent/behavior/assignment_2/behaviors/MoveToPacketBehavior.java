@@ -14,8 +14,6 @@ import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 import util.assignments.task.TaskType;
 
-import java.util.Map;
-
 /**
  * A behavior where the agent moves towards a packet
  */

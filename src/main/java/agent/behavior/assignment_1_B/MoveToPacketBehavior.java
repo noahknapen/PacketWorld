@@ -28,7 +28,7 @@ import environment.world.packet.PacketRep;
 
 public class MoveToPacketBehavior extends Behavior {
 
-    final ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
+    private final static ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
         new Coordinate(1, 1), 
         new Coordinate(-1, -1),
         new Coordinate(1, 0), 
@@ -360,7 +360,7 @@ public class MoveToPacketBehavior extends Behavior {
         int agentY = agentState.getY();
 
 
-        List<Coordinate> positions = RELATIVE_POSITIONS;
+        List<Coordinate> positions = new ArrayList<>(MoveToPacketBehavior.RELATIVE_POSITIONS);
 
         // Prioritize going straight first
         Coordinate previousPosition = getPreviousPosition(agentState);

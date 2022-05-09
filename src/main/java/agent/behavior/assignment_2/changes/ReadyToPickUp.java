@@ -9,8 +9,6 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 
-import java.util.Map;
-
 /**
  * A behavior change class that checks if the agent can pick up the desired packet
  */

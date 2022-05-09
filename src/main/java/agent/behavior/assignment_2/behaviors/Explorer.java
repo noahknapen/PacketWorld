@@ -4,14 +4,12 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
-import util.assignments.general.CommunicationUtils;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.GraphUtils;
 import util.assignments.general.ActionUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
