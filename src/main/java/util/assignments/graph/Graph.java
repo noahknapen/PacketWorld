@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,10 +18,11 @@ import util.assignments.jackson.NodeSerializer;
 import util.assignments.targets.Target;
 
 /**
- * A class that represents a graph
+ * A class represening a graph
  */
 public class Graph {
 
+    // A datamember holding the map of the graph
     @JsonSerialize(keyUsing = NodeSerializer.class)
     @JsonDeserialize(keyUsing = NodeDeserializer.class)
     @JsonProperty("map")
@@ -47,21 +49,13 @@ public class Graph {
     }
 
     /**
-     * Finds the corresponding node key in the map and returns if it is walkable
+     * Finds the corresponding node key in the map
+     * 
      * @param node The coordinate of the node
-     * @return boolean (True if walkable)
+     * @return The node if there exists one, otherwise empty
      */
-    public Node getNode(Coordinate coordinate) {
-        Node outputNode = new Node(coordinate);
-        if (!getMap().containsKey(outputNode)) return null;
-
-        outputNode =  getMap()
-                .keySet()
-                .stream()
-                .filter(n -> coordinate.equals(n.getCoordinate())).toList().get(0);
-
-        return outputNode;
-
+    public Optional<Node> getNode(Coordinate coordinate) {
+        return map.keySet().stream().filter(n -> n.getCoordinate().equals(coordinate)).findAny();
     }
 
     public <T extends Target> ArrayList<T> getTargets(Class<T> targetClass) {
@@ -80,7 +74,7 @@ public class Graph {
     public void addNode(Node node) {
         // If node exists -> update target
         if(map.containsKey(node)) {
-            getNode(node.getCoordinate()).setTarget(node.getTarget());
+            getNode(node.getCoordinate()).get().setTarget(node.getTarget());
             return;
         }
         

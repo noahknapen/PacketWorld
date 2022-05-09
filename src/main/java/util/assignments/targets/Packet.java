@@ -6,7 +6,7 @@ import environment.Coordinate;
 import java.awt.Color;
 
 /**
- * A class that represents a packet
+ * A class representing a packet
  */
 @JsonIgnoreProperties(value={"color"})
 @JsonTypeInfo(
@@ -15,18 +15,26 @@ import java.awt.Color;
 )
 public class Packet extends Target {
 
+    // A datamember holding the color of the packet
     private int rgbColor;
-    private boolean prioPacket;
+    // A datamember holding if the packet has priority
+    private boolean priority;
 
     //////////////////
     // CONSTRUCTORS //
     //////////////////
 
-    @JsonCreator
-    public Packet(@JsonProperty("coordinate") Coordinate coordinate,  @JsonProperty("rgbColor") int rgbColor) {
+    public Packet(Coordinate coordinate, int rgbColor) {
         super(coordinate);
         this.setRgbColor(rgbColor);
-        this.setPrioPacket(false);
+        this.setPriority(false);
+    }
+
+    @JsonCreator
+    public Packet(@JsonProperty("coordinate") Coordinate coordinate,  @JsonProperty("rgbColor") int rgbColor, @JsonProperty("priority") boolean priority) {
+        super(coordinate);
+        this.setRgbColor(rgbColor);
+        this.setPriority(priority);
     }
 
     ///////////////////////
@@ -37,20 +45,25 @@ public class Packet extends Target {
         return rgbColor;
     }
 
+    /**
+     * Get the color
+     * 
+     * @return The color of the packet
+     */
     public Color getColor() {
         return new Color(rgbColor);
     }
 
+    public boolean hasPriority() {
+        return priority;
+    }
+    
     public void setRgbColor(int rgbColor) {
         this.rgbColor = rgbColor;
     }
 
-    public boolean isPrioPacket() {
-        return prioPacket;
-    }
-
-    public void setPrioPacket(boolean prioPacket) {
-        this.prioPacket = prioPacket;
+    public void setPriority(boolean priority) {
+        this.priority = priority;
     }
 
     ///////////////
@@ -59,7 +72,7 @@ public class Packet extends Target {
 
     @Override
     public String toString() {
-        return String.format("%s %s", super.toString(), rgbColor);
+        return String.format("%s %s %s", super.toString(), rgbColor, priority);
     }
 
     @Override
@@ -71,6 +84,5 @@ public class Packet extends Target {
     public int hashCode() {
         return super.hashCode();
     }
-
 }
 

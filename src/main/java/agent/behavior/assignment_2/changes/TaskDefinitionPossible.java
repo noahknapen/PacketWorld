@@ -114,7 +114,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
             if (packageIndex != Integer.MAX_VALUE) discoveredPackets.remove(packageIndex);
 
             Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
-            graph.getNode(candidatePacket.getCoordinate()).setTarget(Optional.empty());
+            graph.getNode(candidatePacket.getCoordinate()).get().setTarget(Optional.empty());
 
             // Update the memory
             MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.GRAPH, graph));

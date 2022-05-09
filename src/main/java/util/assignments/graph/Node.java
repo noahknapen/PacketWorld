@@ -14,11 +14,16 @@ import util.assignments.targets.Target;
 @JsonIgnoreProperties(value={"walkable", "fcost"})
 public class Node implements Comparable<Node> {
 
+    // A datamember holding the coordinate of the node
     private Coordinate coordinate;
+    // A datamember holding the optional target of the node
     private Optional<Target> target;
 
+    // A datamember holding the gCost of the node
     private double gCost;
+    // A datamember holding the hCost of the node
     private double hCost;
+    // A datamember holding the parent of the node
     private Node parent;
 
     //////////////////
@@ -38,12 +43,13 @@ public class Node implements Comparable<Node> {
     }
 
     @JsonCreator
-    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent, @JsonProperty("target") Optional<Target> target) {
+    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("target") Optional<Target> target, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent) {
         this.coordinate = coordinate;
+        this.target = target;
+
         this.gCost = gCost;
         this.hCost = hCost;
         this.parent = parent;
-        this.target = target;
     }
 
     ///////////////////////
@@ -52,6 +58,14 @@ public class Node implements Comparable<Node> {
 
     public Coordinate getCoordinate() {
         return coordinate;
+    }
+
+    public Optional<Target> getTarget() {
+        return target;
+    }
+    
+    public boolean isWalkable() {
+        return this.target.isEmpty();
     }
 
     public double getGCost() {
@@ -70,12 +84,12 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
-    public boolean isWalkable() {
-        return !this.target.isPresent();
-    }
-
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
+    }
+    
+    public void setTarget(Optional<Target> target) {
+        this.target = target;
     }
 
     public void setGCost(double gCost) {
@@ -90,21 +104,13 @@ public class Node implements Comparable<Node> {
         this.parent = parent;
     }
 
-    public Optional<Target> getTarget() {
-        return target;
-    }
-
-    public void setTarget(Optional<Target> target) {
-        this.target = target;
-    }
-
     ///////////////
     // OVERRIDES //
     ///////////////
 
     @Override
     public String toString() {
-        return String.format("%s %s %s %s %s", coordinate, gCost, hCost, parent, target);
+        return String.format("%s %s %s %s %s", coordinate, target, gCost, hCost, parent);
     }
 
     @Override
@@ -127,5 +133,4 @@ public class Node implements Comparable<Node> {
     public int hashCode() {
         return coordinate.hashCode();
     }
-
 }

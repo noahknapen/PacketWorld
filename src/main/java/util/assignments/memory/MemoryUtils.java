@@ -93,7 +93,7 @@ public class MemoryUtils {
     ////////////
 
     /**
-     * A function to update the memory. 
+     * A function to update the memory
      * It deletes the values of the memory fragments of the given keys and replaces them with the values of {@code updates}.
      * 
      * @param agentState The current state of the agent

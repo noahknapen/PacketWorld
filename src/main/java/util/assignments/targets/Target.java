@@ -4,19 +4,19 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import environment.Coordinate;
-import util.assignments.graph.Node;
 
 /**
- * A class that represents a target
+ * A class representing a target
  */
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME
+    use = JsonTypeInfo.Id.NAME
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = Packet.class),
-        @JsonSubTypes.Type(value = Destination.class),
-        @JsonSubTypes.Type(value = ChargingStation.class)
+    @JsonSubTypes.Type(value = Packet.class),
+    @JsonSubTypes.Type(value = Destination.class),
+    @JsonSubTypes.Type(value = ChargingStation.class)
 })
 public abstract class Target {
 
@@ -26,10 +26,8 @@ public abstract class Target {
     // CONSTRUCTORS //
     //////////////////
 
-    // public Target(Coordinate coordinate) {
-        //this.setCoordinate(coordinate);
-    //}
-    public Target(Coordinate coordinate) {
+    @JsonCreator
+    public Target(@JsonProperty("coordinate") Coordinate coordinate) {
         this.setCoordinate(coordinate);
     }
 

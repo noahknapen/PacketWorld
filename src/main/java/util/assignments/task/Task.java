@@ -11,7 +11,9 @@ import util.assignments.targets.Packet;
  */
 public class Task {
     
+    // A datamember holding the packet linked to the task
     private Packet packet;
+    // A datamember holding the destination linked to the task
     private Destination destination;
 
     //////////////////

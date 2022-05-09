@@ -49,8 +49,8 @@ public class PacketComparator implements Comparator<Packet> {
     public int compare(Packet packet1, Packet packet2) {
 
         // Check if packets are prio packets
-        if (packet1.isPrioPacket()) return 1;
-        if (packet2.isPrioPacket()) return -1;
+        if (packet1.hasPriority()) return 1;
+        if (packet2.hasPriority()) return -1;
 
         Color packet1Color = packet1.getColor();
         Color packet2Color = packet2.getColor();

@@ -145,8 +145,8 @@ public class GraphUtils {
 
             // If node exists in graph -> update target if updatedGraph has newer value
             if(currentGraph.getMap().containsKey(node)) {
-                Node n = currentGraph.getNode(node.getCoordinate());
-                n.setTarget(node.getTarget());
+                Optional<Node> n = currentGraph.getNode(node.getCoordinate());
+                if(n.isPresent()) n.get().setTarget(n.get().getTarget().or(() -> node.getTarget()));
                 continue;
             }
 
@@ -162,19 +162,19 @@ public class GraphUtils {
                     Coordinate neighbourCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                     // Define neighbour node
-                    Node neighbourNode = currentGraph.getNode(neighbourCoordinate);
+                    Optional<Node> neighbourNode = currentGraph.getNode(neighbourCoordinate);
 
                     // Check if neighbour node is not contained in the graph and continue with next neighbour if so (only connect edges to nodes that is in the current graph)
-                    if(neighbourNode == null) continue;
+                    if(neighbourNode.isEmpty()) continue;
 
                     // Check if node is equal to neighbour and continue with the next neighbour if so
                     if(node.equals(neighbourNode)) continue;
 
                     // Only allow edges between free node, free nodes and targets and between packets
-                    if (!node.isWalkable() && !neighbourNode.isWalkable()) continue;
+                    if (!node.isWalkable() && !neighbourNode.get().isWalkable()) continue;
 
                     // Add the edges between the cells
-                    currentGraph.addEdge(node, neighbourNode);
+                    currentGraph.addEdge(node, neighbourNode.get());
                 }
             }
         }
@@ -236,7 +236,7 @@ public class GraphUtils {
             }
 
             // Check if node is walkable
-            if (graph.getNode(node.getCoordinate()).isWalkable()) {
+            if (graph.getNode(node.getCoordinate()).get().isWalkable()) {
                 extractNeighbours(graph, node, targetNode, openList, closeList);
             }
 
