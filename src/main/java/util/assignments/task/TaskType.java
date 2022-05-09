@@ -6,4 +6,5 @@ package util.assignments.task;
 public enum TaskType {
     MOVE_TO_PACKET,
     MOVE_TO_DESTINATION,
+    CHANGE_PACKET_TO_MOVE_TO
 }
