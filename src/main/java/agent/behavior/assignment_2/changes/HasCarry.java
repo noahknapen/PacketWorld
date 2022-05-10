@@ -4,7 +4,7 @@ import agent.AgentState;
 import agent.behavior.BehaviorChange;
 
 /**
- * A behavior change class that checks if the agent carries a packet
+ * A behavior change class that checks if the agent carries a packet.
  */
 public class HasCarry extends BehaviorChange{
 

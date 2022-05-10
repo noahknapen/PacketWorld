@@ -1,5 +1,8 @@
 package agent.behavior.assignment_2.changes;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import environment.CellPerception;
@@ -48,6 +51,7 @@ public class PacketAlreadyHandled extends BehaviorChange{
     private boolean checkPacketAlreadyHandled(AgentState agentState) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
+        ArrayList<Packet> discovered_packets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
 
         // Check if the task is null and return false if so
         if(task == null) return false;
@@ -75,7 +79,14 @@ public class PacketAlreadyHandled extends BehaviorChange{
                 // Check if the positions correspond
                 if(cellX == packetX && cellY == packetY) {
                     // Return if the cell does not contain a packet
-                    return !cellPerception.containsPacket();
+                    if (cellPerception.containsPacket())
+                        return false;
+                    else
+                    {
+                        discovered_packets.remove(task.getPacket());
+                        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discovered_packets));
+                        return true;
+                    }
                 }
             }
         }

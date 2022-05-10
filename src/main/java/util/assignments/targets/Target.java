@@ -1,11 +1,8 @@
 package util.assignments.targets;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import environment.Coordinate;
-import util.assignments.graph.Node;
 
 /**
  * A class that represents a target

@@ -28,6 +28,9 @@ public class MoveToPacketBehavior extends Behavior {
         // Communicate the charging stations with all the other agents
         GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
+        // TODO: now, there are 3 loops over the perception to communicate everything, make this more efficient
+        GeneralUtils.handleTargetPacketCommunication(agentState, agentCommunication);
+
         // Communicate the destination locations with agents in perception
         GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
 
