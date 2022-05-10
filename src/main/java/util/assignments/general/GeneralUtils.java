@@ -160,8 +160,6 @@ public class GeneralUtils {
     private static void shareGraph(AgentState agentState, AgentCommunication agentCommunication) {
         // Send messages with the graph
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.GRAPH);
-
-        // Prio packets added in the graph
     }
 
     ////////////
@@ -352,7 +350,7 @@ public class GeneralUtils {
     }
 
     private static void sharePriorityTasks(AgentState agentState, AgentCommunication agentCommunication) {
-        // Send messages with the graph
+        // Send message
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.PRIORITY_TASKS_SEND);
     }
 

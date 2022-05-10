@@ -51,6 +51,18 @@ public class TaskDefinitionPossible extends BehaviorChange{
      *
      */
     private boolean checkTaskDefinition(AgentState agentState) {
+
+        // Get priority tasks
+        ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
+
+        // Check if one of the priority tasks can be done
+        for (Task task : priorityTasks) {
+            if (task.conditionsSatisfied(agentState)) {
+                MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task));
+                return true;
+            }
+        }
+
         // Get the discovered packets and discovered destinations
 
         // Only get packets of same color here
@@ -76,6 +88,8 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
             // Get the color of the candidate packet
             Color candidatePacketColor = candidatePacket.getColor();
+
+            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != candidatePacketColor.getRGB()) continue;
 
             // Loop over the discovered destinations
             for (Destination candidateDestination : discoveredDestinations) {

@@ -107,14 +107,17 @@ public class GraphUtils {
                     if (node.equals(neighbourNode)) continue;
 
                     // Only allow edges between free node,
-                    if (node.containsTarget() && !neighbourNode.containsTarget() && (!node.containsPacket() || !neighbourNode.containsPacket()))
+                    if (node.containsTarget() && neighbourNode.containsTarget() && (!node.containsPacket() || !neighbourNode.containsPacket()))
                         continue;
 
                     // Add the edges between the cells
                     graph.addEdge(node, neighbourNode);
                 }
             }
+        }
 
+        // Check if some new nodes are blocked
+        for (Node node : newNodes) {
             if (agentState.getColor().isPresent() &&
                     node.getTarget().isPresent() &&
                     node.containsPacket() &&
@@ -333,7 +336,35 @@ public class GraphUtils {
                 break;
             }
 
-            extractNeighbours(graph, node, targetNode, openList, closeList, includePackets);
+            for (Node neighbourNode : graph.getMap().get(node)) {
+
+                // Guard clause to check if neighbour is acceptable node
+                if (neighbourNode.containsTarget() && (!includePackets || !neighbourNode.containsPacket())) continue;
+
+                // Convert boolean to int
+                int containsPacketInt = neighbourNode.containsPacket() ? 1: 0;
+
+                double totalGCost = node.getGCost() + 1 + containsPacketInt * PACKET_COST;
+
+                if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
+                    neighbourNode.setParent(node);
+                    neighbourNode.setGCost(totalGCost);
+                    neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+
+                    openList.add(neighbourNode);
+                } else {
+                    if (totalGCost < neighbourNode.getGCost()) {
+                        neighbourNode.setParent(node);
+                        neighbourNode.setGCost(totalGCost);
+                        neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+
+                        if (closeList.contains(neighbourNode)) {
+                            closeList.remove(neighbourNode);
+                            openList.add(neighbourNode);
+                        }
+                    }
+                }
+            }
 
             openList.remove(node);
             closeList.add(node);
@@ -386,35 +417,9 @@ public class GraphUtils {
      * @param includePackets
      */
     private static void extractNeighbours(Graph graph, Node node, Node targetNode, PriorityQueue<Node> openList, PriorityQueue<Node> closeList, boolean includePackets) {
-        for (Node neighbourNode : graph.getMap().get(node)) {
 
-            // Guard clause to check if neighbour is acceptable node
-            if (!neighbourNode.containsTarget() && (!includePackets || !neighbourNode.containsPacket())) continue;
 
-            // Convert boolean to int
-            int containsPacketInt = neighbourNode.containsPacket() ? 1: 0;
 
-            double totalGCost = node.getGCost() + 1 + containsPacketInt * PACKET_COST;
-
-            if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
-                neighbourNode.setParent(node);
-                neighbourNode.setGCost(totalGCost);
-                neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-
-                openList.add(neighbourNode);
-            } else {
-                if (totalGCost < neighbourNode.getGCost()) {
-                    neighbourNode.setParent(node);
-                    neighbourNode.setGCost(totalGCost);
-                    neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-
-                    if (closeList.contains(neighbourNode)) {
-                        closeList.remove(neighbourNode);
-                        openList.add(neighbourNode);
-                    }
-                }
-            }
-        }
     }
 
 

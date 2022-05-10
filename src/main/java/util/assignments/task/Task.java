@@ -1,13 +1,18 @@
 package util.assignments.task;
 
+import agent.AgentState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import util.assignments.graph.Graph;
 import util.assignments.graph.Node;
+import util.assignments.memory.MemoryKeys;
+import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * A class representing the task the agent is performing
@@ -77,5 +82,19 @@ public class Task {
     public void setTaskConditions(ArrayList<Packet> taskConditions) {
         this.taskConditions.clear();
         this.taskConditions.addAll(taskConditions);
+    }
+
+    public boolean conditionsSatisfied(AgentState agentState) {
+
+        // Get graph
+        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
+
+        for (Packet packet : taskConditions) {
+            if (graph.getNode(packet.getCoordinate()).isEmpty()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
