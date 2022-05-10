@@ -351,6 +351,8 @@ public class GeneralUtils {
 
     private static void sharePriorityTasks(AgentState agentState, AgentCommunication agentCommunication) {
         // Send message
+        if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS_SEND, Task.class).size() == 0) return;
+
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.PRIORITY_TASKS_SEND);
     }
 
