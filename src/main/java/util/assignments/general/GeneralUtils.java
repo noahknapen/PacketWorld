@@ -17,6 +17,8 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
+import util.assignments.targets.Target;
+import util.assignments.task.Task;
 
 /**
  * A class that implements general functions
@@ -37,7 +39,7 @@ public class GeneralUtils {
     /**
      * Check the perception of the agent
      * Perform the appropriate action when there is something in a cell in the perception of the agent.
-     *  
+     *
      * @param agentState The current state of the agent
      */
     public static void checkPerception(AgentState agentState) {
@@ -56,7 +58,7 @@ public class GeneralUtils {
                 Coordinate cellCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
 
                 // Check if the cell contains a charging station
-                if (cellPerception.containsEnergyStation()) 
+                if (cellPerception.containsEnergyStation())
                     addChargingStation(agentState, cellCoordinate);
             }
         }
@@ -65,7 +67,7 @@ public class GeneralUtils {
     /**
      * A function that adds a charging station to the memory of the agent
      *
-     * @param agentState The current state of the agent
+     * @param agentState                The current state of the agent
      * @param chargingStationCoordinate The coordinates of the charging station
      */
     private static void addChargingStation(AgentState agentState, Coordinate chargingStationCoordinate) {
@@ -76,7 +78,7 @@ public class GeneralUtils {
         ChargingStation chargingStation = new ChargingStation(chargingStationCoordinate);
 
         // Check if the charging station was already discovered and continue with next cell if so
-        if(discoveredChargingStations.contains(chargingStation)) return;
+        if (discoveredChargingStations.contains(chargingStation)) return;
 
         // Add the charging station to the list of discovered charging stations
         discoveredChargingStations.add(chargingStation);
@@ -93,14 +95,14 @@ public class GeneralUtils {
     // INFORMATION SHARING //
     /////////////////////////
 
-        /////////////
-        // GENERAL //
-        /////////////
+    /////////////
+    // GENERAL //
+    /////////////
 
     /**
      * A function that is used to communicate information about the charging stations.
      *
-     * @param agentState The current state of the agent
+     * @param agentState         The current state of the agent
      * @param agentCommunication The interface for communication
      */
     public static void handleChargingStationsCommunication(AgentState agentState, AgentCommunication agentCommunication) {
@@ -108,14 +110,13 @@ public class GeneralUtils {
         boolean updatedStations = Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.UPDATED_STATIONS, Boolean.class));
 
         // Check if the list of discovered charging stations was updated
-        if(updatedStations) {
+        if (updatedStations) {
             // Share information about the charging stations
             shareChargingStations(agentState, agentCommunication);
 
             // Update the memory
             MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.UPDATED_STATIONS, false));
-        }
-        else {
+        } else {
             // Look at messages, If we shared something the others can not have changed something or give priority to true statements
             updateChargingStations(agentState, agentCommunication);
         }
@@ -124,7 +125,7 @@ public class GeneralUtils {
     /**
      * A function that is used to communicate information about the graph.
      *
-     * @param agentState The current state of the agent
+     * @param agentState         The current state of the agent
      * @param agentCommunication The interface for communication
      */
     public static void handleGraphCommunication(AgentState agentState, AgentCommunication agentCommunication) {
@@ -135,14 +136,14 @@ public class GeneralUtils {
         updateGraph(agentState, agentCommunication);
     }
 
-        ///////////
-        // SHARE //
-        ///////////
+    ///////////
+    // SHARE //
+    ///////////
 
     /**
      * A function that is used to share the charging stations with other agents.
      *
-     * @param agentState The current state of the agent
+     * @param agentState         The current state of the agent
      * @param agentCommunication The interface for communication
      */
     private static void shareChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
@@ -153,7 +154,7 @@ public class GeneralUtils {
     /**
      * A function that is used to share the graph with other agents.
      *
-     * @param agentState The current state of the agent
+     * @param agentState         The current state of the agent
      * @param agentCommunication The interface for communication
      */
     private static void shareGraph(AgentState agentState, AgentCommunication agentCommunication) {
@@ -163,14 +164,14 @@ public class GeneralUtils {
         // Prio packets added in the graph
     }
 
-        ////////////
-        // UPDATE //
-        ////////////
+    ////////////
+    // UPDATE //
+    ////////////
 
     /**
      * A function that updates the list of discovered charging stations with the information received from other agents.
      *
-     * @param agentState The current state of the agent
+     * @param agentState         The current state of the agent
      * @param agentCommunication The interface for communication
      */
     private static void updateChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
@@ -181,27 +182,27 @@ public class GeneralUtils {
         ArrayList<ChargingStation> updatedChargingStations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
 
         // Loop over updated charging stations
-        for(ChargingStation updatedChargingStation: updatedChargingStations) {
+        for (ChargingStation updatedChargingStation : updatedChargingStations) {
             // Check if the charging station is not included in the current list
-            if(!currentChargingStations.contains(updatedChargingStation)) {
+            if (!currentChargingStations.contains(updatedChargingStation)) {
                 // Add the new charging station to the charging stations
                 currentChargingStations.add(updatedChargingStation);
 
                 // Inform
                 if (GeneralUtils.PRINT)
                     System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
-                
+
                 continue;
-            }            
+            }
 
             // Loop over current charging stations
-            for(ChargingStation currentChargingStation: currentChargingStations) {
+            for (ChargingStation currentChargingStation : currentChargingStations) {
                 // Check if charging stations correspond
-                if(currentChargingStation.equals(updatedChargingStation)) {
+                if (currentChargingStation.equals(updatedChargingStation)) {
                     // Update the current charging station if needed
                     currentChargingStation.setInUse(updatedChargingStation.isInUse());
                     currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
-                
+
                     // Inform
                     if (GeneralUtils.PRINT)
                         System.out.printf("%s: Updated a known charging station from communication (%s)\n", agentState.getName(), currentChargingStation);
@@ -216,7 +217,7 @@ public class GeneralUtils {
     /**
      * A function that updates the graph with the information received from other agents.
      *
-     * @param agentState The current state of the agent
+     * @param agentState         The current state of the agent
      * @param agentCommunication The interface for communication
      */
     private static void updateGraph(AgentState agentState, AgentCommunication agentCommunication) {
@@ -247,10 +248,10 @@ public class GeneralUtils {
     ///////////
     // UTILS //
     ///////////
-    
+
     /**
      * A function to know if the agent has reached the position
-     * 
+     *
      * @param agentState The current state of the agent
      * @param coordinate The coordinate of the position to reach
      * @return True is the agent is next to the position, otherwise false
@@ -269,11 +270,11 @@ public class GeneralUtils {
         // Return true if the distance is less than 1 for both axes
         return (dX <= 1) && (dY <= 1);
     }
-    
-    
+
+
     /**
      * A function to know if a specific position is in the graph
-     * 
+     *
      * @param agentState The current state of the agent
      * @param coordinate The coordinate of the position to check
      * @return True is the position is in the graph, otherwise false
@@ -283,18 +284,18 @@ public class GeneralUtils {
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Check if the graph is null and return false turn if so
-        if(graph == null) return false;
+        if (graph == null) return false;
 
         // Get the graph map
         Map<Node, List<Node>> map = graph.getMap();
 
         // Loop over graph nodes
-        for(Node node: map.keySet()) {
+        for (Node node : map.keySet()) {
             // Get the position of the node
             Coordinate nodeCoordinate = node.getCoordinate();
 
             // Check if coordinates correspond
-            if(nodeCoordinate.equals(coordinate)) return true;
+            if (nodeCoordinate.equals(coordinate)) return true;
 
         }
 
@@ -305,10 +306,9 @@ public class GeneralUtils {
      * A function that determines whether the agent has enough energy left to pick up the given packet en deliver it
      * to the given destination. The cost is based on where the agent is currently standing.
      *
-     * @param agentState: The state of the agent
-     * @param packet: The packet it has to check
+     * @param agentState:  The state of the agent
+     * @param packet:      The packet it has to check
      * @param destination: The destination the packet has to go to
-     *
      * @return True if enough energy to perform the task, false otherwise.
      */
     public static boolean hasEnoughBatteryToCompleteTask(AgentState agentState, Packet packet, Destination destination) {
@@ -341,5 +341,38 @@ public class GeneralUtils {
 
         // Calculate the distance
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
+    }
+
+    public static void handlePriorityTaskCommunication(AgentState agentState, AgentCommunication agentCommunication) {
+        // Share your priority tasks
+        sharePriorityTasks(agentState, agentCommunication);
+
+        // Get priorityTasks from other agents
+        updatePriorityTasks(agentState, agentCommunication);
+    }
+
+    private static void sharePriorityTasks(AgentState agentState, AgentCommunication agentCommunication) {
+        // Send messages with the graph
+        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.PRIORITY_TASKS_SEND);
+    }
+
+    private static void updatePriorityTasks(AgentState agentState, AgentCommunication agentCommunication) {
+        // Get the priority tasks
+        ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
+
+        // Get the updated priority tasks
+        ArrayList<Task> receivedPriorityTasks = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.PRIORITY_TASKS_SEND, Task.class);
+
+        // Loop over updated priority tasks
+        for (Task task : receivedPriorityTasks) {
+
+            // If task packet has same color as agent
+            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == task.getPacket().getRgbColor()) {
+                priorityTasks.add(task);
+            }
+        }
+
+        // Update memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PRIORITY_TASKS, priorityTasks));
     }
 }

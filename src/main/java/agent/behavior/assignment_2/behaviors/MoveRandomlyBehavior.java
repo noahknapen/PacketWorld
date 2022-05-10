@@ -4,7 +4,6 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
-import environment.Perception;
 import util.assignments.general.CommunicationUtils;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.GraphUtils;
@@ -25,7 +24,7 @@ public class MoveRandomlyBehavior extends Behavior {
         GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
         // Communicate the destination locations with agents in perception
-        // GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+        GeneralUtils.handlePriorityTaskCommunication(agentState, agentCommunication);
 
         // Communicate the graph with agents in perception  
         GeneralUtils.handleGraphCommunication(agentState, agentCommunication);

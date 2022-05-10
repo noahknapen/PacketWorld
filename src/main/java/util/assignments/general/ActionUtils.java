@@ -56,7 +56,12 @@ public class ActionUtils {
         if (!isDirectionPossible)
             direction = getNewRandomDirection(agentState, direction);
 
-        agentAction.step(agentState.getX()+direction.getX(), agentState.getY()+direction.getY());
+        if (direction.equals(new Coordinate(0,0))) {
+            agentAction.skip();
+        }
+        else {
+            agentAction.step(agentState.getX()+direction.getX(), agentState.getY()+direction.getY());
+        }
     }
 
     /**
@@ -90,7 +95,7 @@ public class ActionUtils {
         
         Perception agentPerception = agentState.getPerception();
         // Keep a direction the agent should walk to
-        Coordinate newDirection = null;
+        Coordinate newDirection = new Coordinate(0,0);
 
         // Shuffle the possible directions
         ArrayList<Coordinate> directions = new ArrayList<>(ActionUtils.RELATIVE_POSITIONS);

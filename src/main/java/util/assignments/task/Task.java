@@ -22,7 +22,7 @@ public class Task {
     @JsonProperty("isMoveTask")
     private boolean isMoveTask;
 
-    private ArrayList<Packet> taskConditions = new ArrayList<>();
+    private ArrayList<Packet> taskConditions;
 
     //////////////////
     // CONSTRUCTORS //
@@ -33,6 +33,7 @@ public class Task {
         this.setPacket(packet);
         this.setDestination(destination);
         this.setIsMoveTask(false);
+        taskConditions = new ArrayList<>();
     }
 
     ///////////////////////
@@ -55,10 +56,6 @@ public class Task {
         this.destination = destination;
     }
 
-    public boolean isMoveTask() {
-        return isMoveTask;
-    }
-
     public void setIsMoveTask(boolean moveTask) {
         this.isMoveTask = moveTask;
     }
@@ -78,6 +75,7 @@ public class Task {
     }
 
     public void setTaskConditions(ArrayList<Packet> taskConditions) {
-        this.taskConditions = taskConditions;
+        this.taskConditions.clear();
+        this.taskConditions.addAll(taskConditions);
     }
 }

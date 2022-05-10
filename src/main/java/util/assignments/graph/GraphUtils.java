@@ -75,56 +75,54 @@ public class GraphUtils {
                     graph.addNode(cellNode.get());
                     newNodes.add(cellNode.get());
                 }
-
-
             }
-
         }
-            for (Node node : newNodes) {
 
-                // Loop over neighbourhood to add edges
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        // Get the position of the neighbour cell
-                        int neighbourCellX = node.getCoordinate().getX() + i;
-                        int neighbourCellY = node.getCoordinate().getY() + j;
+        for (Node node : newNodes) {
 
-                        // Get the corresponding neighbour cell
-                        CellPerception neighbourCellPerception = agentPerception.getCellPerceptionOnAbsPos(neighbourCellX, neighbourCellY);
+            // Loop over neighbourhood to add edges
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    // Get the position of the neighbour cell
+                    int neighbourCellX = node.getCoordinate().getX() + i;
+                    int neighbourCellY = node.getCoordinate().getY() + j;
 
-                        // Check if the neighbour cell is null or not walkable and continue with the next cell if so
-                        if (neighbourCellPerception == null) continue;
+                    // Get the corresponding neighbour cell
+                    CellPerception neighbourCellPerception = agentPerception.getCellPerceptionOnAbsPos(neighbourCellX, neighbourCellY);
 
-                        // Check if the cell is not walkable and that it is not because of an agent standing there. If so continue with the next cell
-                        if (neighbourCellPerception.containsWall()) continue;
+                    // Check if the neighbour cell is null or not walkable and continue with the next cell if so
+                    if (neighbourCellPerception == null) continue;
 
-                        // Get the position of the neighbour cell
-                        Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
+                    // Check if the cell is not walkable and that it is not because of an agent standing there. If so continue with the next cell
+                    if (neighbourCellPerception.containsWall()) continue;
 
-                        // Create a node
-                        Optional<Target> neighbourTarget = extractTarget(neighbourCellPerception);
-                        Node neighbourNode = new Node(neighbourCellCoordinate, neighbourTarget);
+                    // Get the position of the neighbour cell
+                    Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
-                        // Check if node is equal to cell and continue with the next cell if so
-                        if (node.equals(neighbourNode)) continue;
+                    // Create a node
+                    Optional<Target> neighbourTarget = extractTarget(neighbourCellPerception);
+                    Node neighbourNode = new Node(neighbourCellCoordinate, neighbourTarget);
 
-                        // Only allow edges between free node,
-                        if (node.containsTarget() && !neighbourNode.containsTarget() && (!node.containsPacket() || !neighbourNode.containsPacket()))
-                            continue;
+                    // Check if node is equal to cell and continue with the next cell if so
+                    if (node.equals(neighbourNode)) continue;
 
-                        // Add the edges between the cells
-                        graph.addEdge(node, neighbourNode);
-                    }
-                }
+                    // Only allow edges between free node,
+                    if (node.containsTarget() && !neighbourNode.containsTarget() && (!node.containsPacket() || !neighbourNode.containsPacket()))
+                        continue;
 
-                if (agentState.getColor().isPresent() &&
-                        node.getTarget().isPresent() &&
-                        node.containsPacket() &&
-                        node.getTarget().get().getRgbColor() == agentState.getColor().get().getRGB())
-                {
-                    checkIfBlocked(agentState, node, graph);
+                    // Add the edges between the cells
+                    graph.addEdge(node, neighbourNode);
                 }
             }
+
+            if (agentState.getColor().isPresent() &&
+                    node.getTarget().isPresent() &&
+                    node.containsPacket() &&
+                    node.getTarget().get().getRgbColor() == agentState.getColor().get().getRGB())
+            {
+                checkIfBlocked(agentState, node, graph);
+            }
+        }
 
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
@@ -184,9 +182,9 @@ public class GraphUtils {
 
 
     /**
-     * Finds all packets along a path of nodes (Does not count the last node in the path)
+     * Finds all packets along a path of nodes
      * @param path The path of nodes
-     * @return A list of all packets along the path (Does not count the last node in the path)
+     * @return A list of all packets along the path
      */
     private static ArrayList<Node> getPathPackets(ArrayList<Node> path) {
         ArrayList<Node> packetNodes = new ArrayList<>();
