@@ -21,6 +21,9 @@ public class Explorer extends Behavior {
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
+        // Communicate the priority tasks with agents in perception
+        GeneralUtils.handlePriorityTaskCommunication(agentState, agentCommunication);
+
         GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
     }
 

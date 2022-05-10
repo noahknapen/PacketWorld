@@ -367,7 +367,7 @@ public class GeneralUtils {
         for (Task task : receivedPriorityTasks) {
 
             // If task packet has same color as agent
-            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == task.getPacket().getRgbColor()) {
+            if (!priorityTasks.contains(task) && agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == task.getPacket().getRgbColor()) {
                 priorityTasks.add(task);
             }
         }

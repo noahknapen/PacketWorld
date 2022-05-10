@@ -9,6 +9,8 @@ import environment.Perception;
 import util.assignments.comparators.PacketComparator;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.Graph;
+import util.assignments.graph.GraphUtils;
+import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -81,15 +83,20 @@ public class TaskDefinitionPossible extends BehaviorChange{
         // Loop over the sorted discovered packets
         for(int i = 0; i < discoveredPackets.size(); i++) {
 
-            // Check if path exists to packet
-
             // Get a candidate packet
             Packet candidatePacket = discoveredPackets.get(i);
+
+            // Check if path exists to packet
 
             // Get the color of the candidate packet
             Color candidatePacketColor = candidatePacket.getColor();
 
             if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != candidatePacketColor.getRGB()) continue;
+
+            ArrayList<Node> packetPath = GraphUtils.performAStarSearch(agentState, candidatePacket.getCoordinate(), false);
+
+            if (packetPath == null) continue;
+
 
             // Loop over the discovered destinations
             for (Destination candidateDestination : discoveredDestinations) {
@@ -103,6 +110,9 @@ public class TaskDefinitionPossible extends BehaviorChange{
                 if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
 
                 // Check if path exists to destination
+                ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, candidateDestination.getCoordinate(), false);
+
+                if (destinationPath == null)
 
 
                 // Remove the packet from the discovered packets

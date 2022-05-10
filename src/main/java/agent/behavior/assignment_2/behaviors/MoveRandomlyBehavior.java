@@ -23,7 +23,7 @@ public class MoveRandomlyBehavior extends Behavior {
         // Communicate the charging stations with all the other agents
         GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
-        // Communicate the destination locations with agents in perception
+        // Communicate the priority tasks with agents in perception
         GeneralUtils.handlePriorityTaskCommunication(agentState, agentCommunication);
 
         // Communicate the graph with agents in perception  

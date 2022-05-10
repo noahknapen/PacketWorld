@@ -1,5 +1,6 @@
 package util.assignments.graph;
 
+import java.awt.*;
 import java.util.*;
 
 import agent.AgentState;
@@ -165,7 +166,7 @@ public class GraphUtils {
 
         for (Node packetNode : pathPackets) {
             Packet packet = (Packet) packetNode.getTarget().get();
-            Task task = new Task(packet,null);
+            Task task = new Task(packet, new Destination(new Coordinate(9,9), packet.getRgbColor()));
             task.setTaskConditions(taskConditions);
             taskConditions.add(packet);
 
@@ -336,34 +337,10 @@ public class GraphUtils {
                 break;
             }
 
-            for (Node neighbourNode : graph.getMap().get(node)) {
-
-                // Guard clause to check if neighbour is acceptable node
-                if (neighbourNode.containsTarget() && (!includePackets || !neighbourNode.containsPacket())) continue;
-
-                // Convert boolean to int
-                int containsPacketInt = neighbourNode.containsPacket() ? 1: 0;
-
-                double totalGCost = node.getGCost() + 1 + containsPacketInt * PACKET_COST;
-
-                if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
-                    neighbourNode.setParent(node);
-                    neighbourNode.setGCost(totalGCost);
-                    neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-
-                    openList.add(neighbourNode);
-                } else {
-                    if (totalGCost < neighbourNode.getGCost()) {
-                        neighbourNode.setParent(node);
-                        neighbourNode.setGCost(totalGCost);
-                        neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
-
-                        if (closeList.contains(neighbourNode)) {
-                            closeList.remove(neighbourNode);
-                            openList.add(neighbourNode);
-                        }
-                    }
-                }
+            // Guard clause to check if neighbour is acceptable node
+            if (!(node.containsTarget() && (!includePackets || !node.containsPacket())))
+            {
+                extractNeighbours(graph, node, targetNode, openList, closeList, includePackets);
             }
 
             openList.remove(node);
@@ -418,6 +395,34 @@ public class GraphUtils {
      */
     private static void extractNeighbours(Graph graph, Node node, Node targetNode, PriorityQueue<Node> openList, PriorityQueue<Node> closeList, boolean includePackets) {
 
+        for (Node neighbourNode : graph.getMap().get(node)) {
+
+            Node graphNeighbourNode = graph.getNode(neighbourNode.getCoordinate()).get();
+
+            // Convert boolean to int
+            int containsPacketInt = graphNeighbourNode.containsPacket() ? 1: 0;
+
+            double totalGCost = node.getGCost() + 1 + containsPacketInt * PACKET_COST;
+
+            if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
+                neighbourNode.setParent(node);
+                neighbourNode.setGCost(totalGCost);
+                neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+
+                openList.add(neighbourNode);
+            } else {
+                if (totalGCost < neighbourNode.getGCost()) {
+                    neighbourNode.setParent(node);
+                    neighbourNode.setGCost(totalGCost);
+                    neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+
+                    if (closeList.contains(neighbourNode)) {
+                        closeList.remove(neighbourNode);
+                        openList.add(neighbourNode);
+                    }
+                }
+            }
+        }
 
 
     }
