@@ -7,7 +7,6 @@ import java.util.Map;
 
 import agent.AgentAction;
 import agent.AgentState;
-import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import util.assignments.graph.GraphUtils;

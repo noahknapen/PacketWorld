@@ -5,6 +5,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.*;
 
 import environment.Coordinate;
+import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
 /**
@@ -88,12 +89,8 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
-    public boolean nodeWalkable() {
-        return this.target == null;
-    }
-
     public boolean containsPacket() {
-        return target.getClass() == Packet.class;
+        return target.isPresent() && target.get().getClass() == Packet.class;
     }
 
     public void setCoordinate(Coordinate coordinate) {

@@ -4,6 +4,7 @@ import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
+import environment.Perception;
 import util.assignments.general.CommunicationUtils;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.GraphUtils;

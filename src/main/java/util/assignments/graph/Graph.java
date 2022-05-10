@@ -51,7 +51,7 @@ public class Graph {
     /**
      * Finds the corresponding node in the map based on the coordinate
      *
-     * @param node The coordinate of the node
+     * @param coordinate The coordinate of the node
      * @return The node if there exists one, otherwise empty
      */
     public Optional<Node> getNode(Coordinate coordinate) {
@@ -79,11 +79,8 @@ public class Graph {
      * @param node The node to add
      */
     public void addNode(Node node) {
-        // If node exists -> update target
-        if(map.containsKey(node)) {
-            getNode(node.getCoordinate()).get().setTarget(node.getTarget());
-            return;
-        }
+        // If node exists
+        if(map.containsKey(node)) return;
         
         // Add the node
         map.put(node, new LinkedList<Node>());

@@ -12,7 +12,6 @@ import environment.world.crumb.CrumbRep;
 import environment.world.destination.DestinationRep;
 import environment.world.energystation.EnergyStationRep;
 import environment.world.flag.FlagRep;
-import environment.world.generator.PacketGeneratorRep;
 import environment.world.gradient.GradientRep;
 import environment.world.packet.PacketRep;
 import environment.world.pheromone.PheromoneRep;
@@ -25,7 +24,7 @@ import environment.world.wall.WallRep;
  */
 
 public class CellPerception {
-    
+
     /**
      * The x and y coordinate (wrt. the environment) of this cell.
      */
@@ -90,10 +89,6 @@ public class CellPerception {
         return this.getRepOfType(PacketRep.class) != null;
     }
 
-    public boolean containsGeneratorPacket() {
-        return this.getRepOfType(PacketGeneratorRep.class) != null;
-    }
-
     /**
      * Check if this cell perception has a wall in it.
      * @return True if a wall is present in this cell perception, false otherwise.
@@ -116,10 +111,6 @@ public class CellPerception {
      */
     public boolean containsAgent() {
         return this.getRepOfType(AgentRep.class) != null;
-    }
-
-    public boolean containsGlassWall() {
-        return !this.isWalkable() && !this.containsAgent() && !this.containsAnyDestination() && !this.containsPacket();
     }
 
     /**
@@ -177,8 +168,8 @@ public class CellPerception {
      */
     public boolean containsFlagWithColor(Color color) {
         return this.getFlagRepresentation()
-            .map(f -> f.getColor() == color)
-            .orElse(false);
+                .map(f -> f.getColor() == color)
+                .orElse(false);
     }
 
 

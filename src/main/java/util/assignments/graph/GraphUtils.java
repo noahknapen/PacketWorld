@@ -3,7 +3,6 @@ package util.assignments.graph;
 import java.util.*;
 
 import agent.AgentState;
-import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
