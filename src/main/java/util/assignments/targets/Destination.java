@@ -37,9 +37,9 @@ public class Destination extends Target{
     }
 
     /**
-     * Get the color
+     * Get the color of the destination
      * 
-     * @return The color of the packet
+     * @return The color of the destination
      */
     public Color getColor() {
         return new Color(rgbColor);

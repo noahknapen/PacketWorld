@@ -2,8 +2,6 @@ package util.assignments.general;
 
 import java.util.*;
 
-import java.util.List;
-
 import agent.AgentCommunication;
 import agent.AgentState;
 import environment.CellPerception;
@@ -36,7 +34,7 @@ public class GeneralUtils {
 
     /**
      * Check the perception of the agent
-     * Perform the appropriate action when there is something in a cell in the perception of the agent.
+     * It performs the appropriate action when there is something in a cell in the perception of the agent.
      *  
      * @param agentState The current state of the agent
      */
@@ -47,46 +45,59 @@ public class GeneralUtils {
         // Loop over the whole perception
         for (int x = 0; x <= agentPerception.getWidth(); x++) {
             for (int y = 0; y <= agentPerception.getHeight(); y++) {
+                // Get the perception of the cell
                 CellPerception cellPerception = agentPerception.getCellAt(x, y);
 
-                // Check if the cell is null or the cell is the one the agent is currently standing on and continue with the next cell if so
-                if (cellPerception == null || (x == 0 && y == 0)) continue;
+                // Check if the perception of the cell is null and continue with the next cell if so
+                if(cellPerception == null) {
+                    continue;
+                }
 
-                // Get the coordinates of the cell
-                Coordinate cellCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
+                // Get the coordinate of the cell
+                int cellX = cellPerception.getX();
+                int cellY = cellPerception.getY();
+                Coordinate cellCoordinate = new Coordinate(cellX, cellY);
+
+                // Check if the position of the cell equals the position of the agent
+                // It checks if the cell coordinate is (0,0)
+                if(cellX == 0 && cellY == 0) {
+                    continue;
+                }
 
                 // Check if the cell contains a charging station
-                if (cellPerception.containsEnergyStation()) 
-                    addChargingStation(agentState, cellCoordinate);
+                if (cellPerception.containsEnergyStation())
+                    // Add a charging station
+                    GeneralUtils.discoverChargingStation(agentState, cellCoordinate);
             }
         }
     }
 
     /**
-     * A function that adds a charging station to the memory of the agent
+     * Discover a charging station
      *
      * @param agentState The current state of the agent
      * @param chargingStationCoordinate The coordinates of the charging station
      */
-    private static void addChargingStation(AgentState agentState, Coordinate chargingStationCoordinate) {
-        // Retrieve the memory fragment
-        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+    private static void discoverChargingStation(AgentState agentState, Coordinate chargingStationCoordinate) {
+        // Get the list of charging stations
+        ArrayList<ChargingStation> chargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
-        // Create the corresponding charging station
+        // Create a charging station
         ChargingStation chargingStation = new ChargingStation(chargingStationCoordinate);
 
-        // Check if the charging station was already discovered and continue with next cell if so
-        if(discoveredChargingStations.contains(chargingStation)) return;
+        // Check if the charging station was already discovered and return if so
+        if(chargingStations.contains(chargingStation)) return;
 
-        // Add the charging station to the list of discovered charging stations
-        discoveredChargingStations.add(chargingStation);
+        // Add the charging station to the charging stations
+        chargingStations.add(chargingStation);
 
         // Inform
-        if (GeneralUtils.PRINT)
-            System.out.printf("%s: Discovered a new charging station (%s) [%s]\n", agentState.getName(), chargingStation, discoveredChargingStations.size());
+        if(GeneralUtils.PRINT) {
+            System.out.printf("%s: Discovered a new charging station (%s) [%s]\n", agentState.getName(), chargingStation, chargingStations.size());
+        } 
 
         // Update memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations, MemoryKeys.UPDATED_STATIONS, true));
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.CHARGING_STATIONS, chargingStations, MemoryKeys.UPDATED_STATIONS, true));
     }
 
     /////////////////////////
@@ -98,41 +109,49 @@ public class GeneralUtils {
         /////////////
 
     /**
-     * A function that is used to communicate information about the charging stations.
+     * Handle the communication of the charging stations between agents
      *
      * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
+     * @param agentCommunication The communication interface of the agent
      */
     public static void handleChargingStationsCommunication(AgentState agentState, AgentCommunication agentCommunication) {
-        // Get if the list of discovered charging stations was updated
-        boolean updatedStations = Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.UPDATED_STATIONS, Boolean.class));
+        // Get if the charging stations were updated
+        boolean chargingStationsUpdated = Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.UPDATED_STATIONS, Boolean.class));
 
-        // Check if the list of discovered charging stations was updated
-        if(updatedStations) {
-            // Share information about the charging stations
-            shareChargingStations(agentState, agentCommunication);
+        // Check if the charging stations were updated
+        if(chargingStationsUpdated) {
+            // Share the charging stations
+            GeneralUtils.shareChargingStations(agentState, agentCommunication);
 
             // Update the memory
             MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.UPDATED_STATIONS, false));
         }
-        else {
-            // Look at messages, If we shared something the others can not have changed something or give priority to true statements
-            updateChargingStations(agentState, agentCommunication);
-        }
+
+        // Update the charging stations
+        GeneralUtils.updateChargingStations(agentState, agentCommunication);
     }
 
     /**
-     * A function that is used to communicate information about the graph.
+     * Handle the communication of the graph between agents
      *
      * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
+     * @param agentCommunication The communication interface of the agent
      */
     public static void handleGraphCommunication(AgentState agentState, AgentCommunication agentCommunication) {
-        // Share the graph
-        shareGraph(agentState, agentCommunication);
+        // Get if the graph was updated
+        boolean graphUpdated = Boolean.TRUE.equals(MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.UPDATED_GRAPH, Boolean.class));
 
-        // Update graph
-        updateGraph(agentState, agentCommunication);
+        // Check if the graph was updated
+        if(graphUpdated) {
+            // Share the graph
+            GeneralUtils.shareGraph(agentState, agentCommunication);
+
+            // Update the memory
+            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.UPDATED_GRAPH, false));
+        }
+
+        // Update the graph
+        GeneralUtils.updateGraph(agentState, agentCommunication);
     }
 
         ///////////
@@ -140,27 +159,25 @@ public class GeneralUtils {
         ///////////
 
     /**
-     * A function that is used to share the charging stations with other agents.
+     * Share the charging stations with other agents
      *
      * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
+     * @param agentCommunication The communication interface of the agent
      */
     private static void shareChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
-        // Broadcast the list of discovered charging stations
-        CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
+        // Broadcast the charging stations
+        CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.CHARGING_STATIONS);
     }
 
     /**
-     * A function that is used to share the graph with other agents.
+     * Share the graph with other agents
      *
      * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
+     * @param agentCommunication The communication interface of the agent
      */
     private static void shareGraph(AgentState agentState, AgentCommunication agentCommunication) {
-        // Send messages with the graph
+        // Send the graph to agents in the perception of the agent
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.GRAPH);
-
-        // Prio packets added in the graph
     }
 
         ////////////
@@ -168,78 +185,104 @@ public class GeneralUtils {
         ////////////
 
     /**
-     * A function that updates the list of discovered charging stations with the information received from other agents.
+     * Update the charging stations based on communication with other agents
      *
      * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
+     * @param agentCommunication The communication interface of the agent
      */
-    private static void updateChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
+    private static void updateChargingStations(AgentState agentState, AgentCommunication agentCommunication) {    
         // Get the current charging stations
-        ArrayList<ChargingStation> currentChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+        ArrayList<ChargingStation> currentChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
-        // Get the updated charging stations
-        ArrayList<ChargingStation> updatedChargingStations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+        // Get the messages
+        HashMap<String, ArrayList<ChargingStation>> chargingStationMessages = CommunicationUtils.getObjectListsFromMails(agentState, agentCommunication, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
-        // Loop over updated charging stations
-        for(ChargingStation updatedChargingStation: updatedChargingStations) {
-            // Check if the charging station is not included in the current list
-            if(!currentChargingStations.contains(updatedChargingStation)) {
-                // Add the new charging station to the charging stations
-                currentChargingStations.add(updatedChargingStation);
+        // Check if no charging station messages were received and return if so
+        if (chargingStationMessages.size() == 0) {
+            return;
+        }
 
-                // Inform
-                if (GeneralUtils.PRINT)
-                    System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
-                
+        // Loop over all charging station messages
+        for(String sender: chargingStationMessages.keySet()) {
+            // Check if sender equals the agent and continue with next charging station message if so
+            if(sender.equals(agentState.getName())) {
                 continue;
-            }            
+            }
 
-            // Loop over current charging stations
-            for(ChargingStation currentChargingStation: currentChargingStations) {
-                // Check if charging stations correspond
-                if(currentChargingStation.equals(updatedChargingStation)) {
-                    // Update the current charging station if needed
-                    currentChargingStation.setInUse(updatedChargingStation.isInUse());
-                    currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
-                
+            // Get the update charging stations of the charging station message
+            ArrayList<ChargingStation> updatedChargingStations = chargingStationMessages.get(sender);
+
+            // Loop over updated charging stations
+            for(ChargingStation updatedChargingStation: updatedChargingStations) {
+                // Check if the current charging stations do not contain the updated charging station
+                if(!currentChargingStations.contains(updatedChargingStation)) {
+                    // Add the updated charging station to the current charging stations
+                    currentChargingStations.add(updatedChargingStation);
+
                     // Inform
-                    if (GeneralUtils.PRINT)
-                        System.out.printf("%s: Updated a known charging station from communication (%s)\n", agentState.getName(), currentChargingStation);
+                    if (GeneralUtils.PRINT) {
+                        System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
+                    }
+
+                    continue;
+                }            
+
+                // Loop over current charging stations
+                for(ChargingStation currentChargingStation: currentChargingStations) {
+                    // Check if the current charging station equals the updated charging station
+                    if(currentChargingStation.equals(updatedChargingStation)) {
+                        // Check if the current charging station is not in use
+                        // The current charging station should only be set to in use if it is not already
+                        if(!currentChargingStation.isInUse()) {
+                            currentChargingStation.setInUse(updatedChargingStation.isInUse());
+                            currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
+
+                            // Inform
+                            if(GeneralUtils.PRINT) {
+                                System.out.printf("%s: Updated a known charging station from communication (%s)\n", agentState.getName(), currentChargingStation);
+                            }
+                        }
+                    }
                 }
             }
         }
-
-        // Update the current charging stations
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, currentChargingStations));
+        
+        // Update the memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.CHARGING_STATIONS, currentChargingStations));
     }
 
     /**
-     * A function that updates the graph with the information received from other agents.
+     * Update the graph based on communication with other agents
      *
      * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
+     * @param agentCommunication The communication interface of the agent
      */
     private static void updateGraph(AgentState agentState, AgentCommunication agentCommunication) {
-        // Get the updated graph
-        HashMap<String, Graph> graphMessages = CommunicationUtils.getObjectFromMails(agentCommunication, MemoryKeys.GRAPH, Graph.class);
+        // Get the messages
+        HashMap<String, Graph> graphMessages = CommunicationUtils.getObjectsFromMails(agentCommunication, MemoryKeys.GRAPH, Graph.class);
 
-        // No messages about the graph received
-        if (graphMessages == null) return;
+        // Check if no graph messages were received and return if so
+        if (graphMessages.size() == 0) {
+            return;
+        }
 
-        // If the message comes from the agent return
-        if (graphMessages.containsKey(agentState.getName())) return;
+        // Loop over all graph messages
+        for(String sender: graphMessages.keySet()) {
+            // Check if sender equals the agent and continue with next graph message if so
+            if(sender.equals(agentState.getName())) {
+                continue;
+            }
 
-        // Loop over the received messages
-        for (String sender : graphMessages.keySet()) {
-            // Get an update of the graphs
+            // Get the update graph of the graph message
             Graph updatedGraph = graphMessages.get(sender);
 
             // Update the current graph
             GraphUtils.update(agentState, updatedGraph);
 
             // Inform
-            if (GeneralUtils.PRINT)
+            if (GeneralUtils.PRINT) {
                 System.out.printf("%s: Updated the graph from communication\n", agentState.getName());
+            }
         }
     }
 
@@ -249,14 +292,14 @@ public class GeneralUtils {
     ///////////
     
     /**
-     * A function to know if the agent has reached the position
+     * Has the agent reached the position?
      * 
      * @param agentState The current state of the agent
      * @param coordinate The coordinate of the position to reach
      * @return True is the agent is next to the position, otherwise false
      */
     public static boolean hasReachedPosition(AgentState agentState, Coordinate coordinate) {
-        // Get the positions
+        // Get the position of the agent and the position
         int agentX = agentState.getX();
         int agentY = agentState.getY();
         int coordinateX = coordinate.getX();
@@ -266,13 +309,13 @@ public class GeneralUtils {
         int dX = Math.abs(agentX - coordinateX);
         int dY = Math.abs(agentY - coordinateY);
 
-        // Return true if the distance is less than 1 for both axes
+        // Return true if the distance is less than 1 for both axes, otherwise return false
         return (dX <= 1) && (dY <= 1);
     }
     
     
     /**
-     * A function to know if a specific position is in the graph
+     * Does the graph contains a node with a given coordinate?
      * 
      * @param agentState The current state of the agent
      * @param coordinate The coordinate of the position to check
@@ -283,63 +326,80 @@ public class GeneralUtils {
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Check if the graph is null and return false turn if so
-        if(graph == null) return false;
+        if(graph == null) {
+            return false;
+        }
 
-        // Get the graph map
-        Map<Node, List<Node>> map = graph.getMap();
-
-        // Loop over graph nodes
-        for(Node node: map.keySet()) {
-            // Get the position of the node
+        // Loop over the graph nodes
+        for(Node node: graph.getMap().keySet()) {
+            // Get the coordinate of the node
             Coordinate nodeCoordinate = node.getCoordinate();
 
-            // Check if coordinates correspond
-            if(nodeCoordinate.equals(coordinate)) return true;
-
+            // Check if the coordinate of the node equals the coordinate of the position
+            if(nodeCoordinate.equals(coordinate)) {
+                return true;
+            }
         }
 
         return false;
     }
 
     /**
-     * A function that determines whether the agent has enough energy left to pick up the given packet en deliver it
-     * to the given destination. The cost is based on where the agent is currently standing.
-     *
-     * @param agentState: The state of the agent
-     * @param packet: The packet it has to check
-     * @param destination: The destination the packet has to go to
-     *
-     * @return True if enough energy to perform the task, false otherwise.
-     */
-    public static boolean hasEnoughBatteryToCompleteTask(AgentState agentState, Packet packet, Destination destination) {
-        // First calculate the power to go to the packet location
-        Coordinate packetPosition = packet.getCoordinate();
-        int cellsToWalk1 = Perception.distance(agentState.getX(), agentState.getY(), packetPosition.getX(), packetPosition.getY());
-        double powerToGoToPacket = cellsToWalk1 * GeneralUtils.COST_WALK_WITHOUT_PACKET;
-
-        // Second calculate the power to go from packet to destination
-        Coordinate destinationPosition = destination.getCoordinate();
-        int cellsToWalk2 = Perception.distance(packetPosition.getX(), packetPosition.getY(), destinationPosition.getX(), destinationPosition.getY());
-        double powerToGoToDestination = cellsToWalk2 * GeneralUtils.COST_WALK_WITH_PACKET;
-
-        // See if there is enough power to complete the task and have an extra buffer
-        return agentState.getBatteryState() > (powerToGoToDestination + powerToGoToPacket + 150);
-    }
-
-    /**
-     * A function to calculate the Euclidean distance between two coordinates
+     * Calculate the Euclidean distance between two coordinates
      *
      * @param coordinate1 The first coordinate
      * @param coordinate2 The second coordinate
+     * @return The euclidean distance between the two coordinates
      */
     public static double calculateEuclideanDistance(Coordinate coordinate1, Coordinate coordinate2) {
-        // Get the positions
+        // Get the positions of both coordinates
         int coordinate1X = coordinate1.getX();
         int coordinate1Y = coordinate1.getY();
         int coordinate2X = coordinate2.getX();
         int coordinate2Y = coordinate2.getY();
 
-        // Calculate the distance
+        // Calculate and return the distance
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
+    }
+
+    /**
+     * Has the agent enough battery to complete a task?
+     *
+     * @param agentState The current state of the agent
+     * @param packet The packet the agent has to deliver
+     * @param destination The destination to which the agent has to deliver the packet
+     * @return True if enough energy to perform the task, false otherwise.
+     */
+    public static boolean hasEnoughBatteryToCompleteTask(AgentState agentState, Packet packet, Destination destination) {
+        // Get the position of the agent
+        int agentX = agentState.getX();
+        int agentY = agentState.getY();
+
+        // Get the position of the packet
+        int packetX = packet.getCoordinate().getX();
+        int packetY = packet.getCoordinate().getY();
+
+        // Get the number of cells between the agent and the packet
+        int numberOfCellsToPacket = Perception.distance(agentX, agentY, packetX, packetY);
+
+        // Calculate the energy required to go to the packet
+        double requiredEnergyToPacket = numberOfCellsToPacket * GeneralUtils.COST_WALK_WITHOUT_PACKET;
+
+        // Get the position of the destination
+        int destinationX = destination.getCoordinate().getX();
+        int destinationY = destination.getCoordinate().getY();
+
+        // Get the number of cells between the packet and the destination
+        int numberOfCellsToDestination = Perception.distance(packetX, packetY, destinationX, destinationY);
+
+        // Calculate the energy required to go to the destination
+        double requiredEnergyToDestination = numberOfCellsToDestination * GeneralUtils.COST_WALK_WITH_PACKET;
+
+        // Calculate total required energy
+        // Hereby, a margin of 150 is added.
+        double totalRequiredEnergy = requiredEnergyToPacket + requiredEnergyToDestination + 150;
+
+        // Return true if the battery state of the agent is higher than the total required energy, otherwise return false
+        return agentState.getBatteryState() > totalRequiredEnergy;
     }
 }

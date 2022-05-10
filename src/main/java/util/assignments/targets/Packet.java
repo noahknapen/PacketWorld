@@ -46,7 +46,7 @@ public class Packet extends Target {
     }
 
     /**
-     * Get the color
+     * Get the color of the packet
      * 
      * @return The color of the packet
      */

@@ -62,6 +62,6 @@ public class MoveRandomlyBehavior extends Behavior {
         if (agentCommunication.getNbMessages() == 0) return;
 
         // Retrieve the messages and delete them
-        CommunicationUtils.getObjectFromMails(agentCommunication, "boolean", Boolean.class);
+        CommunicationUtils.getObjectsFromMails(agentCommunication, "boolean", Boolean.class);
     }
 }

@@ -34,6 +34,6 @@ public class Application {
         } catch (Exception ignored) {}
 
         MainMenu mm = new MainMenu();
-        mm.setVisible(true);               
+        mm.setVisible(true);    
     }
 }

@@ -18,7 +18,7 @@ import util.assignments.jackson.NodeSerializer;
 import util.assignments.targets.Target;
 
 /**
- * A class represening a graph
+ * A class representing a graph
  */
 public class Graph {
 
@@ -44,12 +44,8 @@ public class Graph {
         return map;
     }
 
-    public void setMap(Map<Node, List<Node>> map) {
-        this.map = map;
-    }
-
     /**
-     * Finds the corresponding node in the map based on the coordinate
+     * Get the corresponding node in the map based on the coordinate
      * 
      * @param node The coordinate of the node
      * @return The node if there exists one, otherwise empty
@@ -69,6 +65,10 @@ public class Graph {
         return new ArrayList<>(map.keySet().stream().filter(n -> (n.getTarget().isPresent() && n.getTarget().get().getClass().equals(targetClass))).map(n -> (T) n.getTarget().get()).collect(Collectors.toList()));
     }
 
+    public void setMap(Map<Node, List<Node>> map) {
+        this.map = map;
+    }
+
     /////////////
     // METHODS //
     /////////////
@@ -79,9 +79,11 @@ public class Graph {
      * @param node The node to add
      */
     public void addNode(Node node) {
-        // If node exists -> update target
+        // Check if the map alreadu contains the node
         if(map.containsKey(node)) {
-            getNode(node.getCoordinate()).get().setTarget(node.getTarget());
+            // Update the node
+            updateNode(node);
+    
             return;
         }
         
@@ -89,6 +91,12 @@ public class Graph {
         map.put(node, new LinkedList<Node>());
     }
 
+    /**
+     * Add an edge between two nodes to the map
+     * 
+     * @param node1 The first node
+     * @param node2 The second node
+     */
     public void addEdge(Node node1, Node node2) {
         // Check if the map does not contain node 1 and add it if so
         if(!map.containsKey(node1))
@@ -103,6 +111,28 @@ public class Graph {
             map.get(node1).add(node2);
         if(!map.get(node2).contains(node1))
             map.get(node2).add(node1);
+    }
+
+    /**
+     * Update a node in the map based on another one
+     * Update the target of the node
+     * 
+     * @param updateNode
+     */
+    public void updateNode(Node updateNode) {
+        // Get the coordinate of the update node
+        Coordinate updateNodeCoordinate = updateNode.getCoordinate();
+
+        // Get the optional current node
+        Optional<Node> currentNode = getNode(updateNodeCoordinate);
+
+        // Check if the current does not exist and return if so
+        if(currentNode.isEmpty()) return;
+
+        // Check if the update node is younger than the current node
+        if (updateNode.getUpdateTime() > currentNode.get().getUpdateTime()) 
+            // Update the current node
+            currentNode.get().setTarget(updateNode.getTarget());
     }
 
     ///////////////

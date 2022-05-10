@@ -8,7 +8,7 @@ import environment.Coordinate;
 import util.assignments.targets.Target;
 
 /**
- * A class that represents a node
+ * A class representing a node
  */
 
 @JsonIgnoreProperties(value={"walkable", "fcost"})
@@ -68,6 +68,11 @@ public class Node implements Comparable<Node> {
         return target;
     }
     
+    /**
+     * Is the node walkable?
+     * 
+     * @return True if the node is walkable, otherwise false
+     */
     public boolean isWalkable() {
         return this.target.isEmpty();
     }
