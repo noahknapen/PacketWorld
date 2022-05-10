@@ -22,7 +22,7 @@ import util.assignments.targets.Target;
  */
 public class Graph {
 
-    // A datamember holding the map of the graph
+    // A data member holding the map of the graph
     @JsonSerialize(keyUsing = NodeSerializer.class)
     @JsonDeserialize(keyUsing = NodeDeserializer.class)
     @JsonProperty("map")

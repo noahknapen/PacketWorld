@@ -14,19 +14,19 @@ import util.assignments.targets.Target;
 @JsonIgnoreProperties(value={"walkable", "fcost"})
 public class Node implements Comparable<Node> {
 
-    // A datamember holding the coordinate of the node
+    // A data member holding the coordinate of the node
     private Coordinate coordinate;
-    // A datamember holding the optional target of the node
+    // A data member holding the optional target of the node
     private Optional<Target> target;
 
-    // A datamember holding the gCost of the node
+    // A data member holding the gCost of the node
     private double gCost;
-    // A datamember holding the hCost of the node
+    // A data member holding the hCost of the node
     private double hCost;
-    // A datamember holding the parent of the node
+    // A data member holding the parent of the node
     private Node parent;
 
-    // A datamember holding the time at which the node was updated
+    // A data member holding the time at which the node was updated
     private long updateTime;
 
     //////////////////

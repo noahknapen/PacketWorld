@@ -15,7 +15,7 @@ import java.awt.Color;
 )
 public class Destination extends Target{
     
-    // A datamember holding the color of the destination
+    // A data member holding the color of the destination
     private int rgbColor;
 
     //////////////////

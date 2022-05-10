@@ -15,9 +15,9 @@ import environment.Coordinate;
 )
 public class ChargingStation extends Target{
 
-    // A datamember holding if the battery station is in use or not
+    // A data member holding if the battery station is in use or not
     private boolean inUse;
-    // A datamember holding the battery of the user currently using the charging station
+    // A data member holding the battery of the user currently using the charging station
     private Optional<Integer> batteryOfUser;
 
     //////////////////

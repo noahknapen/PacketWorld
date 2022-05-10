@@ -15,9 +15,9 @@ import java.awt.Color;
 )
 public class Packet extends Target {
 
-    // A datamember holding the color of the packet
+    // A data member holding the color of the packet
     private int rgbColor;
-    // A datamember holding if the packet has priority
+    // A data member holding if the packet has priority
     private boolean priority;
 
     //////////////////
