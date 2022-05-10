@@ -186,65 +186,6 @@ public class GeneralUtils {
         updateDestinations(agentState, agentCommunication);
     }
 
-    public static void handleTargetPacketCommunication(AgentState agentState, AgentCommunication agentCommunication) { 
-        // Get the target packet
-        Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
-
-        if (task == null)
-            throw new IllegalArgumentException("task is null");
-        
-        Packet packet = task.getPacket();
-        Coordinate packetCoordinate = packet.getCoordinate();
-
-        // See if another agent is moving towards this packet
-        boolean otherAgentMovingToPacket = isOtherAgentMovingToPacket(agentState, agentCommunication, packetCoordinate);
-
-        // If another agent is moving towards this packet, update memory so the agent can see if another task is available.
-        // Otherwise, communicate to other agents that this agent is moving towards the target packet
-        if (otherAgentMovingToPacket)
-        {
-            task.setType(TaskType.CHANGE_PACKET_TO_MOVE_TO);
-            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task));
-        } else
-        {
-            shareTargetPacketThroughTask(agentState, agentCommunication);
-        }
-    }
-
-    private static boolean isOtherAgentMovingToPacket(AgentState agentState, AgentCommunication agentCommunication, Coordinate packetCoordinate) {
-        
-        List<Coordinate> otherAgentsTargetPackets = getTargetPacketsOfOtherAgents(agentState, agentCommunication);
-
-        for (Coordinate otherPacketCoordinate : otherAgentsTargetPackets)
-        {
-            if (packetCoordinate.equals(otherPacketCoordinate))
-                return true;
-        }
-
-        return false;
-    }
-
-    private static List<Coordinate> getTargetPacketsOfOtherAgents(AgentState agentState, AgentCommunication agentCommunication) {
-
-        ArrayList<Task> otherTasks = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.TASK, Task.class);
-        ArrayList<Coordinate> otherTargetCoordinates = new ArrayList<>();
-
-        for (Task task : otherTasks)
-        {
-            if (task == null)
-                continue;
-            
-            // No matter what task type the other agent has, its coordinate of the packet should be retrieved as this agent should not worry about that packet
-            otherTargetCoordinates.add(task.getPacket().getCoordinate());
-        }
-
-        return otherTargetCoordinates;
-    }
-
-    private static void shareTargetPacketThroughTask(AgentState agentState, AgentCommunication agentCommunication) {
-        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.TASK);
-    }
-
     /**
      * A function that is used to communicate information about the charging stations.
      *
