@@ -52,6 +52,8 @@ public class TaskDefinitionPossible extends BehaviorChange{
      */
     private boolean checkTaskDefinition(AgentState agentState) {
         // Get the discovered packets and discovered destinations
+
+        // Only get packets of same color here
         ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Packet.class);
         ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
 
@@ -66,6 +68,9 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
         // Loop over the sorted discovered packets
         for(int i = 0; i < discoveredPackets.size(); i++) {
+
+            // Check if path exists to packet
+
             // Get a candidate packet
             Packet candidatePacket = discoveredPackets.get(i);
 
@@ -82,6 +87,8 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
                 // If the agent hasn't got enough energy to work on it, it will not start the work
                 if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
+
+                // Check if path exists to destination
 
 
                 // Remove the packet from the discovered packets

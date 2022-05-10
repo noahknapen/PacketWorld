@@ -15,6 +15,7 @@ import util.assignments.targets.ChargingStation;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
+import util.assignments.task.Task;
 
 /**
  * A class that implements functions regarding the graph
@@ -47,13 +48,13 @@ public class GraphUtils {
         // Loop over the whole perception to create nodes
         for (int x = 0; x <= agentPerception.getWidth(); x++) {
             for (int y = 0; y <= agentPerception.getHeight(); y++) {
-                CellPerception cellPerception = agentPerception.getCellAt(x,y);
+                CellPerception cellPerception = agentPerception.getCellAt(x, y);
 
                 // Check if the cell is null and continue with the next cell if so
-                if(cellPerception == null) continue;
+                if (cellPerception == null) continue;
 
                 // Check if the cell is not walkable and that it is not because of an agent standing there. If so continue with the next cell
-                if(cellPerception.containsWall()) continue;
+                if (cellPerception.containsWall()) continue;
 
                 // Get the position of the cell
                 int cellX = cellPerception.getX();
@@ -66,10 +67,9 @@ public class GraphUtils {
 
                 // If node exists -> update target
                 // timeUpdate = true since target comes from perception
-                if(cellNode.isPresent()) {
+                if (cellNode.isPresent()) {
                     cellNode.get().setTarget(target, true);
-                }
-                else {
+                } else {
                     // Add the node to the graph
                     cellNode = Optional.of(new Node(cellCoordinate, target));
                     graph.addNode(cellNode.get());
@@ -77,17 +77,9 @@ public class GraphUtils {
                 }
 
 
-                /*
-                // If cell contains target -> Check if a path in the graph exists to it
-                if (cellNode is new and cellNode.containsTarget()){
-                    checkForPath(agentState, graph, cellNode);
-                }
-
-                 */
-
-
             }
 
+        }
             for (Node node : newNodes) {
 
                 // Loop over neighbourhood to add edges
@@ -124,80 +116,86 @@ public class GraphUtils {
                         graph.addEdge(node, neighbourNode);
                     }
                 }
+
+                if (agentState.getColor().isPresent() &&
+                        node.getTarget().isPresent() &&
+                        node.containsPacket() &&
+                        node.getTarget().get().getRgbColor() == agentState.getColor().get().getRGB())
+                {
+                    checkIfBlocked(agentState, node, graph);
+                }
             }
-
-            // check unknown path nodes for path
-
-
-        }
 
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
     }
 
-    private static Graph checkForPath(AgentState agentState, Graph graph, Node cellNode) {
-        ArrayList<Node> path = GraphUtils.performAStarSearch(agentState, cellNode.getCoordinate(), true);
+    /**
+     * Checks if there are packets along the path to the goal.
+     * Creates priority tasks if that is the case
+     * @param agentState The agent state
+     * @param node The destination node
+     * @param graph The graph to be searched through
+     */
+    private static void checkIfBlocked(AgentState agentState, Node node, Graph graph) {
+        ArrayList<Node> path = GraphUtils.performAStarSearch(agentState, graph, node.getCoordinate(), true);
 
-        /*
-        packetlist
-        unknownpathlist
+        // Agent currently does not know a possible path to the node
+        if (path == null) return;
 
-        TaskDef
-        packet = packetlist.pop
+        ArrayList<Node> pathPackets = getPathPackets(path);
 
-        CheckForPath
-        path, packetincluded = astar()
+        // If no packets exists along the path
+        if (!pathPackets.isEmpty()) {
+            createPriorityTasks(agentState, pathPackets);
+        }
+    }
 
-        if path is null -> save packet in unknownpath list
+    /**
+     * Creates a task for each packet in the pathPackets list
+     * Decides if the agent can handle the task or if the task should be shared to other agents through communication
+     * @param agentState The agent state
+     * @param pathPackets A list of packets to be used for creating tasks
+     */
+    private static void createPriorityTasks(AgentState agentState, ArrayList<Node> pathPackets) {
+        ArrayList<Packet> taskConditions = new ArrayList<>();
+        ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
+        ArrayList<Task> priorityTasksSend = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS_SEND, Task.class);
 
-        if path is not null but packetincluded
-            Node firstPacket = getFirstPacket()
-            .
-            .
-            firstpacket.setprio(true)
-            task.setCondition(firstPacket)
+        for (Node packetNode : pathPackets) {
+            Packet packet = (Packet) packetNode.getTarget().get();
+            Task task = new Task(packet,null);
+            task.setTaskConditions(taskConditions);
+            taskConditions.add(packet);
 
-            if color = firstpacketcolor
-            else
-                try next packet in packetlist
-
-        else we got a good path
-            save the path in the task and move towards it
-
-        */
-
-        // Guard clause
-        if (path == null) return graph;
-
-        Node firstPacketNode = getFirstPathPacket(path);
-
-        // Check if a packet exists in the path
-        if (firstPacketNode != null && firstPacketNode.getTarget().isPresent()) {
-            Packet packet = (Packet) firstPacketNode.getTarget().get();
-
-            // Set packet as a prio
-            graph.getNode(packet.getCoordinate()).get().getTarget().get().setPriority(true);
-
-            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == packet.getRgbColor()) {
-
-                // I can handle it myself
-                ArrayList<Packet> prioPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIO_PACKETS, Packet.class);
-                if (!prioPackets.contains(packet)) {
-                    prioPackets.add(packet);
-                    MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PRIO_PACKETS, prioPackets));
-                }
+            // Check if agent can not handle the task
+            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != packet.getRgbColor()){
+                priorityTasksSend.add(task);
+            }
+            else {
+                priorityTasks.add(task);
             }
         }
 
-        return graph;
+        // Update memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PRIORITY_TASKS, priorityTasks, MemoryKeys.PRIORITY_TASKS_SEND, priorityTasksSend));
+
     }
 
-    private static Node getFirstPathPacket(ArrayList<Node> path) {
-        for (Node node : path) {
-            if (node.containsPacket()) return node;
+
+    /**
+     * Finds all packets along a path of nodes (Does not count the last node in the path)
+     * @param path The path of nodes
+     * @return A list of all packets along the path (Does not count the last node in the path)
+     */
+    private static ArrayList<Node> getPathPackets(ArrayList<Node> path) {
+        ArrayList<Node> packetNodes = new ArrayList<>();
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            if (path.get(i).containsPacket()) packetNodes.add(path.get(i));
         }
 
-        return null;
+        return packetNodes;
     }
 
     /**
@@ -301,14 +299,11 @@ public class GraphUtils {
      * @param includePackets True if you should allow packets in path
      * @return The coordinate (first of path) to which the agent should move
      */
-    public static ArrayList<Node> performAStarSearch(AgentState agentState, Coordinate target, boolean includePackets) {
+    public static ArrayList<Node> performAStarSearchSub(AgentState agentState, Graph graph, Coordinate target, boolean includePackets) {
         // Get the position of the agent
         int agentX = agentState.getX();
         int agentY = agentState.getY();
         Coordinate agentPosition = new Coordinate(agentX, agentY);
-
-        // Get the graph
-        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Check if graph is null and raise exception if so
         if(graph == null) return null;
@@ -365,6 +360,18 @@ public class GraphUtils {
 
         // Return the first element of the path (which defines the next move)
         return path;
+    }
+
+    public static ArrayList<Node> performAStarSearch(AgentState agentState, Coordinate target, boolean includePackets) {
+        // Get the graph
+        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
+
+        return performAStarSearchSub(agentState, graph, target, includePackets);
+
+    }
+
+    public static ArrayList<Node> performAStarSearch(AgentState agentState, Graph graph, Coordinate target, boolean includePackets) {
+       return performAStarSearchSub(agentState, graph, target, includePackets);
     }
 
     ///////////
