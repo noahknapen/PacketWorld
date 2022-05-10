@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.*;
 import environment.Coordinate;
 
 /**
- * A class that represents a charging station
+ * A class representing a charging station
  */
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -15,9 +15,9 @@ import environment.Coordinate;
 )
 public class ChargingStation extends Target{
 
-    // A variable to check if the battery station is in use or not
+    // A data member holding if the battery station is in use or not
     private boolean inUse;
-    // A variable holding the battery of the user currently using the charging station
+    // A data member holding the battery of the user currently using the charging station
     private Optional<Integer> batteryOfUser;
 
     //////////////////

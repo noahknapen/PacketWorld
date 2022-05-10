@@ -13,6 +13,7 @@ import util.assignments.targets.Packet;
  * A class implementing a comparator for packets
  * It is used to sort packets that have to be delivered
  * Packets are sorted based on:
+ * - Priority
  * - If a corresponding (color) destination is already discovered
  * - Position between packet and agent: Packets closer to current position of agent are picked up first
  */
@@ -47,10 +48,8 @@ public class PacketComparator implements Comparator<Packet> {
      */
     @Override
     public int compare(Packet packet1, Packet packet2) {
-
-        // Check if packets are prio packets
-        if (packet1.isPrioPacket()) return 1;
-        if (packet2.isPrioPacket()) return -1;
+        if (packet1.hasPriority()) return 1;
+        if (packet2.hasPriority()) return -1;
 
         Color packet1Color = packet1.getColor();
         Color packet2Color = packet2.getColor();

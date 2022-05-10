@@ -8,12 +8,12 @@ import agent.behavior.BehaviorChange;
 import environment.Perception;
 import util.assignments.comparators.PacketComparator;
 import util.assignments.general.GeneralUtils;
+import util.assignments.graph.Graph;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
-import util.assignments.task.TaskType;
 
 /**
  * A behavior change class that checks if a new task can be defined
@@ -52,8 +52,8 @@ public class TaskDefinitionPossible extends BehaviorChange{
      */
     private boolean checkTaskDefinition(AgentState agentState) {
         // Get the discovered packets and discovered destinations
-        ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
-        ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
+        ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Packet.class);
+        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
 
         // Sort the discovered packets
         PacketComparator packetComparator = new PacketComparator(agentState, discoveredDestinations);
@@ -108,13 +108,16 @@ public class TaskDefinitionPossible extends BehaviorChange{
             if (closestDestination == null) continue;
 
             // Define the task
-            Task task = new Task(TaskType.MOVE_TO_PACKET, candidatePacket, closestDestination);
+            Task task = new Task(candidatePacket, closestDestination);
 
             // Remove the packet at packet index from the discovered packets. No idea why this error exist because line 104 changes packageIndex
             if (packageIndex != Integer.MAX_VALUE) discoveredPackets.remove(packageIndex);
 
+            Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
+            graph.getNode(candidatePacket.getCoordinate()).get().setTarget(Optional.empty());
+
             // Update the memory
-            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
+            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.GRAPH, graph));
 
             return true;
         }

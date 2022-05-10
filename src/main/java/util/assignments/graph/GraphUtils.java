@@ -61,8 +61,8 @@ public class GraphUtils {
                 Coordinate cellCoordinate = new Coordinate(cellX, cellY);
 
                 // Create a node
-                Target target = extractTarget(cellCoordinate, cellPerception);
-                Node cellNode = graph.getNode(cellCoordinate);
+                Optional<Target> target = extractTarget(cellPerception);
+                Node cellNode = new Node(cellCoordinate, target);
 
                 // If node exists -> update target
                 // timeUpdate = true since target comes from perception
@@ -110,7 +110,7 @@ public class GraphUtils {
                         Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                         // Create a node
-                        Target neighbourTarget = extractTarget(neighbourCellCoordinate, neighbourCellPerception);
+                        Optional<Target> neighbourTarget = extractTarget(neighbourCellPerception);
                         Node neighbourNode = new Node(neighbourCellCoordinate, neighbourTarget);
 
                         // Check if node is equal to cell and continue with the next cell if so
@@ -241,12 +241,12 @@ public class GraphUtils {
             int nodeY = node.getCoordinate().getY();
             Coordinate nodeCoordinate = new Coordinate(nodeX, nodeY);
 
-            Node graphNode = currentGraph.getNode(nodeCoordinate);
+            Optional<Node> graphNode = currentGraph.getNode(nodeCoordinate);
 
             // If node exists in graph -> update target if updatedGraph has newer update time
             // timeUpdate = false because we should only update the time when new value arrives from perception
             if(graphNode != null) {
-                if (node.getUpdateTime() > graphNode.getUpdateTime()) graphNode.setTarget(node.getTarget(), false);
+                if (node.getUpdateTime() > graphNode.get().getUpdateTime()) graphNode.setTarget(node.getTarget(), false);
                 continue;
             }
 
@@ -263,19 +263,19 @@ public class GraphUtils {
                     Coordinate neighbourCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                     // Define neighbour node
-                    Node neighbourNode = currentGraph.getNode(neighbourCoordinate);
+                    Optional<Node> neighbourNode = currentGraph.getNode(neighbourCoordinate);
 
                     // Check if neighbour node is not contained in the graph and continue with next neighbour if so (only connect edges to nodes that is in the current graph)
-                    if(neighbourNode == null) continue;
+                    if(neighbourNode.isEmpty()) continue;
 
                     // Check if node is equal to neighbour and continue with the next neighbour if so
                     if(node.equals(neighbourNode)) continue;
 
                     // Only allow edges between free node, free nodes and targets and between packets
-                    if (!node.containsTarget() && !neighbourNode.containsTarget() && (!node.containsPacket() || !neighbourNode.containsPacket())) continue;
+                    if (!node.containsTarget() && !neighbourNode.get().containsTarget() && (!node.containsPacket() || !neighbourNode.get().containsPacket())) continue;
 
                     // Add the edges between the cells
-                    currentGraph.addEdge(node, neighbourNode);
+                    currentGraph.addEdge(node, neighbourNode.get());
                 }
             }
         }
@@ -363,6 +363,10 @@ public class GraphUtils {
         // Return the first element of the path (which defines the next move)
         return path;
     }
+
+    ///////////
+    // UTILS //
+    ///////////
 
     /**
      * Extracts the neighbours around the node and adds them to openList for further evaluation. Used in A* search.

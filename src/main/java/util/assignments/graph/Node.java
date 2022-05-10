@@ -1,24 +1,33 @@
 package util.assignments.graph;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.*;
 
 import environment.Coordinate;
-import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
 /**
  * A class that represents a node
  */
 
-@JsonIgnoreProperties(value={"fcost"})
+@JsonIgnoreProperties(value={"walkable", "fcost"})
 public class Node implements Comparable<Node> {
 
+    // A data member holding the coordinate of the node
     private Coordinate coordinate;
+    // A data member holding the optional target of the node
+    private Optional<Target> target;
+
+    // A data member holding the gCost of the node
     private double gCost;
+    // A data member holding the hCost of the node
     private double hCost;
-    private long updateTime;
+    // A data member holding the parent of the node
     private Node parent;
-    private Target target;
+
+    // A data member holding the time at which the node was updated
+    private long updateTime;
 
     //////////////////
     // CONSTRUCTORS //
@@ -29,21 +38,22 @@ public class Node implements Comparable<Node> {
         this.setGCost(0);
         this.setHCost(0);
         this.setParent(null);
-        this.setUpdateTimeToNow();
+        this.setUpdateTime();
     }
 
-    public Node(Coordinate coordinate, Target target) {
+    public Node(Coordinate coordinate, Optional<Target> target) {
         this(coordinate);
         this.setTarget(target, false);
     }
 
     @JsonCreator
-    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent, @JsonProperty("target") Target target) {
+    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("target") Optional<Target> target, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent) {
         this.coordinate = coordinate;
+        this.target = target;
+
         this.gCost = gCost;
         this.hCost = hCost;
         this.parent = parent;
-        this.target = target;
     }
 
     ///////////////////////
@@ -52,6 +62,14 @@ public class Node implements Comparable<Node> {
 
     public Coordinate getCoordinate() {
         return coordinate;
+    }
+
+    public Optional<Target> getTarget() {
+        return target;
+    }
+    
+    public boolean isWalkable() {
+        return this.target.isEmpty();
     }
 
     public double getGCost() {
@@ -70,23 +88,21 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
-    public boolean containsTarget() {
+    public boolean nodeWalkable() {
         return this.target == null;
     }
 
     public boolean containsPacket() {
-        return target != null && target.getClass() == Packet.class;
-    }
-
-    public void setPrioPacket(boolean prio) {
-        if (containsPacket()) {
-            Packet packet = (Packet) getTarget();
-            packet.setPrioPacket(prio);
-        }
+        return target.getClass() == Packet.class;
     }
 
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
+    }
+
+    public void setTarget(Optional<Target> target, boolean timeUpdate) {
+        this.target = target;
+        if (timeUpdate) this.setUpdateTime();
     }
 
     public void setGCost(double gCost) {
@@ -101,20 +117,7 @@ public class Node implements Comparable<Node> {
         this.parent = parent;
     }
 
-    public Target getTarget() {
-        return target;
-    }
-
-    public void setTarget(Target target, boolean timeUpdate) {
-        this.target = target;
-        if (timeUpdate) setUpdateTimeToNow();
-    }
-
-    public long getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTimeToNow() {
+    public void setUpdateTime() {
         this.updateTime = System.currentTimeMillis();
     }
 
@@ -124,7 +127,7 @@ public class Node implements Comparable<Node> {
 
     @Override
     public String toString() {
-        return String.format("%s %s %s %s %s", coordinate, gCost, hCost, parent, target);
+        return String.format("%s %s %s %s %s", coordinate, target, gCost, hCost, parent);
     }
 
     @Override
@@ -147,5 +150,4 @@ public class Node implements Comparable<Node> {
     public int hashCode() {
         return coordinate.hashCode();
     }
-
 }

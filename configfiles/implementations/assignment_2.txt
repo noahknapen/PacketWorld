@@ -37,19 +37,17 @@ nbChanges 14
 
 ### SOURCE 1: Explorer ###
 
-# Add ContinueToPacket and DestinationTask here
-
-agent.behavior.assignment_2.changes.MustGoToChargingStation
-nbArgs 0
-priority 0
-source 1
-target 7
-
 agent.behavior.assignment_2.changes.StopExploring
 nbArgs 0
 priority 0
 source 1
 target 2
+
+agent.behavior.assignment_2.changes.MustGoToChargingStation
+nbArgs 0
+priority 1
+source 1
+target 7
 
 ### SOURCE 2: MoveRandomlyBehavior ###
 
@@ -81,7 +79,7 @@ target 2
 
 agent.behavior.assignment_2.changes.MustGoToChargingStation
 nbArgs 0
-priority 1
+priority 2
 source 3
 target 7
 
@@ -93,7 +91,7 @@ priority 0
 source 4
 target 5
 
-### SOURCE 5: MoveToPacketBehavior ###
+### SOURCE 5: MoveToDestinationBehavior ###
 
 agent.behavior.assignment_2.changes.ReadyToPutDown
 nbArgs 0
@@ -117,7 +115,7 @@ target 3
 
 agent.behavior.assignment_2.changes.NotEnoughEnergyToWork
 nbArgs 0
-priority 1
+priority 2
 source 6
 target 2
 
@@ -136,6 +134,3 @@ nbArgs 0
 priority 1
 source 8
 target 2
-
-
-

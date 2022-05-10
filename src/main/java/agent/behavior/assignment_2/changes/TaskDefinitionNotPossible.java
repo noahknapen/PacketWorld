@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
+import util.assignments.graph.Graph;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -49,13 +50,13 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
      */
     private boolean checkNoTaskDefinition(AgentState agentState) {
         // Get the discovered packets
-        ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
+        ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Packet.class);
 
         // Check if no packets were discovered yet and return true if so
         if(discoveredPackets.isEmpty()) return true;
 
         // Get the discovered destinations
-        ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
+        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
 
         // Check if no destinations were discovered yet and return true if so
         if(discoveredDestinations.isEmpty()) return true;

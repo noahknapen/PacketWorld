@@ -2,13 +2,13 @@ package util.assignments.general;
 
 import java.util.*;
 
+import java.util.List;
+
 import agent.AgentCommunication;
 import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
-import environment.world.destination.DestinationRep;
-import environment.world.packet.PacketRep;
 import util.assignments.graph.Graph;
 import util.assignments.graph.GraphUtils;
 import util.assignments.graph.Node;
@@ -17,27 +17,26 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
-import util.assignments.task.Task;
-
-import java.awt.Color;
 
 /**
  * A class that implements general functions
  */
 public class GeneralUtils {
 
-    // Energy values
-    public static final int WALK_WITHOUT_PACKET = 10;
-    public static final int WALK_WITH_PACKET = 25;
-    public static final boolean PRINT = true;
+    // A static data member holding the cost of a walk without a packet
+    public static final int COST_WALK_WITHOUT_PACKET = 10;
+    // A static data member holding the cost of a walk with a packet
+    public static final int COST_WALK_WITH_PACKET = 25;
+    // A static data member holding if messages should be printed in the output
+    public static final boolean PRINT = false;
 
     ////////////////
     // PERCEPTION //
     ////////////////
 
     /**
-     * Check the perception of the agent. Perform the appropriate action when there is something in a cell in the
-     * perception of the agent.
+     * Check the perception of the agent
+     * Perform the appropriate action when there is something in a cell in the perception of the agent.
      *  
      * @param agentState The current state of the agent
      */
@@ -50,93 +49,21 @@ public class GeneralUtils {
             for (int y = 0; y <= agentPerception.getHeight(); y++) {
                 CellPerception cellPerception = agentPerception.getCellAt(x, y);
 
-                // Check if the cell is null and continue with the next cell if so
-                if (cellPerception == null) continue;
+                // Check if the cell is null or the cell is the one the agent is currently standing on and continue with the next cell if so
+                if (cellPerception == null || (x == 0 && y == 0)) continue;
 
                 // Get the coordinates of the cell
                 Coordinate cellCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
 
-                // Check if the cell contains a packet
-                if (cellPerception.containsPacket()) addPacket(agentState, cellPerception, cellCoordinate);
-
-                // Check if the cell contains a destination
-                if (cellPerception.containsAnyDestination()) addDestination(agentState, cellPerception, cellCoordinate);
-
                 // Check if the cell contains a charging station
-                if (cellPerception.containsEnergyStation()) addChargingStation(agentState, cellCoordinate);
+                if (cellPerception.containsEnergyStation()) 
+                    addChargingStation(agentState, cellCoordinate);
             }
         }
     }
 
     /**
-     * A function that adds a packet to its memory.
-     *
-     * @param agentState The current state of the agent
-     * @param cellPerception The perception of the cell
-     * @param packetCoordinate The coordinates of the packet
-     */
-    private static void addPacket(AgentState agentState, CellPerception cellPerception, Coordinate packetCoordinate) {
-        // Retrieve memory fragments
-        Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
-        ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
-
-        // Get the color of the packet
-        Color packetColor = cellPerception.getRepOfType(PacketRep.class).getColor();
-        int packetRgbColor = packetColor.getRGB();
-
-        // Create the corresponding packet
-        Packet packet = new Packet(packetCoordinate, packetRgbColor);
-
-        // Check if the packet was already discovered and continue with the next cell if so
-        if(discoveredPackets.contains(packet)) return;
-
-        // Check if packet is currently handled and continue with the next cell if so because it should not be added to list again
-        if(task != null && task.getPacket().equals(packet)) return;
-
-        // Add the packet to the list of discovered packets
-        discoveredPackets.add(packet);
-
-        // Inform
-        if (GeneralUtils.PRINT)
-            System.out.printf("%s: Discovered a new packet (%s) [%s]\n", agentState.getName(), packet, discoveredPackets.size());
-
-        // Update memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_PACKETS, discoveredPackets));
-    }
-
-    /**
-     * A function that adds a destination to its memory.
-     *
-     * @param agentState The current state of the agent
-     * @param cellPerception The perception of the cell
-     * @param destinationCoordinate The coordinates of the destination
-     */
-    private static void addDestination(AgentState agentState, CellPerception cellPerception, Coordinate destinationCoordinate) {
-        // Retrieve the memory fragments
-        ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
-
-        // Get the color of the destination
-        int destinationRgbColor = cellPerception.getRepOfType(DestinationRep.class).getColor().getRGB();
-
-        // Create the corresponding destination
-        Destination destination = new Destination(destinationCoordinate, destinationRgbColor);
-
-        // Check if the destination was already discovered
-        if(discoveredDestinations.contains(destination)) return;
-
-        // Add the destination to the list of discovered destinations
-        discoveredDestinations.add(destination);
-
-        // Inform
-        if (GeneralUtils.PRINT)
-            System.out.printf("%s: Discovered a new destination (%s) [%s]\n", agentState.getName(), destination, discoveredDestinations.size());
-
-        // Update memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_DESTINATIONS, discoveredDestinations, MemoryKeys.UPDATED_STATIONS, true));
-    }
-
-    /**
-     * A function that adds a charging station to its memory.
+     * A function that adds a charging station to the memory of the agent
      *
      * @param agentState The current state of the agent
      * @param chargingStationCoordinate The coordinates of the charging station
@@ -169,20 +96,6 @@ public class GeneralUtils {
         /////////////
         // GENERAL //
         /////////////
-
-    /**
-     * A function that is used to communicate information about the destination.
-     *
-     * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
-     */
-    public static void handleDestinationsCommunication(AgentState agentState, AgentCommunication agentCommunication) {
-        // Share the destinations
-        shareDestinations(agentState, agentCommunication);
-
-        // Update list
-        updateDestinations(agentState, agentCommunication);
-    }
 
     /**
      * A function that is used to communicate information about the charging stations.
@@ -227,20 +140,6 @@ public class GeneralUtils {
         ///////////
 
     /**
-     * A function that is used to share the destinations with other agents in its perception.
-     *
-     * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
-     */
-    private static void shareDestinations(AgentState agentState, AgentCommunication agentCommunication) {
-        // Send messages with the list of discovered destinations
-        if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class).size() == 0) return;
-
-        CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS);
-    }
-
-
-    /**
      * A function that is used to share the charging stations with other agents.
      *
      * @param agentState The current state of the agent
@@ -267,36 +166,6 @@ public class GeneralUtils {
         ////////////
         // UPDATE //
         ////////////
-
-    /**
-     * A function that updates the list of discovered destinations with the information received from other agents.
-     *
-     * @param agentState The current state of the agent
-     * @param agentCommunication The interface for communication
-     */
-    private static void updateDestinations(AgentState agentState, AgentCommunication agentCommunication) {
-        // Get the current destinations
-        ArrayList<Destination> currentDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
-
-        // Get the updated destinations
-        ArrayList<Destination> updatedDestinations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
-
-        // Loop over updated destinations
-        for(Destination updatedDestination: updatedDestinations) {
-            // Check if the destinations is included in the current list and continue with the next destination if so
-            if (currentDestinations.contains(updatedDestination)) continue;
-
-            // Add the new destination to the list
-            currentDestinations.add(updatedDestination);
-
-            // Inform
-            if (GeneralUtils.PRINT)
-                System.out.printf("%s: Added a new destination from communication (%s) [%s]\n", agentState.getName(), updatedDestination, currentDestinations.size());
-        }
-
-        // Update the current destinations
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_DESTINATIONS, currentDestinations));
-    }
 
     /**
      * A function that updates the list of discovered charging stations with the information received from other agents.
@@ -401,41 +270,6 @@ public class GeneralUtils {
         return (dX <= 1) && (dY <= 1);
     }
     
-    /**
-     * A function to know if a specific position is in the perception of the agent
-     * 
-     * @param agentState The current state of the agent
-     * @param coordinate The coordinate of the position to check
-     * @return True is the position is in the perception of the agent, otherwise false
-     */
-    public static boolean positionInPerception(AgentState agentState, Coordinate coordinate) {
-        // Get the position
-        int coordinateX = coordinate.getX();
-        int coordinateY = coordinate.getY();
-
-        // Get the perception of the agent
-        Perception agentPerception = agentState.getPerception();
-
-        // Loop over the whole perception
-        for (int x = 0; x < agentPerception.getWidth(); x++) {
-            for (int y = 0; y < agentPerception.getHeight(); y++) {
-                CellPerception cellPerception = agentPerception.getCellAt(x,y);
-
-                // Check if the cell is null and continue with the next cell if so
-                if(cellPerception == null) continue;
-
-                // Get the position of the cell
-                int cellX = cellPerception.getX();
-                int cellY = cellPerception.getY();
-                
-                // Check if the positions correspond
-                if(cellX == coordinateX && cellY == coordinateY) 
-                    return true;
-            }
-        }
-
-        return false;
-    }
     
     /**
      * A function to know if a specific position is in the graph
@@ -481,12 +315,12 @@ public class GeneralUtils {
         // First calculate the power to go to the packet location
         Coordinate packetPosition = packet.getCoordinate();
         int cellsToWalk1 = Perception.distance(agentState.getX(), agentState.getY(), packetPosition.getX(), packetPosition.getY());
-        double powerToGoToPacket = cellsToWalk1 * GeneralUtils.WALK_WITHOUT_PACKET;
+        double powerToGoToPacket = cellsToWalk1 * GeneralUtils.COST_WALK_WITHOUT_PACKET;
 
         // Second calculate the power to go from packet to destination
         Coordinate destinationPosition = destination.getCoordinate();
         int cellsToWalk2 = Perception.distance(packetPosition.getX(), packetPosition.getY(), destinationPosition.getX(), destinationPosition.getY());
-        double powerToGoToDestination = cellsToWalk2 * GeneralUtils.WALK_WITH_PACKET;
+        double powerToGoToDestination = cellsToWalk2 * GeneralUtils.COST_WALK_WITH_PACKET;
 
         // See if there is enough power to complete the task and have an extra buffer
         return agentState.getBatteryState() > (powerToGoToDestination + powerToGoToPacket + 150);

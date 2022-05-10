@@ -4,6 +4,7 @@ import agent.AgentState;
 import agent.behavior.BehaviorChange;
 import util.assignments.comparators.PacketComparator;
 import util.assignments.general.GeneralUtils;
+import util.assignments.graph.Graph;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -11,8 +12,6 @@ import util.assignments.targets.Packet;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Map;
-
 
 public class NotEnoughEnergyToWork extends BehaviorChange {
 
@@ -45,8 +44,8 @@ public class NotEnoughEnergyToWork extends BehaviorChange {
      */
     private boolean isNotEnoughEnergyToWork(AgentState agentState) {
         // Get the discovered packets and discovered destinations
-        ArrayList<Packet> discoveredPackets = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_PACKETS, Packet.class);
-        ArrayList<Destination> discoveredDestinations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_DESTINATIONS, Destination.class);
+        ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Packet.class);
+        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
 
         // Sort the discovered packets
         PacketComparator packetComparator = new PacketComparator(agentState, discoveredDestinations);

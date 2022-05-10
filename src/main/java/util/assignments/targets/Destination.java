@@ -6,7 +6,7 @@ import environment.Coordinate;
 import java.awt.Color;
 
 /**
- * A class that represents a destination
+ * A class representing a destination
  */
 @JsonIgnoreProperties(value={"color"})
 @JsonTypeInfo(
@@ -15,6 +15,7 @@ import java.awt.Color;
 )
 public class Destination extends Target{
     
+    // A data member holding the color of the destination
     private int rgbColor;
 
     //////////////////
@@ -35,6 +36,11 @@ public class Destination extends Target{
         return rgbColor;
     }
 
+    /**
+     * Get the color
+     * 
+     * @return The color of the packet
+     */
     public Color getColor() {
         return new Color(rgbColor);
     }

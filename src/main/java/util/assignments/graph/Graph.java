@@ -1,9 +1,12 @@
 package util.assignments.graph;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -12,12 +15,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import environment.Coordinate;
 import util.assignments.jackson.NodeDeserializer;
 import util.assignments.jackson.NodeSerializer;
+import util.assignments.targets.Target;
 
 /**
- * A class that represents a graph
+ * A class represening a graph
  */
 public class Graph {
 
+    // A data member holding the map of the graph
     @JsonSerialize(keyUsing = NodeSerializer.class)
     @JsonDeserialize(keyUsing = NodeDeserializer.class)
     @JsonProperty("map")
@@ -44,21 +49,24 @@ public class Graph {
     }
 
     /**
-     * Finds the corresponding node key in the map and returns if it is walkable
+     * Finds the corresponding node in the map based on the coordinate
+     *
      * @param node The coordinate of the node
-     * @return boolean (True if walkable)
+     * @return The node if there exists one, otherwise empty
      */
-    public Node getNode(Coordinate coordinate) {
-        Node outputNode = new Node(coordinate);
-        if (!getMap().containsKey(outputNode)) return null;
+    public Optional<Node> getNode(Coordinate coordinate) {
+        return map.keySet().stream().filter(n -> n.getCoordinate().equals(coordinate)).findAny();
+    }
 
-        outputNode =  getMap()
-                .keySet()
-                .stream()
-                .filter(n -> coordinate.equals(n.getCoordinate())).toList().get(0);
-
-        return outputNode;
-
+    /**
+     * Get all the targets of a specific type found in the graph
+     *
+     * @param <T> The type of the targets
+     * @param targetClass The class of the targets
+     * @return An arraylist of all the targets of a specific type found in the graph
+     */
+    public <T extends Target> ArrayList<T> getTargets(Class<T> targetClass) {
+        return new ArrayList<>(map.keySet().stream().filter(n -> (n.getTarget().isPresent() && n.getTarget().get().getClass().equals(targetClass))).map(n -> (T) n.getTarget().get()).collect(Collectors.toList()));
     }
 
     /////////////
@@ -72,7 +80,10 @@ public class Graph {
      */
     public void addNode(Node node) {
         // If node exists -> update target
-        if(map.containsKey(node)) return;
+        if(map.containsKey(node)) {
+            getNode(node.getCoordinate()).get().setTarget(node.getTarget());
+            return;
+        }
         
         // Add the node
         map.put(node, new LinkedList<Node>());

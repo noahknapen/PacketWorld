@@ -12,7 +12,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import util.assignments.graph.Node;
 
 /**
- * A class that implements a function to serialize a the Node class
+ * A class that implements a function to serialize a Node class
  */
 public class NodeSerializer extends JsonSerializer<Node> {
 

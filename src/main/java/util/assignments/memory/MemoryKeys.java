@@ -10,11 +10,11 @@ public class MemoryKeys {
     public static final String PRIO_PACKETS = "PRIO_PACKETS";
     public static final String NO_PATH_NODES = "UNKNOWN_PATH_TARGETS";
 
-    public static final String DISCOVERED_DESTINATIONS = "DISCOVERED_DESTINATIONS";
-    public static final String DISCOVERED_PACKETS = "DISCOVERED_PACKETS";
     public static final String DISCOVERED_CHARGING_STATIONS = "DISCOVERED_CHARGING_STATIONS";
     public static final String UPDATED_STATIONS = "UPDATED_STATIONS";
 
     public static final String EMERGENCY = "EMERGENCY";
     public static final String EXPLORING_TURNS = "EXPLORING_TURNS";
+    public static final String BATTERY_STATE = "BATTERY_STATE";
+    public static final String RAND0M_DIRECTION = "RANDOM_DIRECTION";
 }

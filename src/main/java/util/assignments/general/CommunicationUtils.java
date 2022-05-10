@@ -15,7 +15,6 @@ import environment.Perception;
 import environment.world.agent.AgentRep;
 import util.Message;
 import util.assignments.jackson.JacksonUtils;
-import util.assignments.targets.Packet;
 
 /**
  * A class that implements functions regarding the communication of the agent

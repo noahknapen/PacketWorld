@@ -12,9 +12,6 @@ import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.task.Task;
-import util.assignments.task.TaskType;
-
-import java.util.Map;
 
 /**
  * A behavior where the agent puts down a packet
@@ -28,13 +25,13 @@ public class PutDownPacketBehavior extends Behavior {
     @Override
     public void communicate(AgentState agentState, AgentCommunication agentCommunication) {
         // Communicate the charging stations with all the other agents
-        //GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
+        GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
         // Communicate the destination locations with agents in perception
-        //GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+        // GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
 
         // Communicate the graph with agents in perception
-        //GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
+        GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
 
     }
 
@@ -60,9 +57,6 @@ public class PutDownPacketBehavior extends Behavior {
     private void handlePutDown(AgentState agentState, AgentAction agentAction)  {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
-
-        // Check if the task has other task type than MOVE_TO_DESTINATION and raise exception if so
-        if(task.getType() != TaskType.MOVE_TO_DESTINATION) throw new IllegalArgumentException("Task type is not MOVE_TO_DESTINATION");
 
         // Get the coordinate of the destination
         Destination destination= task.getDestination();
