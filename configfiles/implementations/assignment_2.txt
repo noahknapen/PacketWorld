@@ -91,7 +91,7 @@ priority 0
 source 4
 target 5
 
-### SOURCE 5: MoveToPacketBehavior ###
+### SOURCE 5: MoveToDestinationBehavior ###
 
 agent.behavior.assignment_2.changes.ReadyToPutDown
 nbArgs 0

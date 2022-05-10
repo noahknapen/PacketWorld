@@ -57,7 +57,7 @@ public class GraphUtils {
                 Coordinate cellCoordinate = new Coordinate(cellX, cellY);
 
                 // Create a node
-                Optional<Target> target = extractTarget(cellCoordinate, cellPerception);
+                Optional<Target> target = extractTarget(cellPerception);
                 Node cellNode = new Node(cellCoordinate, target);
 
                 // Add the node to the graph or update if target exists
@@ -83,7 +83,7 @@ public class GraphUtils {
                         Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
                         // Create a node
-                        Optional<Target> neighbourTarget = extractTarget(neighbourCellCoordinate, neighbourCellPerception);
+                        Optional<Target> neighbourTarget = extractTarget(neighbourCellPerception);
                         Node neighbourNode = new Node(neighbourCellCoordinate, neighbourTarget);
 
                         // Check if node is equal to cell and continue with the next cell if so
@@ -101,28 +101,6 @@ public class GraphUtils {
 
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
-    }
-
-    /**
-     * Extracts the target (Packet, Destination etc) if one exists in the cell perception
-     * @param coordinate Cell coordinate
-     * @param cellPerception The cell perception
-     * @return Target (or null if cell does not contain any target)
-     */
-    private static Optional<Target> extractTarget(Coordinate coordinate, CellPerception cellPerception) {
-        if (cellPerception.containsPacket()) {
-            return Optional.of(new Packet(coordinate, Objects.requireNonNull(cellPerception.getRepOfType(PacketRep.class)).getColor().getRGB()));
-        }
-
-        if (cellPerception.containsAnyDestination()) {
-            return Optional.of(new Destination(coordinate, Objects.requireNonNull(cellPerception.getRepOfType(DestinationRep.class)).getColor().getRGB()));
-        }
-
-        if (cellPerception.containsEnergyStation()) {
-            return Optional.of(new ChargingStation(coordinate));
-        }
-
-        return Optional.empty();
     }
 
     /**
@@ -267,9 +245,39 @@ public class GraphUtils {
         return path.get(0);
     }
 
+    ///////////
+    // UTILS //
+    ///////////
+
     /**
-     * Extracts the neighbours around the node and adds them to openList for further evaluation. Used in A* search.
-     * @param graph The graph object
+     * Extracts the target (Packet, Destination etc) if one exists in the cell perception
+     * 
+     * @param cellPerception The perception of the cell
+     * @return A target if one exists, otherwise empty
+     */
+    private static Optional<Target> extractTarget(CellPerception cellPerception) {
+        Coordinate targetCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
+
+        if (cellPerception.containsPacket()) {
+            return Optional.of(new Packet(targetCoordinate, Objects.requireNonNull(cellPerception.getRepOfType(PacketRep.class)).getColor().getRGB()));
+        }
+
+        if (cellPerception.containsAnyDestination()) {
+            return Optional.of(new Destination(targetCoordinate, Objects.requireNonNull(cellPerception.getRepOfType(DestinationRep.class)).getColor().getRGB()));
+        }
+
+        if (cellPerception.containsEnergyStation()) {
+            return Optional.of(new ChargingStation(targetCoordinate));
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Extracts the neighbours around the node and adds them to openList for further evaluation
+     * It is used in A* search.
+     * 
+     * @param graph The graph
      * @param node The node that neighbours should be extracted around
      * @param targetNode The destination node for the search
      * @param openList The list of open nodes (unvisited nodes)
