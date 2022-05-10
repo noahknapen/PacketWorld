@@ -283,6 +283,10 @@ public class ActionUtils {
      * @param move The coordinate representing the move
      */
     private static boolean makeMove(AgentState agentState, AgentAction agentAction, Coordinate move) {
+
+        // Guard clause
+        if (move == null) return false;
+
         // Get the perception of the agent
         Perception agentPerception = agentState.getPerception();
 
