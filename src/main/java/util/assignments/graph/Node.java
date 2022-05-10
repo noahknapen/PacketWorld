@@ -80,7 +80,7 @@ public class Node implements Comparable<Node> {
     public double getHCost() {
         return hCost;
     }
-    
+
     public double getFCost() {
         return gCost + hCost;
     }
@@ -91,6 +91,10 @@ public class Node implements Comparable<Node> {
 
     public boolean containsPacket() {
         return target.isPresent() && target.get().getClass() == Packet.class;
+    }
+
+    public boolean containsTarget() {
+        return getTarget().isPresent();
     }
 
     public void setCoordinate(Coordinate coordinate) {
@@ -117,9 +121,9 @@ public class Node implements Comparable<Node> {
     public void setUpdateTime() {
         this.updateTime = System.currentTimeMillis();
     }
-
     ///////////////
     // OVERRIDES //
+
     ///////////////
 
     @Override
@@ -146,5 +150,9 @@ public class Node implements Comparable<Node> {
     @Override
     public int hashCode() {
         return coordinate.hashCode();
+    }
+
+    public long getUpdateTime() {
+        return updateTime;
     }
 }

@@ -62,6 +62,7 @@ public class Packet extends Target {
         this.rgbColor = rgbColor;
     }
 
+    @Override
     public void setPriority(boolean priority) {
         this.priority = priority;
     }

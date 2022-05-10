@@ -43,6 +43,8 @@ public abstract class Target {
         this.coordinate = coordinate;
     }
 
+    public void setPriority(boolean priority) {}
+
     ///////////////
     // OVERRIDES //
     ///////////////

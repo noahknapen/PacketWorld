@@ -3,6 +3,7 @@ package util.assignments.graph;
 import java.util.*;
 
 import agent.AgentState;
+import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import environment.world.destination.DestinationRep;
@@ -61,18 +62,18 @@ public class GraphUtils {
 
                 // Create a node
                 Optional<Target> target = extractTarget(cellPerception);
-                Node cellNode = new Node(cellCoordinate, target);
+                Optional<Node> cellNode = graph.getNode(cellCoordinate);
 
                 // If node exists -> update target
                 // timeUpdate = true since target comes from perception
-                if(cellNode != null) {
-                    cellNode.setTarget(target, true);
+                if(cellNode.isPresent()) {
+                    cellNode.get().setTarget(target, true);
                 }
                 else {
                     // Add the node to the graph
-                    cellNode = new Node(cellCoordinate, target);
-                    graph.addNode(cellNode);
-                    newNodes.add(cellNode);
+                    cellNode = Optional.of(new Node(cellCoordinate, target));
+                    graph.addNode(cellNode.get());
+                    newNodes.add(cellNode.get());
                 }
 
 
@@ -116,7 +117,7 @@ public class GraphUtils {
                         if (node.equals(neighbourNode)) continue;
 
                         // Only allow edges between free node,
-                        if (!node.containsTarget() && !neighbourNode.containsTarget() && (!node.containsPacket() || !neighbourNode.containsPacket()))
+                        if (node.containsTarget() && !neighbourNode.containsTarget() && (!node.containsPacket() || !neighbourNode.containsPacket()))
                             continue;
 
                         // Add the edges between the cells
@@ -168,14 +169,14 @@ public class GraphUtils {
         // Guard clause
         if (path == null) return graph;
 
-        Node firstPacket = getFirstPathPacket(path);
+        Node firstPacketNode = getFirstPathPacket(path);
 
         // Check if a packet exists in the path
-        if (firstPacket != null) {
-            Packet packet = (Packet) firstPacket.getTarget();
+        if (firstPacketNode != null && firstPacketNode.getTarget().isPresent()) {
+            Packet packet = (Packet) firstPacketNode.getTarget().get();
 
             // Set packet as a prio
-            graph.getNode(packet.getCoordinate()).setPrioPacket(true);
+            graph.getNode(packet.getCoordinate()).get().getTarget().get().setPriority(true);
 
             if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == packet.getRgbColor()) {
 
@@ -201,25 +202,28 @@ public class GraphUtils {
 
     /**
      * Extracts the target (Packet, Destination etc) if one exists in the cell perception
-     * @param coordinate Cell coordinate
-     * @param cellPerception The cell perception
-     * @return Target (or null if cell does not contain any target)
+     *
+     * @param cellPerception The perception of the cell
+     * @return A target if one exists, otherwise empty
      */
-    private static Target extractTarget(Coordinate coordinate, CellPerception cellPerception) {
+    private static Optional<Target> extractTarget(CellPerception cellPerception) {
+        Coordinate targetCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
+
         if (cellPerception.containsPacket()) {
-            return new Packet(coordinate, Objects.requireNonNull(cellPerception.getRepOfType(PacketRep.class)).getColor().getRGB());
+            return Optional.of(new Packet(targetCoordinate, Objects.requireNonNull(cellPerception.getRepOfType(PacketRep.class)).getColor().getRGB()));
         }
 
         if (cellPerception.containsAnyDestination()) {
-            return new Destination(coordinate, Objects.requireNonNull(cellPerception.getRepOfType(DestinationRep.class)).getColor().getRGB());
+            return Optional.of(new Destination(targetCoordinate, Objects.requireNonNull(cellPerception.getRepOfType(DestinationRep.class)).getColor().getRGB()));
         }
 
         if (cellPerception.containsEnergyStation()) {
-            return new ChargingStation(coordinate);
+            return Optional.of(new ChargingStation(targetCoordinate));
         }
 
-        return null;
+        return Optional.empty();
     }
+
 
     /**
      * Update the graph based on another one
@@ -244,8 +248,8 @@ public class GraphUtils {
 
             // If node exists in graph -> update target if updatedGraph has newer update time
             // timeUpdate = false because we should only update the time when new value arrives from perception
-            if(graphNode != null) {
-                if (node.getUpdateTime() > graphNode.get().getUpdateTime()) graphNode.setTarget(node.getTarget(), false);
+            if(graphNode.isPresent()) {
+                if (node.getUpdateTime() > graphNode.get().getUpdateTime()) graphNode.get().setTarget(node.getTarget(), false);
                 continue;
             }
 
@@ -310,7 +314,7 @@ public class GraphUtils {
         if(graph == null) return null;
 
         // Define the nodes
-        Node startNode = graph.getNode(agentPosition);
+        Node startNode = graph.getNode(agentPosition).get();
         Node targetNode = new Node(target);
 
         // Define priority queues
