@@ -10,6 +10,7 @@ import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
+import util.assignments.targets.Target;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -73,6 +74,17 @@ public class Task {
     @Override
     public String toString() {
         return String.format("%s %s %s", packet, destination, isMoveTask);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        boolean result = false;
+
+        if(object instanceof Task otherTask) {
+            result = this.getPacket().equals(otherTask.getPacket()) && this.getDestination().equals(otherTask.getDestination());
+        }
+
+        return result;
     }
 
     public ArrayList<Packet> getTaskConditions() {

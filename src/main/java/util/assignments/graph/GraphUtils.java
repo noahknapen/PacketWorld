@@ -321,6 +321,7 @@ public class GraphUtils {
         // Set costs of start node
         startNode.setGCost(0);
         startNode.setHCost(calculateHeuristic(startNode, targetNode));
+        startNode.setParent(null);
 
         // Add start node to open list
         openList.add(startNode);
@@ -338,7 +339,7 @@ public class GraphUtils {
             }
 
             // Guard clause to check if neighbour is acceptable node
-            if (!(node.containsTarget() && (!includePackets || !node.containsPacket())))
+            if (!node.containsTarget() || (node.containsPacket() && includePackets))
             {
                 extractNeighbours(graph, node, targetNode, openList, closeList, includePackets);
             }
@@ -395,14 +396,14 @@ public class GraphUtils {
      */
     private static void extractNeighbours(Graph graph, Node node, Node targetNode, PriorityQueue<Node> openList, PriorityQueue<Node> closeList, boolean includePackets) {
 
-        for (Node neighbourNode : graph.getMap().get(node)) {
+        for (Node neighbour : graph.getMap().get(node)) {
 
-            Node graphNeighbourNode = graph.getNode(neighbourNode.getCoordinate()).get();
+            Node neighbourNode = graph.getNode(neighbour.getCoordinate()).get();
 
             // Convert boolean to int
-            int containsPacketInt = graphNeighbourNode.containsPacket() ? 1: 0;
+            int containsPacketInt = neighbourNode.containsPacket() ? 1: 0;
 
-            double totalGCost = node.getGCost() + 1 + containsPacketInt * PACKET_COST;
+            double totalGCost = node.getGCost() + 1; //+ containsPacketInt * PACKET_COST;
 
             if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
                 neighbourNode.setParent(node);
