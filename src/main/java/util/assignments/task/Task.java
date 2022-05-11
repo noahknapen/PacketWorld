@@ -2,18 +2,16 @@ package util.assignments.task;
 
 import agent.AgentState;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import util.assignments.graph.Graph;
-import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
-import util.assignments.targets.Target;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 /**
  * A class representing the task the agent is performing
@@ -24,9 +22,9 @@ public class Task {
     private Packet packet;
     // A data member holding the destination linked to the task
     private Destination destination;
-    // A data member that tells if task is a move packet task or not
-    @JsonProperty("isMoveTask")
-    private boolean isMoveTask;
+    // A data member that tells if task is a handled or not
+    @JsonProperty("handled")
+    private boolean handled;
 
     private ArrayList<Packet> taskConditions;
 
@@ -38,7 +36,7 @@ public class Task {
     public Task(@JsonProperty("packet") Packet packet, @JsonProperty("destination") Destination destination) {
         this.setPacket(packet);
         this.setDestination(destination);
-        this.setIsMoveTask(false);
+        this.setHandled(false);
         taskConditions = new ArrayList<>();
     }
 
@@ -62,8 +60,8 @@ public class Task {
         this.destination = destination;
     }
 
-    public void setIsMoveTask(boolean moveTask) {
-        this.isMoveTask = moveTask;
+    public void setHandled(boolean handled) {
+        this.handled = handled;
     }
 
     ///////////////
@@ -73,7 +71,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", packet, destination, isMoveTask);
+        return String.format("%s %s %s", packet, destination, handled);
     }
 
     @Override
@@ -108,5 +106,9 @@ public class Task {
         }
 
         return true;
+    }
+
+    public boolean isHandled() {
+        return handled;
     }
 }
