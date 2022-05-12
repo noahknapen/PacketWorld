@@ -1,5 +1,6 @@
 package util.assignments.general;
 
+import java.awt.*;
 import java.util.*;
 
 import java.util.List;
@@ -70,7 +71,7 @@ public class GeneralUtils {
      * @param agentState                The current state of the agent
      * @param chargingStationCoordinate The coordinates of the charging station
      */
-    private static void addChargingStation(AgentState agentState, Coordinate chargingStationCoordinate) {
+    public static void addChargingStation(AgentState agentState, Coordinate chargingStationCoordinate) {
         // Retrieve the memory fragment
         ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
 
@@ -295,6 +296,43 @@ public class GeneralUtils {
             // Check if coordinates correspond
             if (nodeCoordinate.equals(coordinate)) return true;
 
+        }
+
+        return false;
+    }
+
+    /**
+     *
+     * @param agentState
+     * @param task
+     * @return
+     */
+    public static boolean canReachDestination(AgentState agentState, Task task) {
+
+        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
+
+        // Loop over the discovered destinations
+        for (Destination candidateDestination : discoveredDestinations) {
+            // Get the color of the candidate destination
+            Color candidateDestinationColor = candidateDestination.getColor();
+
+            // Check if the colors correspond
+            if (task.getPacket().getRgbColor() != candidateDestinationColor.getRGB()) continue;
+
+            // If the agent hasn't got enough energy to work on it, it will not start the work
+            if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, task.getPacket(), candidateDestination))
+                continue;
+
+            // Check if path exists to destination
+            ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, candidateDestination.getCoordinate(), false);
+
+            if (destinationPath != null) {
+                Coordinate destinationCoordinate = destinationPath.get(destinationPath.size()-1).getCoordinate();
+                Destination destination = new Destination(destinationCoordinate, task.getPacket().getRgbColor());
+                task.setDestination(destination);
+                MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task));
+                return true;
+            }
         }
 
         return false;

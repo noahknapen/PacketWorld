@@ -76,6 +76,13 @@ public class GraphUtils {
                     graph.addNode(cellNode.get());
                     newNodes.add(cellNode.get());
                 }
+
+                // Check if the cell is the one the agent is currently standing on and continue with the next cell if so
+                if (x == 0 && y == 0) continue;
+
+                // Check if the cell contains a charging station
+                if (cellPerception.containsEnergyStation())
+                    GeneralUtils.addChargingStation(agentState, cellCoordinate);
             }
         }
 
@@ -108,8 +115,8 @@ public class GraphUtils {
                     if (node.equals(neighbourNode)) continue;
 
                     // Only allow edges between free node,
-                    if (node.containsTarget() && neighbourNode.containsTarget() && (!node.containsPacket() || !neighbourNode.containsPacket()))
-                        continue;
+                    //if (node.containsTarget() && neighbourNode.containsTarget() && !node.containsPacket() && !neighbourNode.containsPacket())
+                    //    continue;
 
                     // Add the edges between the cells
                     graph.addEdge(node, neighbourNode);
@@ -166,7 +173,7 @@ public class GraphUtils {
 
         for (Node packetNode : pathPackets) {
             Packet packet = (Packet) packetNode.getTarget().get();
-            Task task = new Task(packet, new Destination(new Coordinate(9,9), packet.getRgbColor()));
+            Task task = new Task(packet, null);
             task.setTaskConditions(taskConditions);
             taskConditions.add(packet);
 

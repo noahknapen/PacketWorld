@@ -2,16 +2,23 @@ package agent.behavior.assignment_2.changes;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
+import environment.Perception;
+import util.assignments.general.GeneralUtils;
 import util.assignments.graph.Graph;
+import util.assignments.graph.GraphUtils;
+import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
+import util.assignments.task.Task;
 
 /**
  * A behavior change class that checks if a new task cannot be defined
@@ -61,13 +68,46 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
         // Check if no destinations were discovered yet and return true if so
         if(discoveredDestinations.isEmpty()) return true;
 
-        // Transform lists of discovered targets to lists of discovered targets' color
-        ArrayList<Color> discoveredPacketColors = (ArrayList<Color>) discoveredPackets.stream().map(Packet::getColor).collect(Collectors.toList());
-        ArrayList<Color> discoveredDestinationColors = (ArrayList<Color>) discoveredDestinations.stream().map(Destination::getColor).collect(Collectors.toList());
+        // Loop over the sorted discovered packets
+        for(int i = 0; i < discoveredPackets.size(); i++) {
 
-        // Check if there are no corresponding (color) destinations for the packets in the discovered packets list and return true if so
-        if(discoveredPacketColors.stream().noneMatch(e -> discoveredDestinationColors.contains(e))) return true;
+            // Get a candidate packet
+            Packet candidatePacket = discoveredPackets.get(i);
 
-        return false;
+            // Get the color of the candidate packet
+            Color candidatePacketColor = candidatePacket.getColor();
+
+            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != candidatePacketColor.getRGB()) continue;
+
+            // Check if path exists to packet
+            ArrayList<Node> packetPath = GraphUtils.performAStarSearch(agentState, candidatePacket.getCoordinate(), false);
+
+            if (packetPath == null) continue;
+
+
+            // Loop over the discovered destinations
+            for (Destination candidateDestination : discoveredDestinations) {
+                // Get the color of the candidate destination
+                Color candidateDestinationColor = candidateDestination.getColor();
+
+                // Check if the colors correspond
+                if (!candidatePacketColor.equals(candidateDestinationColor)) continue;
+
+                // If the agent hasn't got enough energy to work on it, it will not start the work
+                if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
+
+                // Check if path exists to destination
+                ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, candidateDestination.getCoordinate(), false);
+
+                if (destinationPath == null) continue;
+
+
+                // Task is possible if reached here
+                return false;
+
+            }
+        }
+
+        return true;
     }
 }

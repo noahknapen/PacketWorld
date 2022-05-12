@@ -113,7 +113,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
                 // Check if path exists to destination
                 ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, candidateDestination.getCoordinate(), false);
 
-                if (destinationPath == null)
+                if (destinationPath == null) continue;
 
 
                 // Remove the packet from the discovered packets

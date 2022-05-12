@@ -3,7 +3,7 @@ description "Delivery with different behaviors and energy consumption"
 # ------------------------------------------------
 # The amount of the behavior states the agent has
 # ------------------------------------------------
-nbStates 8
+nbStates 9
 
 1 agent.behavior.assignment_2.behaviors.Explorer
 nbArgs 0
@@ -29,11 +29,14 @@ nbArgs 0
 8 agent.behavior.assignment_2.behaviors.ChargingBehavior
 nbArgs 0
 
+9 agent.behavior.assignment_2.behaviors.MovePacketBehavior
+nbArgs 0
+
 # ---------------------------------------------------------------
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 14
+nbChanges 15
 
 ### SOURCE 1: Explorer ###
 
@@ -91,12 +94,24 @@ priority 0
 source 4
 target 5
 
+agent.behavior.assignment_2.changes.HasCarryNoDestination
+nbArgs 0
+priority 0
+source 4
+target 9
+
 ### SOURCE 5: MoveToDestinationBehavior ###
 
 agent.behavior.assignment_2.changes.ReadyToPutDown
 nbArgs 0
 priority 0
 source 5
+target 6
+
+agent.behavior.assignment_2.changes.ReadyToPutDown
+nbArgs 0
+priority 0
+source 9
 target 6
 
 ### SOURCE 6: PutDownPacketBehavior ###

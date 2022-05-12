@@ -255,7 +255,7 @@ public class ActionUtils {
         // Perform A* search
         ArrayList<Node> path = GraphUtils.performAStarSearch(agentState, target, false);
 
-        if (path == null){
+        if (path == null || path.isEmpty()){
             return null;
         }
 

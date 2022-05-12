@@ -79,7 +79,9 @@ public class Task {
         boolean result = false;
 
         if(object instanceof Task otherTask) {
-            result = this.getPacket().equals(otherTask.getPacket()) && this.getDestination().equals(otherTask.getDestination());
+            result = this.getPacket().equals(otherTask.getPacket()) &&
+                    ((this.getDestination() == null && otherTask.getDestination() == null) ||
+                      this.getDestination().equals(otherTask.getDestination()));
         }
 
         return result;
