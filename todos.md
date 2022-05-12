@@ -6,6 +6,10 @@
 * The behavior of TaskDefinitionPossible, TaskDefinitionNotPossible, AlternateTaskDefinitionPossible, AlternateTaskDefinitionNotPossible is correct, but it could be optimized.
 * Combine as many memoryfragments as possible
 
+# Part III TODO
+* Make it so if agent is removing a blockading packet, it moves it to good position that is not blocking it again
+* Optimize code for performance
+
 # Assignments
 1) Fix bug in PickupPacketBehavior -> Noah (agent that does not pick up packet, stays in PickUpPacketBehavior as HasCarry is not satisfied, but its task changed to MoveToDestination)
 	1) Communicate to agents who are standing at the same packet "I am going to pick this up"
