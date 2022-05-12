@@ -12,6 +12,7 @@ import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * A class representing the task the agent is performing
@@ -102,7 +103,7 @@ public class Task {
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         for (Packet packet : taskConditions) {
-            if (graph.getNode(packet.getCoordinate()).isEmpty()) {
+            if (graph.getNode(packet.getCoordinate()).get().containsPacket()) {
                 return false;
             }
         }

@@ -126,13 +126,7 @@ public class GraphUtils {
 
         // Check if some new nodes are blocked
         for (Node node : newNodes) {
-            if (agentState.getColor().isPresent() &&
-                    node.getTarget().isPresent() &&
-                    node.containsPacket() &&
-                    node.getTarget().get().getRgbColor() == agentState.getColor().get().getRGB())
-            {
-                checkIfBlocked(agentState, node, graph);
-            }
+            checkIfBlocked(agentState, node, graph);
         }
 
         // Update the memory
@@ -178,10 +172,10 @@ public class GraphUtils {
             taskConditions.add(packet);
 
             // Check if agent can not handle the task
-            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != packet.getRgbColor()){
+            if (!priorityTasksSend.contains(task) && agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != packet.getRgbColor()){
                 priorityTasksSend.add(task);
             }
-            else {
+            else if (!priorityTasks.contains(task) && agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == packet.getRgbColor()){
                 priorityTasks.add(task);
             }
         }
@@ -410,7 +404,7 @@ public class GraphUtils {
             // Convert boolean to int
             int containsPacketInt = neighbourNode.containsPacket() ? 1: 0;
 
-            double totalGCost = node.getGCost() + 1; //+ containsPacketInt * PACKET_COST;
+            double totalGCost = node.getGCost() + 1 + containsPacketInt * PACKET_COST;
 
             if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
                 neighbourNode.setParent(node);

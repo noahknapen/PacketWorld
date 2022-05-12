@@ -9,12 +9,14 @@ import environment.Coordinate;
 import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.GraphUtils;
+import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 
@@ -72,10 +74,17 @@ public class MovePacketBehavior extends Behavior {
         if (task.getDestination() == null)
             generateMoveDestinationCoordinate(agentState, task);
 
+
         // If still no destination
         if (task.getDestination() == null) {
             ActionUtils.moveRandomly(agentState, agentAction);
         }
+
+        // If agent just entered this behavior and the destination is right next to it -> Skip this turn
+        else if (GeneralUtils.hasReachedPosition(agentState, task.getDestination().getCoordinate())) {
+            agentAction.skip();
+        }
+
         else {
             ActionUtils.moveToPosition(agentState, agentAction, task.getDestination().getCoordinate());
         }
@@ -103,6 +112,11 @@ public class MovePacketBehavior extends Behavior {
 
             // Check if cell is free
             if (!cellPerception.isFree() && !cellPerception.containsAgent()) continue;
+
+            // Check if path exists to destination
+            ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, cellCoordinate, false);
+
+            if (destinationPath == null) continue;
 
             // Create destination at free cell
             task.setDestination(new Destination(cellCoordinate, 0));

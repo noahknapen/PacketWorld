@@ -87,13 +87,13 @@ public class TaskDefinitionPossible extends BehaviorChange{
             // Get a candidate packet
             Packet candidatePacket = discoveredPackets.get(i);
 
-            // Check if path exists to packet
 
             // Get the color of the candidate packet
             Color candidatePacketColor = candidatePacket.getColor();
 
             if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != candidatePacketColor.getRGB()) continue;
 
+            // Check if path exists to packet
             ArrayList<Node> packetPath = GraphUtils.performAStarSearch(agentState, candidatePacket.getCoordinate(), false);
 
             if (packetPath == null) continue;

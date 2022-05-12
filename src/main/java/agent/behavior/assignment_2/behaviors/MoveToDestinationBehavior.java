@@ -69,7 +69,14 @@ public class MoveToDestinationBehavior extends Behavior {
         Destination destination = task.getDestination();
         Coordinate destinationCoordinate = destination.getCoordinate();
 
-        // Perform move to the position of the destination
-        ActionUtils.moveToPosition(agentState, agentAction, destinationCoordinate);
+
+        // If agent just entered this behavior and the destination is right next to it -> Skip this turn
+        if (GeneralUtils.hasReachedPosition(agentState, destinationCoordinate)) {
+            agentAction.skip();
+        }
+        else {
+            // Perform move to the position of the destination
+            ActionUtils.moveToPosition(agentState, agentAction, destinationCoordinate);
+        }
     }
 }
