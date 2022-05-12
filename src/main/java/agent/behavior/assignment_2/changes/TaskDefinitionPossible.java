@@ -115,7 +115,6 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
                 if (destinationPath == null) continue;
 
-
                 // Remove the packet from the discovered packets
                 candidatePacket = discoveredPackets.get(i);
 

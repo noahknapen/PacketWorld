@@ -302,10 +302,10 @@ public class GeneralUtils {
     }
 
     /**
-     *
-     * @param agentState
-     * @param task
-     * @return
+     * Checks if the task can reach its destination (does not have to be a packet destination)
+     * @param agentState The agent state
+     * @param task The task
+     * @return True if destination can be reached
      */
     public static boolean canReachDestination(AgentState agentState, Task task) {
 
@@ -379,6 +379,11 @@ public class GeneralUtils {
         return Math.sqrt(((coordinate2Y - coordinate1Y) * (coordinate2Y - coordinate1Y)) + ((coordinate2X - coordinate1X) * (coordinate2X - coordinate1X)));
     }
 
+    /**
+     * Handles communication of priority tasks (packets that blocks other things)
+     * @param agentState The agent state
+     * @param agentCommunication The agent communication
+     */
     public static void handlePriorityTaskCommunication(AgentState agentState, AgentCommunication agentCommunication) {
         // Share your priority tasks
         sharePriorityTasks(agentState, agentCommunication);
@@ -387,6 +392,11 @@ public class GeneralUtils {
         updatePriorityTasks(agentState, agentCommunication);
     }
 
+    /**
+     * Shares the list of priority tasks that the agent itself can't handle
+     * @param agentState The agent state
+     * @param agentCommunication The agent communication
+     */
     private static void sharePriorityTasks(AgentState agentState, AgentCommunication agentCommunication) {
         // Send message
         if (MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS_SEND, Task.class).size() == 0) return;
@@ -394,6 +404,12 @@ public class GeneralUtils {
         CommunicationUtils.sendMemoryFragment(agentState, agentCommunication, MemoryKeys.PRIORITY_TASKS_SEND);
     }
 
+    /**
+     * Receives priority tasks from other agents and updates its own
+     * priority task list of the agent can handle the task.
+     * @param agentState The agent state
+     * @param agentCommunication The agent communication
+     */
     private static void updatePriorityTasks(AgentState agentState, AgentCommunication agentCommunication) {
         // Get the priority tasks
         ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
