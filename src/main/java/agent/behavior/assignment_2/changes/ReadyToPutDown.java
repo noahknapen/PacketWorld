@@ -56,6 +56,6 @@ public class ReadyToPutDown extends BehaviorChange{
         Coordinate destinationCoordinate = destination.getCoordinate();
 
         // Return if the agent has reached the position
-        return GeneralUtils.hasReachedPosition(agentState, destinationCoordinate);
+        return destination.getCoordinate() != null && GeneralUtils.hasReachedPosition(agentState, destinationCoordinate);
     }
 }

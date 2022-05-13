@@ -94,9 +94,17 @@ public class TaskDefinitionPossible extends BehaviorChange{
             if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != candidatePacketColor.getRGB()) continue;
 
             // Check if path exists to packet
-            ArrayList<Node> packetPath = GraphUtils.performAStarSearch(agentState, candidatePacket.getCoordinate(), false);
+            ArrayList<Node> packetPath = GraphUtils.performAStarSearch(agentState, candidatePacket.getCoordinate(), true);
 
             if (packetPath == null) continue;
+
+            ArrayList<Node> pathPackets = GraphUtils.getPathPackets(packetPath);
+
+            // If packets exists along the path
+            if (!pathPackets.isEmpty()) {
+                GraphUtils.createPriorityTasks(agentState, pathPackets);
+                continue;
+            }
 
 
             // Loop over the discovered destinations
@@ -111,9 +119,17 @@ public class TaskDefinitionPossible extends BehaviorChange{
                 if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
 
                 // Check if path exists to destination
-                ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, candidateDestination.getCoordinate(), false);
+                ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, candidateDestination.getCoordinate(), true);
 
                 if (destinationPath == null) continue;
+
+                ArrayList<Node> pathPacketsDest = GraphUtils.getPathPackets(destinationPath);
+
+                // If packets exists along the path
+                if (!pathPacketsDest.isEmpty()) {
+                    GraphUtils.createPriorityTasks(agentState, pathPacketsDest);
+                    continue;
+                }
 
                 // Remove the packet from the discovered packets
                 candidatePacket = discoveredPackets.get(i);
@@ -145,7 +161,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
             if (packageIndex != Integer.MAX_VALUE) discoveredPackets.remove(packageIndex);
 
             Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
-            graph.getNode(candidatePacket.getCoordinate()).get().setTarget(Optional.empty(), false);
+            // graph.getNode(candidatePacket.getCoordinate()).get().setTarget(Optional.empty(), false);
 
             // Update the memory
             MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.GRAPH, graph));

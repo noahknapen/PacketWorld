@@ -124,11 +124,6 @@ public class GraphUtils {
             }
         }
 
-        // Check if some new nodes are blocked
-        for (Node node : newNodes) {
-            checkIfBlocked(agentState, node, graph);
-        }
-
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
     }
@@ -160,7 +155,7 @@ public class GraphUtils {
      * @param agentState The agent state
      * @param pathPackets A list of packets to be used for creating tasks
      */
-    private static void createPriorityTasks(AgentState agentState, ArrayList<Node> pathPackets) {
+    public static void createPriorityTasks(AgentState agentState, ArrayList<Node> pathPackets) {
         ArrayList<Packet> taskConditions = new ArrayList<>();
         ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
         ArrayList<Task> priorityTasksSend = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS_SEND, Task.class);
@@ -191,7 +186,7 @@ public class GraphUtils {
      * @param path The path of nodes
      * @return A list of all packets along the path
      */
-    private static ArrayList<Node> getPathPackets(ArrayList<Node> path) {
+    public static ArrayList<Node> getPathPackets(ArrayList<Node> path) {
         ArrayList<Node> packetNodes = new ArrayList<>();
 
         for (int i = 0; i < path.size() - 1; i++) {
@@ -250,7 +245,9 @@ public class GraphUtils {
             // If node exists in graph -> update target if updatedGraph has newer update time
             // timeUpdate = false because we should only update the time when new value arrives from perception
             if(graphNode.isPresent()) {
-                if (node.getUpdateTime() > graphNode.get().getUpdateTime()) graphNode.get().setTarget(node.getTarget(), false);
+                if (node.getUpdateTime() > graphNode.get().getUpdateTime()) {
+                    graphNode.get().setTarget(node.getTarget(), false);
+                }
                 continue;
             }
 
@@ -273,10 +270,7 @@ public class GraphUtils {
                     if(neighbourNode.isEmpty()) continue;
 
                     // Check if node is equal to neighbour and continue with the next neighbour if so
-                    if(node.equals(neighbourNode)) continue;
-
-                    // Only allow edges between free node, free nodes and targets and between packets
-                    if (!node.containsTarget() && !neighbourNode.get().containsTarget() && (!node.containsPacket() || !neighbourNode.get().containsPacket())) continue;
+                    if(node.equals(neighbourNode.get())) continue;
 
                     // Add the edges between the cells
                     currentGraph.addEdge(node, neighbourNode.get());
