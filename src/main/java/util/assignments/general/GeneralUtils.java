@@ -38,34 +38,6 @@ public class GeneralUtils {
     ////////////////
 
     /**
-     * Check the perception of the agent
-     * Perform the appropriate action when there is something in a cell in the perception of the agent.
-     *
-     * @param agentState The current state of the agent
-     */
-    public static void checkPerception(AgentState agentState) {
-        // Get the perception of the agent
-        Perception agentPerception = agentState.getPerception();
-
-        // Loop over the whole perception
-        for (int x = 0; x <= agentPerception.getWidth(); x++) {
-            for (int y = 0; y <= agentPerception.getHeight(); y++) {
-                CellPerception cellPerception = agentPerception.getCellAt(x, y);
-
-                // Check if the cell is null or the cell is the one the agent is currently standing on and continue with the next cell if so
-                if (cellPerception == null || (x == 0 && y == 0)) continue;
-
-                // Get the coordinates of the cell
-                Coordinate cellCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
-
-                // Check if the cell contains a charging station
-                if (cellPerception.containsEnergyStation())
-                    addChargingStation(agentState, cellCoordinate);
-            }
-        }
-    }
-
-    /**
      * A function that adds a charging station to the memory of the agent
      *
      * @param agentState                The current state of the agent

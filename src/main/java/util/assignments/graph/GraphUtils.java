@@ -132,21 +132,22 @@ public class GraphUtils {
      * Checks if there are packets along the path to the goal.
      * Creates priority tasks if that is the case
      * @param agentState The agent state
-     * @param node The destination node
-     * @param graph The graph to be searched through
+     * @param path The path to be checked
      */
-    private static void checkIfBlocked(AgentState agentState, Node node, Graph graph) {
-        ArrayList<Node> path = GraphUtils.performAStarSearch(agentState, graph, node.getCoordinate(), true);
+    public static boolean checkIfBlocked(AgentState agentState, ArrayList<Node> path) {
 
         // Agent currently does not know a possible path to the node
-        if (path == null) return;
+        if (path == null) return false;
 
         ArrayList<Node> pathPackets = getPathPackets(path);
 
-        // If no packets exists along the path
+        // If packets exists along the path
         if (!pathPackets.isEmpty()) {
-            createPriorityTasks(agentState, pathPackets);
+            GraphUtils.createPriorityTasks(agentState, pathPackets);
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -155,7 +156,7 @@ public class GraphUtils {
      * @param agentState The agent state
      * @param pathPackets A list of packets to be used for creating tasks
      */
-    public static void createPriorityTasks(AgentState agentState, ArrayList<Node> pathPackets) {
+    private static void createPriorityTasks(AgentState agentState, ArrayList<Node> pathPackets) {
         ArrayList<Packet> taskConditions = new ArrayList<>();
         ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
         ArrayList<Task> priorityTasksSend = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS_SEND, Task.class);
@@ -186,7 +187,7 @@ public class GraphUtils {
      * @param path The path of nodes
      * @return A list of all packets along the path
      */
-    public static ArrayList<Node> getPathPackets(ArrayList<Node> path) {
+    private static ArrayList<Node> getPathPackets(ArrayList<Node> path) {
         ArrayList<Node> packetNodes = new ArrayList<>();
 
         for (int i = 0; i < path.size() - 1; i++) {

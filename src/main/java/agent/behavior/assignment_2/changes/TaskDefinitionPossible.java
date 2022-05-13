@@ -98,13 +98,8 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
             if (packetPath == null) continue;
 
-            ArrayList<Node> pathPackets = GraphUtils.getPathPackets(packetPath);
-
-            // If packets exists along the path
-            if (!pathPackets.isEmpty()) {
-                GraphUtils.createPriorityTasks(agentState, pathPackets);
-                continue;
-            }
+            // Checks if path is blocked and if so continue with next
+            if (GraphUtils.checkIfBlocked(agentState, packetPath)) continue;
 
 
             // Loop over the discovered destinations
@@ -123,13 +118,9 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
                 if (destinationPath == null) continue;
 
-                ArrayList<Node> pathPacketsDest = GraphUtils.getPathPackets(destinationPath);
+                // Checks if path is blocked and if so continue with next
+                if (GraphUtils.checkIfBlocked(agentState, destinationPath)) continue;
 
-                // If packets exists along the path
-                if (!pathPacketsDest.isEmpty()) {
-                    GraphUtils.createPriorityTasks(agentState, pathPacketsDest);
-                    continue;
-                }
 
                 // Remove the packet from the discovered packets
                 candidatePacket = discoveredPackets.get(i);
