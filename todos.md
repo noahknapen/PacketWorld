@@ -7,7 +7,7 @@
 * Combine as many memoryfragments as possible
 
 # Part III TODO
-* Make it so if agent is removing a blockading packet, it moves it to good position that is not blocking it again
+* For energy environments, fix error with jackson on rgbcolor for charging station 
 * Optimize code for performance
 
 # Assignments
@@ -16,4 +16,3 @@
 	2) If agent receives this message from other agent, abandon packet and check TaskDefinitionPossible, otherwise
 2) Explorer function -> Vince
 3) Combine graphs of agents -> Charles
-4) Communication of different colored packets -> Ludvig
