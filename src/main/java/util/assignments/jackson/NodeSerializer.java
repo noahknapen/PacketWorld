@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import util.assignments.graph.Node;
 
@@ -16,16 +15,10 @@ import util.assignments.graph.Node;
  */
 public class NodeSerializer extends JsonSerializer<Node> {
 
-    private ObjectMapper mapper = new ObjectMapper();
-
     @Override
-    public void serialize(Node value, 
-      JsonGenerator gen,
-      SerializerProvider serializers) 
-      throws IOException, JsonProcessingException {
- 
-        mapper.registerModules(new Jdk8Module());
-        String json = mapper.writeValueAsString(value);
-        gen.writeFieldName(json);
+    public void serialize(Node node, JsonGenerator jsonGenerator, SerializerProvider serializers) throws IOException, JsonProcessingException {
+        ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+        String nodeString = objectMapper.writeValueAsString(node);
+        jsonGenerator.writeFieldName(nodeString);
     }
 }
