@@ -2,14 +2,9 @@ package agent.behavior.assignment_2.changes;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 
 import agent.AgentState;
 import agent.behavior.BehaviorChange;
-import environment.Perception;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.Graph;
 import util.assignments.graph.GraphUtils;
@@ -18,7 +13,6 @@ import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
-import util.assignments.task.Task;
 
 /**
  * A behavior change class that checks if a new task cannot be defined

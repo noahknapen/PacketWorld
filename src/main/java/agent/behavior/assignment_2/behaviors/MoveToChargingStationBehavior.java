@@ -15,7 +15,6 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 public class MoveToChargingStationBehavior extends Behavior {
 
@@ -102,31 +101,6 @@ public class MoveToChargingStationBehavior extends Behavior {
             ActionUtils.moveRandomly(agentState, agentAction);
         }
     }
-
-    /**
-     * A function that returns whether the charging station will be empty upon arrival
-     *
-     * @param station: The charging station
-     *
-     * @return True if the station is empty upon arrival, false otherwise.
-     */
-    private boolean emptyWhenWeArrive(AgentState agentState, ChargingStation station) {
-        // Retrieve the battery level of the user on the station
-        Optional<Integer> batteryLevelUserOnStation = station.getBatteryOfUser();
-
-        // If the station isn't in use it is currently projected free for when we arrive.
-        if (!station.isInUse() || batteryLevelUserOnStation.isEmpty()) return true;
-
-        // Calculate the turns away from the station and the turns the station is in use
-        Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
-        Coordinate stationPosition = station.getCoordinate();
-        double turnsAwayFromStation = Perception.distance(agentPosition.getX(), agentPosition.getY(), stationPosition.getX(), stationPosition.getY());
-        double turnsTheStationIsInUse = (environment.EnergyValues.BATTERY_MAX - batteryLevelUserOnStation.get()) / 100.0;
-
-        // If the turns away from the station is more than the turns in use, the station will be empty upon arrival
-        return Math.ceil(turnsAwayFromStation) >= Math.ceil(turnsTheStationIsInUse);
-    }
-
 
     /**
      * A function that sends an emergency message to the agent that is using the charging station to tell them there

@@ -60,7 +60,6 @@ public class PickUpPacketBehavior extends Behavior {
     private void handlePickUp(AgentState agentState, AgentAction agentAction) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
-        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Get the coordinate of the packet
         Packet packet= task.getPacket();
