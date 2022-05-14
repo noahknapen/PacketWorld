@@ -1,21 +1,16 @@
 package util.assignments.task;
 
-import agent.AgentState;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import util.assignments.graph.Graph;
-import util.assignments.memory.MemoryKeys;
-import util.assignments.memory.MemoryUtils;
-import util.assignments.targets.Destination;
-import util.assignments.targets.Packet;
-
 import java.util.ArrayList;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import util.assignments.targets.Destination;
+import util.assignments.targets.Packet;
+
 /**
- * A class representing the task the agent is performing
+ * A class representing a task the agent performs
  */
 public class Task {
     
@@ -23,22 +18,28 @@ public class Task {
     private Packet packet;
     // A data member holding the destination linked to the task
     private Destination destination;
-    // A data member that tells if task is a handled or not
-    @JsonProperty("handled")
+    // A data member holding if a task is handled or not
     private boolean handled;
-
-    private ArrayList<Packet> taskConditions;
+    // A data member holding the conditions for the task to be handled
+    private ArrayList<Packet> conditions;
 
     //////////////////
     // CONSTRUCTORS //
     //////////////////
     
-    @JsonCreator
-    public Task(@JsonProperty("packet") Packet packet, @JsonProperty("destination") Destination destination) {
+    public Task(Packet packet, Destination destination) {
         this.setPacket(packet);
         this.setDestination(destination);
         this.setHandled(false);
-        taskConditions = new ArrayList<>();
+        this.setConditions(new ArrayList<>());
+    }
+
+    @JsonCreator
+    public Task(@JsonProperty("packet") Packet packet, @JsonProperty("destination") Destination destination, @JsonProperty("handled") boolean handled, @JsonProperty("conditions") ArrayList<Packet> conditions) {
+        this.setPacket(packet);
+        this.setDestination(destination);
+        this.setHandled(handled);
+        this.setConditions(conditions);
     }
 
     ///////////////////////
@@ -53,6 +54,14 @@ public class Task {
         return destination;
     }
 
+    public boolean isHandled() {
+        return handled;
+    }
+
+    public ArrayList<Packet> getConditions() {
+        return conditions;
+    }
+
     public void setPacket(Packet packet) {
         this.packet = packet;
     }
@@ -65,53 +74,33 @@ public class Task {
         this.handled = handled;
     }
 
+    public void setConditions(ArrayList<Packet> conditions) {
+        this.conditions = conditions;
+    }
+
     ///////////////
     // OVERRIDES //
-
     ///////////////
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", packet, destination, handled);
+        return String.format("%s %s %s %s", packet, destination, handled, conditions);
     }
 
     @Override
     public boolean equals(Object object) {
         boolean result = false;
 
-        if(object instanceof Task otherTask) {
-            result = this.getPacket().equals(otherTask.getPacket()) &&
-                    ((this.getDestination() == null && otherTask.getDestination() == null) ||
-                      this.getDestination().equals(otherTask.getDestination()));
+        if(object instanceof Task task) {
+            result = packet.equals(task.getPacket()) &&
+                    ((destination == null && task.getDestination() == null) || destination.equals(task.getDestination()));
         }
 
         return result;
     }
 
-    public ArrayList<Packet> getTaskConditions() {
-        return taskConditions;
-    }
-
-    public void setTaskConditions(ArrayList<Packet> taskConditions) {
-        this.taskConditions.clear();
-        this.taskConditions.addAll(taskConditions);
-    }
-
-    public boolean conditionsSatisfied(AgentState agentState) {
-
-        // Get graph
-        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
-
-        for (Packet packet : taskConditions) {
-            if (graph.getNode(packet.getCoordinate()).get().containsPacket()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public boolean isHandled() {
-        return handled;
+    @Override
+    public int hashCode() {
+        return Objects.hash(packet, destination);
     }
 }

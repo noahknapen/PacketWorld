@@ -401,4 +401,18 @@ public class GeneralUtils {
         // Update memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PRIORITY_TASKS, priorityTasks));
     }
+
+    public static boolean conditionsSatisfied(AgentState agentState, Task task) {
+
+        // Get graph
+        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
+
+        for (Packet packet : task.getConditions()) {
+            if (graph.getNode(packet.getCoordinate()).get().containsPacket()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

@@ -164,7 +164,7 @@ public class GraphUtils {
         for (Node packetNode : pathPackets) {
             Packet packet = (Packet) packetNode.getTarget().get();
             Task task = new Task(packet, null);
-            task.setTaskConditions(taskConditions);
+            task.setConditions(taskConditions);
             taskConditions.add(packet);
 
             // Check if agent can not handle the task
