@@ -220,32 +220,6 @@ public class ActionUtils {
     }
 
     /**
-     * A function to calculate the move (default)
-     * 
-     * @param agentState The current state of the agent
-     * @param target The coordinate of the target
-     */
-    private static Coordinate calculateMoveDefault(AgentState agentState,  Coordinate target) {
-        // Get the positions
-        int agentX = agentState.getX();
-        int agentY = agentState.getY();
-        int targetX = target.getX();
-        int targetY = target.getY();
-
-        // Calculate the difference between the positions
-        int dX = targetX - agentX;
-        int dY = targetY - agentY;
-
-        // Calculate move
-        int relativePositionX = Integer.compare(dX, 0);
-        int relativePositionY = Integer.compare(dY, 0);
-
-        // Define the move coordinate
-
-        return new Coordinate(relativePositionX, relativePositionY);
-    }
-
-    /**
      * A function to calculate the move using an A* algorithm
      * 
      * @param agentState The current state of the agent

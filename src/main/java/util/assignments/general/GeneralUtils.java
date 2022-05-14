@@ -7,7 +7,6 @@ import java.util.List;
 
 import agent.AgentCommunication;
 import agent.AgentState;
-import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import util.assignments.graph.Graph;
@@ -18,7 +17,6 @@ import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.ChargingStation;
 import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
-import util.assignments.targets.Target;
 import util.assignments.task.Task;
 
 /**

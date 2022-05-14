@@ -13,7 +13,6 @@ import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
-import util.assignments.targets.Packet;
 import util.assignments.task.Task;
 
 import java.util.ArrayList;

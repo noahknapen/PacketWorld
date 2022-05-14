@@ -1,7 +1,5 @@
 package agent.behavior.assignment_2.behaviors;
 
-import java.util.Map;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;

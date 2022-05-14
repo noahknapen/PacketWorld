@@ -2,7 +2,6 @@ package util.assignments.task;
 
 import agent.AgentState;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import util.assignments.graph.Graph;
@@ -12,7 +11,6 @@ import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * A class representing the task the agent is performing
