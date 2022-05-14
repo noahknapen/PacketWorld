@@ -38,7 +38,7 @@ public class Explorer extends Behavior {
         // Move the agent randomly
         ActionUtils.moveRandomly(agentState, agentAction);
 
-        // Update memory
+        // Update the memory
         // Retrieve the amount of turns exploring
 
         Object exploringTurns = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.EXPLORING_TURNS, Integer.class);

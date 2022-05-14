@@ -58,7 +58,7 @@ public class MoveToChargingStationBehavior extends Behavior {
      */
     private void moveToChargingStation(AgentState agentState, AgentAction agentAction) {
         // Retrieve the charging stations from memory
-        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
         // Initialise some variables to keep track of the best option
         double minDistance = Double.MAX_VALUE;

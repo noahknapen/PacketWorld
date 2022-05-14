@@ -96,7 +96,7 @@ public class GraphUtils {
                 // Check if the cell contains a charging station
                 if (cellPerception.containsEnergyStation())
                     // Add a charging station
-                    GeneralUtils.addChargingStation(agentState, cellCoordinate);
+                    GeneralUtils.discoverChargingStation(agentState, cellCoordinate);
             }
         }
 

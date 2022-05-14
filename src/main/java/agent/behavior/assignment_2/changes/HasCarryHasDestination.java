@@ -34,7 +34,7 @@ public class HasCarryHasDestination extends BehaviorChange{
             hasDestination = true;
         }
         else if (task != null){
-            hasDestination = GeneralUtils.canReachDestination(agentState, task);
+            hasDestination = GeneralUtils.canDestinationBeReached(agentState, task);
         }
     }
 

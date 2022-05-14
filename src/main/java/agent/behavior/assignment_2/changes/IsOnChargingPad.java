@@ -48,7 +48,7 @@ public class IsOnChargingPad extends BehaviorChange {
         Coordinate agentPosition = new Coordinate(agentX, agentY);
 
         // Get the charging stations from memory
-        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
         // Iterate through all stations
         for (ChargingStation discoveredChargingStation : discoveredChargingStations) {

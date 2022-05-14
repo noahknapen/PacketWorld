@@ -62,7 +62,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
         // Check if one of the priority tasks can be done
         for (Task task : priorityTasks) {
-            if (!task.isHandled() && GeneralUtils.conditionsSatisfied(agentState, task)) {
+            if (!task.isHandled() && GeneralUtils.areConditionsSatisfied(agentState, task)) {
                 task.setHandled(true);
                 MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.PRIORITY_TASKS, priorityTasks));
                 return true;

@@ -7,7 +7,7 @@ public class MemoryKeys {
     public static final String TASK = "TASK";
     public static final String GRAPH = "GRAPH";
 
-    public static final String DISCOVERED_CHARGING_STATIONS = "DISCOVERED_CHARGING_STATIONS";
+    public static final String CHARGING_STATIONS = "CHARGING_STATIONS";
     public static final String UPDATED_STATIONS = "UPDATED_STATIONS";
 
     public static final String PRIORITY_TASKS = "PRIORITY_TASKS";

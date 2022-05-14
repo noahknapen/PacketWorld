@@ -51,7 +51,7 @@ public class PickUpPacketBehavior extends Behavior {
 
             task.setState(TaskState.TO_DESTINATION);
 
-            // Update memory
+            // Update the memory
             updateTaskMemory(agentState, task);
 
 

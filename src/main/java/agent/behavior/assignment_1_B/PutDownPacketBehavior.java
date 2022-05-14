@@ -48,7 +48,7 @@ public class PutDownPacketBehavior extends Behavior {
             // Put down packet
             putDownPacket(agentState, agentAction, task);
 
-            // Update memory
+            // Update the memory
             updateTaskMemory(agentState);
         }
         else agentAction.skip();

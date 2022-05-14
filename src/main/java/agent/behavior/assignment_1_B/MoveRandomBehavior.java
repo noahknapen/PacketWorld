@@ -138,7 +138,7 @@ public class MoveRandomBehavior extends Behavior {
             }
         }
 
-        // Update memory
+        // Update the memory
         updateTaskMemory(agentState, discoveredPackets, discoveredDestinations);        
     }
 

@@ -77,7 +77,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
                     // Define the task
                     Task task = new Task(candidatepacket, destination, TaskState.TO_PACKET);
 
-                    // Update memory
+                    // Update the memory
                     updateTaskMemory(agentState, discoveredPackets, task);
 
                     return true;

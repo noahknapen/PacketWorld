@@ -150,7 +150,7 @@ public class MoveToPacketBehavior extends Behavior {
             }
         }
 
-        // Update memory
+        // Update the memory
         updateTaskMemory(agentState, discoveredPackets, discoveredDestinations);        
     }
 

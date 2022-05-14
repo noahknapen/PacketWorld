@@ -31,7 +31,7 @@ public class HasCarryNoDestination extends BehaviorChange{
 
         // Check if task has a destination
         if (task != null){
-            hasNoDestination = !GeneralUtils.canReachDestination(agentState, task);
+            hasNoDestination = !GeneralUtils.canDestinationBeReached(agentState, task);
         }
     }
 
