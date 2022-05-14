@@ -27,8 +27,8 @@ public class MoveToDestinationBehavior extends Behavior {
         // Communicate the charging stations with all the other agents
         GeneralUtils.handleChargingStationsCommunication(agentState, agentCommunication);
 
-        // Communicate the destination locations with agents in perception
-        // GeneralUtils.handleDestinationsCommunication(agentState, agentCommunication);
+        // Communicate the priority tasks with agents in perception
+        GeneralUtils.handlePriorityTaskCommunication(agentState, agentCommunication);
 
         // Communicate the graph with agents in perception
         GeneralUtils.handleGraphCommunication(agentState, agentCommunication);
@@ -38,7 +38,7 @@ public class MoveToDestinationBehavior extends Behavior {
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {      
         // Check the perception of the agent
-        GeneralUtils.checkPerception(agentState);
+        //GeneralUtils.checkPerception(agentState);
 
         // Build the graph
         GraphUtils.build(agentState);
@@ -69,7 +69,14 @@ public class MoveToDestinationBehavior extends Behavior {
         Destination destination = task.getDestination();
         Coordinate destinationCoordinate = destination.getCoordinate();
 
-        // Perform move to the position of the destination
-        ActionUtils.moveToPosition(agentState, agentAction, destinationCoordinate);
+
+        // If agent just entered this behavior and the destination is right next to it -> Skip this turn
+        if (GeneralUtils.hasReachedPosition(agentState, destinationCoordinate)) {
+            agentAction.skip();
+        }
+        else {
+            // Perform move to the position of the destination
+            ActionUtils.moveToPosition(agentState, agentAction, destinationCoordinate);
+        }
     }
 }

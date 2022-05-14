@@ -9,6 +9,8 @@ import environment.Perception;
 import util.assignments.comparators.PacketComparator;
 import util.assignments.general.GeneralUtils;
 import util.assignments.graph.Graph;
+import util.assignments.graph.GraphUtils;
+import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 import util.assignments.targets.Destination;
@@ -54,7 +56,22 @@ public class TaskDefinitionPossible extends BehaviorChange{
      *
      */
     private boolean checkTaskDefinition(AgentState agentState) {
+
+        // Get priority tasks
+        ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
+
+        // Check if one of the priority tasks can be done
+        for (Task task : priorityTasks) {
+            if (!task.isHandled() && task.conditionsSatisfied(agentState)) {
+                task.setHandled(true);
+                MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.PRIORITY_TASKS, priorityTasks));
+                return true;
+            }
+        }
+
         // Get the discovered packets and discovered destinations
+
+        // Only get packets of same color here
         ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Packet.class);
         ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
 
@@ -69,11 +86,24 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
         // Loop over the sorted discovered packets
         for(int i = 0; i < discoveredPackets.size(); i++) {
+
             // Get a candidate packet
             Packet candidatePacket = discoveredPackets.get(i);
 
+
             // Get the color of the candidate packet
             Color candidatePacketColor = candidatePacket.getColor();
+
+            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != candidatePacketColor.getRGB()) continue;
+
+            // Check if path exists to packet
+            ArrayList<Node> packetPath = GraphUtils.performAStarSearch(agentState, candidatePacket.getCoordinate(), true);
+
+            if (packetPath == null) continue;
+
+            // Checks if path is blocked and if so continue with next
+            if (GraphUtils.checkIfBlocked(agentState, packetPath)) continue;
+
 
             // Loop over the discovered destinations
             for (Destination candidateDestination : discoveredDestinations) {
@@ -85,6 +115,14 @@ public class TaskDefinitionPossible extends BehaviorChange{
 
                 // If the agent hasn't got enough energy to work on it, it will not start the work
                 if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
+
+                // Check if path exists to destination
+                ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, candidateDestination.getCoordinate(), true);
+
+                if (destinationPath == null) continue;
+
+                // Checks if path is blocked and if so continue with next
+                if (GraphUtils.checkIfBlocked(agentState, destinationPath)) continue;
 
 
                 // Remove the packet from the discovered packets
@@ -117,7 +155,7 @@ public class TaskDefinitionPossible extends BehaviorChange{
             if (packageIndex != Integer.MAX_VALUE) discoveredPackets.remove(packageIndex);
 
             Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
-            graph.getNode(candidatePacket.getCoordinate()).get().setTarget(Optional.empty());
+            // graph.getNode(candidatePacket.getCoordinate()).get().setTarget(Optional.empty(), false);
 
             // Update the memory
             MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.GRAPH, graph));

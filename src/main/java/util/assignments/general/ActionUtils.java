@@ -11,6 +11,7 @@ import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
 import util.assignments.graph.GraphUtils;
+import util.assignments.graph.Node;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
 
@@ -55,7 +56,12 @@ public class ActionUtils {
         if (!isDirectionPossible)
             direction = getNewRandomDirection(agentState, direction);
 
-        agentAction.step(agentState.getX()+direction.getX(), agentState.getY()+direction.getY());
+        if (direction.equals(new Coordinate(0,0))) {
+            agentAction.skip();
+        }
+        else {
+            agentAction.step(agentState.getX()+direction.getX(), agentState.getY()+direction.getY());
+        }
     }
 
     /**
@@ -89,7 +95,7 @@ public class ActionUtils {
         
         Perception agentPerception = agentState.getPerception();
         // Keep a direction the agent should walk to
-        Coordinate newDirection = null;
+        Coordinate newDirection = new Coordinate(0,0);
 
         // Shuffle the possible directions
         ArrayList<Coordinate> directions = new ArrayList<>(ActionUtils.RELATIVE_POSITIONS);
@@ -245,11 +251,16 @@ public class ActionUtils {
      * @param agentState The current state of the agent
      * @param target The coordinate of the target
      */
-    private static Coordinate calculateMoveAStar(AgentState agentState,  Coordinate target) {
+    private static Coordinate calculateMoveAStar(AgentState agentState, Coordinate target) {
         // Perform A* search
-        Coordinate pathCoordinate = GraphUtils.performAStarSearch(agentState, target);
+        ArrayList<Node> path = GraphUtils.performAStarSearch(agentState, target, false);
 
-        if (pathCoordinate == null) return new Coordinate(agentState.getX(), agentState.getY());
+        if (path == null || path.isEmpty()){
+            return null;
+        }
+
+        // Get the first coordinate in path
+        Coordinate pathCoordinate = path.get(0).getCoordinate();
 
         // Get the positions
         int agentX = agentState.getX();
@@ -277,6 +288,10 @@ public class ActionUtils {
      * @param move The coordinate representing the move
      */
     private static boolean makeMove(AgentState agentState, AgentAction agentAction, Coordinate move) {
+
+        // Guard clause
+        if (move == null) return false;
+
         // Get the perception of the agent
         Perception agentPerception = agentState.getPerception();
 

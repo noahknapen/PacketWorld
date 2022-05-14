@@ -25,7 +25,7 @@ import environment.world.wall.WallRep;
  */
 
 public class CellPerception {
-    
+
     /**
      * The x and y coordinate (wrt. the environment) of this cell.
      */
@@ -177,8 +177,8 @@ public class CellPerception {
      */
     public boolean containsFlagWithColor(Color color) {
         return this.getFlagRepresentation()
-            .map(f -> f.getColor() == color)
-            .orElse(false);
+                .map(f -> f.getColor() == color)
+                .orElse(false);
     }
 
 

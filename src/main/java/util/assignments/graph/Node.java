@@ -5,6 +5,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.*;
 
 import environment.Coordinate;
+import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
 /**
@@ -43,7 +44,7 @@ public class Node implements Comparable<Node> {
 
     public Node(Coordinate coordinate, Optional<Target> target) {
         this(coordinate);
-        this.setTarget(target);
+        this.setTarget(target, false);
     }
 
     @JsonCreator
@@ -79,7 +80,7 @@ public class Node implements Comparable<Node> {
     public double getHCost() {
         return hCost;
     }
-    
+
     public double getFCost() {
         return gCost + hCost;
     }
@@ -88,17 +89,21 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
-    public long getUpdateTime() {
-        return updateTime;
+    public boolean containsPacket() {
+        return target.isPresent() && target.get().getClass() == Packet.class;
+    }
+
+    public boolean containsTarget() {
+        return getTarget().isPresent();
     }
 
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
     }
-    
-    public void setTarget(Optional<Target> target) {
+
+    public void setTarget(Optional<Target> target, boolean timeUpdate) {
         this.target = target;
-        this.setUpdateTime();
+        if (timeUpdate) this.setUpdateTime();
     }
 
     public void setGCost(double gCost) {
@@ -116,9 +121,9 @@ public class Node implements Comparable<Node> {
     public void setUpdateTime() {
         this.updateTime = System.currentTimeMillis();
     }
-
     ///////////////
     // OVERRIDES //
+
     ///////////////
 
     @Override
@@ -145,5 +150,9 @@ public class Node implements Comparable<Node> {
     @Override
     public int hashCode() {
         return coordinate.hashCode();
+    }
+
+    public long getUpdateTime() {
+        return updateTime;
     }
 }

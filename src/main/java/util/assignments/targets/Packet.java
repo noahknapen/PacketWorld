@@ -41,6 +41,7 @@ public class Packet extends Target {
     // GETTERS & SETTERS //
     ///////////////////////
 
+    @Override
     public int getRgbColor() {
         return rgbColor;
     }
@@ -50,6 +51,7 @@ public class Packet extends Target {
      * 
      * @return The color of the packet
      */
+
     public Color getColor() {
         return new Color(rgbColor);
     }
@@ -62,6 +64,7 @@ public class Packet extends Target {
         this.rgbColor = rgbColor;
     }
 
+    @Override
     public void setPriority(boolean priority) {
         this.priority = priority;
     }

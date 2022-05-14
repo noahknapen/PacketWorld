@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import environment.Coordinate;
 
+import java.awt.*;
+
 /**
  * A class representing a target
  */
@@ -42,6 +44,10 @@ public abstract class Target {
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
     }
+
+    public void setPriority(boolean priority) {}
+
+    public int getRgbColor() {return 0;}
 
     ///////////////
     // OVERRIDES //

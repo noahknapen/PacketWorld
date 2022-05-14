@@ -1,0 +1,87 @@
+width 5
+height 4
+
+nbAgents 2
+environment.world.agent.Agent
+nbArgs 6
+Integer 0
+Integer 1
+Integer 4
+Integer 4
+String "Zoe"
+String "blue"
+environment.world.agent.Agent
+nbArgs 6
+Integer 4
+Integer 1
+Integer 4
+Integer 5
+String "Tom"
+String "red"
+
+nbPackets 3
+environment.world.packet.Packet
+nbArgs 3
+Integer 1
+Integer 1
+String "red"
+environment.world.packet.Packet
+nbArgs 3
+Integer 2
+Integer 1
+String "green"
+environment.world.packet.Packet
+nbArgs 3
+Integer 3
+Integer 0
+String "blue"
+
+nbDestinations 0
+
+nbWalls 10
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 0
+Integer 0
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 0
+Integer 2
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 1
+Integer 0
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 1
+Integer 2
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 2
+Integer 0
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 2
+Integer 2
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 3
+Integer 1
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 3
+Integer 2
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 4
+Integer 0
+environment.world.wall.GlassWall
+nbArgs 2
+Integer 4
+Integer 2
+
+nbEnergyStations 0
+
+nbPacketGenerators 0
+
+nbConveyors 0
