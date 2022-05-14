@@ -90,15 +90,27 @@ target 7
 
 agent.behavior.assignment_2.changes.HasCarryHasDestination
 nbArgs 0
-priority 0
+priority 3
 source 4
 target 5
 
 agent.behavior.assignment_2.changes.HasCarryNoDestination
 nbArgs 0
-priority 0
+priority 2
 source 4
 target 9
+
+agent.behavior.assignment_2.changes.TaskDefinitionPossible
+nbArgs 0
+priority 1
+source 4
+target 3
+
+agent.behavior.assignment_2.changes.TaskDefinitionNotPossible
+nbArgs 0
+priority 0
+source 4
+target 2
 
 ### SOURCE 5: MoveToDestinationBehavior ###
 
@@ -106,12 +118,6 @@ agent.behavior.assignment_2.changes.ReadyToPutDown
 nbArgs 0
 priority 0
 source 5
-target 6
-
-agent.behavior.assignment_2.changes.ReadyToPutDown
-nbArgs 0
-priority 0
-source 9
 target 6
 
 ### SOURCE 6: PutDownPacketBehavior ###
@@ -149,3 +155,11 @@ nbArgs 0
 priority 1
 source 8
 target 2
+
+### SOURCE 9: MovePacketBehavior ###
+
+agent.behavior.assignment_2.changes.ReadyToPutDown
+nbArgs 0
+priority 0
+source 9
+target 6
