@@ -90,15 +90,27 @@ target 7
 
 agent.behavior.assignment_2.changes.HasCarryHasDestination
 nbArgs 0
-priority 0
+priority 2
 source 4
 target 5
 
 agent.behavior.assignment_2.changes.HasCarryNoDestination
 nbArgs 0
-priority 0
+priority 2
 source 4
 target 9
+
+agent.behavior.assignment_2.changes.NewTaskAfterTryingPickUp
+nbArgs 0
+priority 1
+source 4
+target 3
+
+agent.behavior.assignment_2.changes.NoNewTaskAfterTryingPickUp
+nbArgs 0
+priority 0
+source 4
+target 2
 
 ### SOURCE 5: MoveToDestinationBehavior ###
 
