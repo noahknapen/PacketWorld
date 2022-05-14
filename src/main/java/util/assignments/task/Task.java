@@ -75,7 +75,15 @@ public class Task {
     }
 
     public void setConditions(ArrayList<Packet> conditions) {
-        this.conditions = conditions;
+        if (this.conditions != null)
+        {
+            this.conditions.clear();
+            this.conditions.addAll(conditions);
+        }
+        else
+        {
+            this.conditions = new ArrayList<>();
+        }
     }
 
     ///////////////
