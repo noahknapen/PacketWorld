@@ -1,0 +1,29 @@
+width 16
+height 16
+
+nbAgents 1
+environment.world.agent.Agent
+nbArgs 5
+Integer 1
+Integer 1
+Integer 2
+Integer 1
+String "Tom"
+
+nbPackets 1
+environment.world.packet.Packet
+nbArgs 3
+Integer 0
+Integer 7
+String "blue"
+
+nbDestinations 0
+
+nbWalls 0
+
+nbEnergyStations 1
+environment.world.energystation.EnergyStation
+nbArgs 3
+Integer 0
+Integer 4
+Integer 4

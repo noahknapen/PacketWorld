@@ -397,9 +397,6 @@ abstract public class AgentImp extends ActiveImp implements AgentState, AgentCom
             this.generateActionOutcome(new InfPickCrumb(getEnvironment(), x, y, getActiveItemID(), number)));
     }
 
-
-
-
     private void pickRegularPacket(Packet packet) {
         var agentColor = getAgent().getColor();
         var packetColor = packet.getColor();

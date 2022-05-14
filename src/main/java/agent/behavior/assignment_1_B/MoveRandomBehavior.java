@@ -27,7 +27,7 @@ import environment.world.packet.PacketRep;
 
 public class MoveRandomBehavior extends Behavior {
 
-    final ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
+    private final static ArrayList<Coordinate> RELATIVE_POSITIONS = new ArrayList<Coordinate>(List.of(
         new Coordinate(1, 1), 
         new Coordinate(-1, -1),
         new Coordinate(1, 0), 
@@ -149,7 +149,7 @@ public class MoveRandomBehavior extends Behavior {
      *     agentPos -> destinationPos
      * 
      * @param agentState Current state of agent
-     * @param dest New destination to be added to the graph
+     * @param destination New destination to be added to the graph
      */
     private void addDestinationToGraph(AgentState agentState, Destination destination) {
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY());
@@ -249,7 +249,7 @@ public class MoveRandomBehavior extends Behavior {
         int agentY = agentState.getY();
 
 
-        List<Coordinate> positions = RELATIVE_POSITIONS;
+        List<Coordinate> positions = new ArrayList<>(MoveRandomBehavior.RELATIVE_POSITIONS);
 
         // Prioritize going straight first
         Coordinate previousPosition = getPreviousPosition(agentState);

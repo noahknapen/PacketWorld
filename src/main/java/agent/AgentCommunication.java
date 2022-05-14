@@ -25,12 +25,6 @@ public interface AgentCommunication {
      */
     void broadcastMessage(String message);
 
-
-
-
-
-
-
     /**
      * Get the number of messages in the incoming message queue.
      */

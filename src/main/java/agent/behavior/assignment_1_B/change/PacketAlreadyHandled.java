@@ -30,7 +30,6 @@ public class PacketAlreadyHandled extends BehaviorChange{
 
         if(packetAlreadyHandled) {
             Graph graph = getGraph(agentState);
-            Task task = getTask(agentState);
 
             // graph.removeNode(task.getPacket().getCoordinate());
 
@@ -117,25 +116,6 @@ public class PacketAlreadyHandled extends BehaviorChange{
 
             return graph;
         }
-    }
-
-    /**
-     * Retrieve task from memory
-     * 
-     * @param agentState Current state of agent
-     * @return Task
-     */
-    private Task getTask(AgentState agentState) {
-        // Retrieve memory of agent
-        Set<String> memoryFragments = agentState.getMemoryFragmentKeys();
-
-        // Check if task exists in memory
-        if(memoryFragments.contains(MemoryKeys.TASK)) {
-            // Retrieve task
-            String taskString = agentState.getMemoryFragment(MemoryKeys.TASK);
-            return Task.fromJson(taskString);
-        }
-        else return null;
     }
 
     /**

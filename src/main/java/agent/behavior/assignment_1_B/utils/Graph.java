@@ -76,7 +76,7 @@ public class Graph {
 
             if (perception.getCellPerceptionOnAbsPos(candidatePosition.getX(), candidatePosition.getY()) != null
                 && candidateDistance < minDistance
-                && nodes.get(candidatePosition).getState() == NodeType.FREE) {
+                && nodes.get(candidatePosition).getType() == NodeType.FREE) {
 
                 minDistance = candidateDistance;
                 result = candidatePosition;
@@ -220,7 +220,6 @@ public class Graph {
     }
 
     public static Graph fromJson(String graphString) {
-        // TODO
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         return gson.fromJson(graphString, Graph.class);
     }
