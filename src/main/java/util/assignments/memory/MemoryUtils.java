@@ -16,11 +16,11 @@ import util.assignments.jackson.JacksonUtils;
 public class MemoryUtils {
 
     /////////////
-    // GETTERS //
+    // METHODS //
     /////////////
 
     /**
-     * A function to get an object from the memory
+     * Get an object from memory
      * 
      * @param <T> The type of the object 
      * @param agentState The current state of the agent
@@ -32,25 +32,26 @@ public class MemoryUtils {
         // Get the memory
         Set<String> memory = agentState.getMemoryFragmentKeys();
 
-        // Check if the memory contains the memory fragment
+        // Check if the memory contains the memory key
         if(memory.contains(memoryKey)) {
             // Get the memory fragment
             String objectString = agentState.getMemoryFragment(memoryKey);
 
-            // Transform the string to a JSON object and return
+            // Transform the JSON string to an object
             ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
             try {
                 return objectMapper.readValue(objectString, objectClass);
             } catch (IOException e) {
                 e.printStackTrace();
-                return null;
             }
         }
-        else return null;
+        
+        return null;
     }
 
     /**
-     * A function to get a list from the memory and to create one if no exists yet
+     * Get a list from memory
+     * Create one if it does not exist
      * 
      * @param <T> The type of the objects contained in the list
      * @param agentState The current state of the agent
@@ -62,63 +63,57 @@ public class MemoryUtils {
         // Get the memory
         Set<String> memory = agentState.getMemoryFragmentKeys();
 
-        // Check if the memory contains the memory fragment
+        // Check if the memory contains the memory key
         if(memory.contains(memoryKey)) {
             // Get the memory fragment
             String listString = agentState.getMemoryFragment(memoryKey);
 
-            // Transform the string to a JSON object and return
+            // Transform the JSON string to a list
             ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
             try {
                 return objectMapper.readValue(listString, objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, objectClass));
             } catch (IOException e) {
                 e.printStackTrace();
-                return new ArrayList<>();
             }
         }
-        else {
-            // Initialize a new list
-            ArrayList<T> list = new ArrayList<>();
 
-            // Update the memory
-            updateMemory(agentState, Map.of(memoryKey, list));
+        // Initialize a new list
+        ArrayList<T> list = new ArrayList<>();
 
-            // Return the initialized list
-            return list;
-        }
+        // Update the memory
+        MemoryUtils.updateMemory(agentState, Map.of(memoryKey, list));
+
+        // Return the initialized list
+        return list;
     }
 
-    ////////////
-    // UPDATE //
-    ////////////
-
     /**
-     * A function to update the memory
-     * It deletes the values of the memory fragments of the given keys and replaces them with the values of {@code updates}.
+     * Update the memory
      * 
      * @param agentState The current state of the agent
-     * @param updates A list of updates that should be done
+     * @param updates A list of updates
      */
     public static void updateMemory(AgentState agentState, Map<String, Object> updates) {
         // Get the memory
         Set<String> memory = agentState.getMemoryFragmentKeys();
 
+        // Loop over the updates
         for(String memoryKey: updates.keySet()) {
-            // Remove the memory fragment from the memory if it exists
-            if(memory.contains(memoryKey)) 
+            // Check if the memory contains the memory key
+            if(memory.contains(memoryKey))
+                // Remove the fragment from the memory
                 agentState.removeMemoryFragment(memoryKey);
 
-            // Transform the object to a JSON string
-            ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
-            String objectString = "";
             try {
-                objectString = objectMapper.writeValueAsString(updates.get(memoryKey));
+                // Transform the object to a JSON string
+                ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+                String objectString = objectMapper.writeValueAsString(updates.get(memoryKey));
+
+                // Add the fragment to the memory
+                agentState.addMemoryFragment(memoryKey, objectString);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            // Add the update to the memory
-            agentState.addMemoryFragment(memoryKey, objectString);
         }
     }
 }

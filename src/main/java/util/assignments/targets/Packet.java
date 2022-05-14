@@ -86,4 +86,3 @@ public class Packet extends Target {
         return super.hashCode();
     }
 }
-
