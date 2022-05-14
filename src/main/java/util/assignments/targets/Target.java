@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import environment.Coordinate;
 
-
 /**
  * A class representing a target
  */
