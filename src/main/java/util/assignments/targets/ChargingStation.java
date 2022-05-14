@@ -18,7 +18,7 @@ public class ChargingStation extends Target{
 
     // A data member holding if the charging station is in use or not
     private boolean inUse;
-    // A data member holding the battery of the user currently using the charging station
+    // A data member holding the optional battery of the user currently using the charging station
     private Optional<Integer> batteryOfUser;
 
     //////////////////

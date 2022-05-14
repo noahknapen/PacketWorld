@@ -9,9 +9,8 @@ import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
 /**
- * A class that represents a node
+ * A class representing a node
  */
-
 @JsonIgnoreProperties(value={"walkable", "fcost"})
 public class Node implements Comparable<Node> {
 
@@ -19,14 +18,12 @@ public class Node implements Comparable<Node> {
     private Coordinate coordinate;
     // A data member holding the optional target of the node
     private Optional<Target> target;
-
-    // A data member holding the gCost of the node
+    // A data member holding the path cost of the node
     private double gCost;
-    // A data member holding the hCost of the node
+    // A data member holding the heuristic cost of the node
     private double hCost;
     // A data member holding the parent of the node
     private Node parent;
-
     // A data member holding the time at which the node was updated
     private long updateTime;
 
@@ -39,22 +36,22 @@ public class Node implements Comparable<Node> {
         this.setGCost(0);
         this.setHCost(0);
         this.setParent(null);
-        this.setUpdateTime();
+        this.setUpdateTime(System.currentTimeMillis());
     }
 
     public Node(Coordinate coordinate, Optional<Target> target) {
         this(coordinate);
-        this.setTarget(target, false);
+        this.setTarget(target);
     }
 
     @JsonCreator
-    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("target") Optional<Target> target, @JsonProperty("gcost") double gCost, @JsonProperty("hcost") double hCost, @JsonProperty("parent") Node parent) {
-        this.coordinate = coordinate;
-        this.target = target;
-
-        this.gCost = gCost;
-        this.hCost = hCost;
-        this.parent = parent;
+    public Node(@JsonProperty("coordinate") Coordinate coordinate, @JsonProperty("target") Optional<Target> target, @JsonProperty("gCost") double gCost, @JsonProperty("hCost") double hCost, @JsonProperty("parent") Node parent, @JsonProperty("updateTime") long updateTime) {
+        this.setCoordinate(coordinate);
+        this.setTarget(target);
+        this.setGCost(gCost);
+        this.setHCost(hCost);
+        this.setParent(parent);
+        this.setUpdateTime(updateTime);
     }
 
     ///////////////////////
@@ -69,6 +66,11 @@ public class Node implements Comparable<Node> {
         return target;
     }
     
+    /**
+     * Is the node walkable?
+     * 
+     * @return True if the node is walkable, otherwise false
+     */
     public boolean isWalkable() {
         return this.target.isEmpty();
     }
@@ -81,6 +83,11 @@ public class Node implements Comparable<Node> {
         return hCost;
     }
 
+    /**
+     * Get the total cost of the node
+     * 
+     * @return The total cost of the node
+     */
     public double getFCost() {
         return gCost + hCost;
     }
@@ -89,21 +96,16 @@ public class Node implements Comparable<Node> {
         return parent;
     }
 
-    public boolean containsPacket() {
-        return target.isPresent() && target.get().getClass() == Packet.class;
-    }
-
-    public boolean containsTarget() {
-        return getTarget().isPresent();
+    public long getUpdateTime() {
+        return updateTime;
     }
 
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
     }
 
-    public void setTarget(Optional<Target> target, boolean timeUpdate) {
+    public void setTarget(Optional<Target> target) {
         this.target = target;
-        if (timeUpdate) this.setUpdateTime();
     }
 
     public void setGCost(double gCost) {
@@ -118,17 +120,39 @@ public class Node implements Comparable<Node> {
         this.parent = parent;
     }
 
-    public void setUpdateTime() {
-        this.updateTime = System.currentTimeMillis();
+    public void setUpdateTime(long updateTime) {
+        this.updateTime = updateTime;
     }
+
+    /////////////
+    // METHODS //
+    /////////////
+
+    /**
+     * Does the node contain a target?
+     * 
+     * @return True if the node contains a target, otherwise false
+     */
+    public boolean containsTarget() {
+        return target.isPresent();
+    }
+
+    /**
+     * Does the node contain a packet?
+     * 
+     * @return True if the node contains a packet, otherwise false
+     */
+    public boolean containsPacket() {
+        return containsTarget() && target.get().getClass().equals(Packet.class);
+    }
+
     ///////////////
     // OVERRIDES //
-
     ///////////////
 
     @Override
     public String toString() {
-        return String.format("%s %s %s %s %s", coordinate, target, gCost, hCost, parent);
+        return String.format("%s %s %s %s %s %s", coordinate, target, gCost, hCost, parent, updateTime);
     }
 
     @Override
@@ -150,9 +174,5 @@ public class Node implements Comparable<Node> {
     @Override
     public int hashCode() {
         return coordinate.hashCode();
-    }
-
-    public long getUpdateTime() {
-        return updateTime;
     }
 }

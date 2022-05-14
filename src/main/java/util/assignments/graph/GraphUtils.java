@@ -1,6 +1,5 @@
 package util.assignments.graph;
 
-import java.awt.*;
 import java.util.*;
 
 import agent.AgentState;
@@ -69,7 +68,8 @@ public class GraphUtils {
                 // If node exists -> update target
                 // timeUpdate = true since target comes from perception
                 if (cellNode.isPresent()) {
-                    cellNode.get().setTarget(target, true);
+                    cellNode.get().setTarget(target);
+                    cellNode.get().setUpdateTime(System.currentTimeMillis());
                 } else {
                     // Add the node to the graph
                     cellNode = Optional.of(new Node(cellCoordinate, target));
@@ -247,7 +247,7 @@ public class GraphUtils {
             // timeUpdate = false because we should only update the time when new value arrives from perception
             if(graphNode.isPresent()) {
                 if (node.getUpdateTime() > graphNode.get().getUpdateTime()) {
-                    graphNode.get().setTarget(node.getTarget(), false);
+                    graphNode.get().setTarget(node.getTarget());
                 }
                 continue;
             }
