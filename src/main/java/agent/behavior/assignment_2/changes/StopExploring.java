@@ -35,7 +35,7 @@ public class StopExploring extends BehaviorChange{
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.BATTERY_STATE, batteryState));
 
 
-        stopExploring = ((int) exploringTurns ) >= 0;
+        stopExploring = ((int) exploringTurns ) >= 60;
     }
 
     @Override

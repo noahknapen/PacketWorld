@@ -4,12 +4,16 @@ import java.awt.*;
 import java.util.*;
 
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import agent.AgentCommunication;
 import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
+import environment.world.destination.DestinationRep;
+import environment.world.packet.PacketRep;
 import util.assignments.graph.Graph;
 import util.assignments.graph.GraphUtils;
 import util.assignments.graph.Node;
@@ -414,5 +418,60 @@ public class GeneralUtils {
         }
 
         return true;
+    }
+
+    /**
+     * Extracts the target (Packet, Destination etc) if one exists in the cell perception
+     *
+     * @param cellPerception The perception of the cell
+     * @return A target if one exists, otherwise empty
+     */
+    public static Optional<Target> extractTarget(CellPerception cellPerception) {
+        Coordinate targetCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
+
+        if (cellPerception.containsPacket()) {
+            return Optional.of(new Packet(targetCoordinate, Objects.requireNonNull(cellPerception.getRepOfType(PacketRep.class)).getColor().getRGB()));
+        }
+
+        if (cellPerception.containsAnyDestination()) {
+            return Optional.of(new Destination(targetCoordinate, Objects.requireNonNull(cellPerception.getRepOfType(DestinationRep.class)).getColor().getRGB()));
+        }
+
+        if (cellPerception.containsEnergyStation()) {
+            return Optional.of(new ChargingStation(targetCoordinate));
+        }
+
+        return Optional.empty();
+    }
+
+      /**
+     * Creates a task for each packet in the pathPackets list
+     * Decides if the agent can handle the task or if the task should be shared to other agents through communication
+     * @param agentState The agent state
+     * @param pathPackets A list of packets to be used for creating tasks
+     */
+    public static void createPriorityTasks(AgentState agentState, ArrayList<Node> pathPackets) {
+        ArrayList<Packet> taskConditions = new ArrayList<>();
+        ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
+        ArrayList<Task> priorityTasksSend = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS_SEND, Task.class);
+
+        for (Node packetNode : pathPackets.stream().filter(n -> n.containsPacket()).collect(Collectors.toList())) {
+            Packet packet = (Packet) packetNode.getTarget().get();
+            Task task = new Task(packet, null);
+            task.setConditions(taskConditions);
+            taskConditions.add(packet);
+
+            // Check if agent can not handle the task
+            if (!priorityTasksSend.contains(task) && agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != packet.getRgbColor()){
+                priorityTasksSend.add(task);
+            }
+            else if (!priorityTasks.contains(task) && agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == packet.getRgbColor()){
+                priorityTasks.add(task);
+            }
+        }
+
+        // Update memory
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PRIORITY_TASKS, priorityTasks, MemoryKeys.PRIORITY_TASKS_SEND, priorityTasksSend));
+
     }
 }

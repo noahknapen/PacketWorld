@@ -16,7 +16,7 @@ import util.assignments.jackson.JacksonUtils;
 public class MemoryUtils {
 
     /////////////
-    // METHODS //
+    // GETTERS //
     /////////////
 
     /**
@@ -86,6 +86,10 @@ public class MemoryUtils {
         // Return the initialized list
         return list;
     }
+
+    ////////////
+    // UPDATE //
+    ////////////
 
     /**
      * Update the memory

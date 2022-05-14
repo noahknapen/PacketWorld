@@ -102,8 +102,12 @@ public class TaskDefinitionPossible extends BehaviorChange{
             if (packetPath == null) continue;
 
             // Checks if path is blocked and if so continue with next
-            if (GraphUtils.checkIfBlocked(agentState, packetPath)) continue;
+            if (GraphUtils.isPathBlocked(packetPath)) {
+                
+                GeneralUtils.createPriorityTasks(agentState, packetPath);
 
+                continue;
+            }
 
             // Loop over the discovered destinations
             for (Destination candidateDestination : discoveredDestinations) {
@@ -122,8 +126,11 @@ public class TaskDefinitionPossible extends BehaviorChange{
                 if (destinationPath == null) continue;
 
                 // Checks if path is blocked and if so continue with next
-                if (GraphUtils.checkIfBlocked(agentState, destinationPath)) continue;
-
+                if (GraphUtils.isPathBlocked(destinationPath)) {
+                    
+                    GeneralUtils.createPriorityTasks(agentState, packetPath);
+                    continue;
+                }
 
                 // Remove the packet from the discovered packets
                 candidatePacket = discoveredPackets.get(i);

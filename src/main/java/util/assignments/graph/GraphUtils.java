@@ -1,28 +1,27 @@
 package util.assignments.graph;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.PriorityQueue;
 
 import agent.AgentState;
 import environment.CellPerception;
 import environment.Coordinate;
 import environment.Perception;
-import environment.world.destination.DestinationRep;
-import environment.world.packet.PacketRep;
 import util.assignments.general.GeneralUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
-import util.assignments.targets.ChargingStation;
-import util.assignments.targets.Destination;
-import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
-import util.assignments.task.Task;
 
 /**
  * A class that implements functions regarding the graph
  */
 public class GraphUtils {
 
-    // The cost for traversing over a packet in a computed path using Astar
+    // A data member holding the cost for traversing over a packet in a computed path using A*
     private static final int PACKET_COST = 100;
     
     ///////////
@@ -40,86 +39,92 @@ public class GraphUtils {
 
         // Get the graph
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
-        ArrayList<Node> newNodes = new ArrayList<>();
 
-        // Check if graph is null and create one if so
-        if(graph == null) graph = new Graph();
+        // Check if the graph is null
+        if(graph == null) {
+            // Create a graph
+            graph = new Graph();
+        }
+
+        // Create a list of new nodes
+        ArrayList<Node> newNodes = new ArrayList<>();
         
-        // Loop over the whole perception to create nodes
+        // Loop over the perception
         for (int x = 0; x <= agentPerception.getWidth(); x++) {
             for (int y = 0; y <= agentPerception.getHeight(); y++) {
+                // Get the perception of the cell
                 CellPerception cellPerception = agentPerception.getCellAt(x, y);
 
-                // Check if the cell is null and continue with the next cell if so
-                if (cellPerception == null) continue;
+                // Check if the cell is null
+                if (cellPerception == null) {
+                    continue;
+                }
 
-                // Check if the cell is not walkable and that it is not because of an agent standing there. If so continue with the next cell
-                if (cellPerception.containsWall()) continue;
+                // Check if the cell contains a wall or a glass wall
+                if (cellPerception.containsWall() || cellPerception.containsGlassWall()) {
+                    continue;
+                }
 
-                // Get the position of the cell
+                // Get the coordinate of the cell
                 int cellX = cellPerception.getX();
                 int cellY = cellPerception.getY();
                 Coordinate cellCoordinate = new Coordinate(cellX, cellY);
 
-                // Create a node
-                Optional<Target> target = extractTarget(cellPerception);
-                Optional<Node> cellNode = graph.getNode(cellCoordinate);
+                // Get the optional graph node
+                Optional<Node> graphNode = graph.getNode(cellCoordinate);
 
-                // If node exists -> update target
-                // timeUpdate = true since target comes from perception
-                if (cellNode.isPresent()) {
-                    cellNode.get().setTarget(target);
-                    cellNode.get().setUpdateTime(System.currentTimeMillis());
-                } else {
-                    // Add the node to the graph
-                    cellNode = Optional.of(new Node(cellCoordinate, target));
-                    graph.addNode(cellNode.get());
-                    newNodes.add(cellNode.get());
+                // Get the optional target
+                Optional<Target> target = GeneralUtils.extractTarget(cellPerception);
+
+                // Check if the graph node is present
+                if(graphNode.isPresent()) {
+                    // Set the optional target
+                    graphNode.get().setTarget(target);
+                    graphNode.get().setUpdateTime(System.currentTimeMillis());
                 }
+                else {
+                    // Create a node
+                    Node cellNode = new Node(cellCoordinate, target);
 
-                // Check if the cell is the one the agent is currently standing on and continue with the next cell if so
-                if (x == 0 && y == 0) continue;
+                    // Add the node to the graph
+                    graph.addNode(cellNode);
+
+                    // Add the node to the list of new nodes
+                    newNodes.add(cellNode);
+                }
 
                 // Check if the cell contains a charging station
                 if (cellPerception.containsEnergyStation())
+                    // Add a charging station
                     GeneralUtils.addChargingStation(agentState, cellCoordinate);
             }
         }
 
-        for (Node node : newNodes) {
-
-            // Loop over neighbourhood to add edges
+        // Loop over the new nodes
+        for(Node newNode: newNodes) {
+            // Loop over the neighbourhood
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {
-                    // Get the position of the neighbour cell
-                    int neighbourCellX = node.getCoordinate().getX() + i;
-                    int neighbourCellY = node.getCoordinate().getY() + j;
+                    // Check if i = 0 and j = 0
+                    if(i == 0 && j == 0) {
+                        continue;
+                    }
 
-                    // Get the corresponding neighbour cell
-                    CellPerception neighbourCellPerception = agentPerception.getCellPerceptionOnAbsPos(neighbourCellX, neighbourCellY);
+                    // Get the coordinate of the neighbour cell
+                    int neighbourCellX = newNode.getCoordinate().getX() + i;
+                    int neighbourCellY = newNode.getCoordinate().getY() + j;
+                    Coordinate neighCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
-                    // Check if the neighbour cell is null or not walkable and continue with the next cell if so
-                    if (neighbourCellPerception == null) continue;
+                    // Get the optional graph node
+                    Optional<Node> graphNode = graph.getNode(neighCoordinate);
 
-                    // Check if the cell is not walkable and that it is not because of an agent standing there. If so continue with the next cell
-                    if (neighbourCellPerception.containsWall()) continue;
+                    // Check if the graph node is empty
+                    if(graphNode.isEmpty()) {
+                        continue;
+                    }
 
-                    // Get the position of the neighbour cell
-                    Coordinate neighbourCellCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
-
-                    // Create a node
-                    Optional<Target> neighbourTarget = extractTarget(neighbourCellPerception);
-                    Node neighbourNode = new Node(neighbourCellCoordinate, neighbourTarget);
-
-                    // Check if node is equal to cell and continue with the next cell if so
-                    if (node.equals(neighbourNode)) continue;
-
-                    // Only allow edges between free node,
-                    //if (node.containsTarget() && neighbourNode.containsTarget() && !node.containsPacket() && !neighbourNode.containsPacket())
-                    //    continue;
-
-                    // Add the edges between the cells
-                    graph.addEdge(node, neighbourNode);
+                    // Add an edge between the new node and the graph node (neighbour node)
+                    graph.addEdge(newNode, graphNode.get());
                 }
             }
         }
@@ -127,100 +132,6 @@ public class GraphUtils {
         // Update the memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
     }
-
-    /**
-     * Checks if there are packets along the path to the goal.
-     * Creates priority tasks if that is the case
-     * @param agentState The agent state
-     * @param path The path to be checked
-     */
-    public static boolean checkIfBlocked(AgentState agentState, ArrayList<Node> path) {
-
-        // Agent currently does not know a possible path to the node
-        if (path == null) return false;
-
-        ArrayList<Node> pathPackets = getPathPackets(path);
-
-        // If packets exists along the path
-        if (!pathPackets.isEmpty()) {
-            GraphUtils.createPriorityTasks(agentState, pathPackets);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Creates a task for each packet in the pathPackets list
-     * Decides if the agent can handle the task or if the task should be shared to other agents through communication
-     * @param agentState The agent state
-     * @param pathPackets A list of packets to be used for creating tasks
-     */
-    private static void createPriorityTasks(AgentState agentState, ArrayList<Node> pathPackets) {
-        ArrayList<Packet> taskConditions = new ArrayList<>();
-        ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
-        ArrayList<Task> priorityTasksSend = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS_SEND, Task.class);
-
-        for (Node packetNode : pathPackets) {
-            Packet packet = (Packet) packetNode.getTarget().get();
-            Task task = new Task(packet, null);
-            task.setConditions(taskConditions);
-            taskConditions.add(packet);
-
-            // Check if agent can not handle the task
-            if (!priorityTasksSend.contains(task) && agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != packet.getRgbColor()){
-                priorityTasksSend.add(task);
-            }
-            else if (!priorityTasks.contains(task) && agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == packet.getRgbColor()){
-                priorityTasks.add(task);
-            }
-        }
-
-        // Update memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PRIORITY_TASKS, priorityTasks, MemoryKeys.PRIORITY_TASKS_SEND, priorityTasksSend));
-
-    }
-
-
-    /**
-     * Finds all packets along a path of nodes
-     * @param path The path of nodes
-     * @return A list of all packets along the path
-     */
-    private static ArrayList<Node> getPathPackets(ArrayList<Node> path) {
-        ArrayList<Node> packetNodes = new ArrayList<>();
-
-        for (int i = 0; i < path.size() - 1; i++) {
-            if (path.get(i).containsPacket()) packetNodes.add(path.get(i));
-        }
-
-        return packetNodes;
-    }
-
-    /**
-     * Extracts the target (Packet, Destination etc) if one exists in the cell perception
-     *
-     * @param cellPerception The perception of the cell
-     * @return A target if one exists, otherwise empty
-     */
-    private static Optional<Target> extractTarget(CellPerception cellPerception) {
-        Coordinate targetCoordinate = new Coordinate(cellPerception.getX(), cellPerception.getY());
-
-        if (cellPerception.containsPacket()) {
-            return Optional.of(new Packet(targetCoordinate, Objects.requireNonNull(cellPerception.getRepOfType(PacketRep.class)).getColor().getRGB()));
-        }
-
-        if (cellPerception.containsAnyDestination()) {
-            return Optional.of(new Destination(targetCoordinate, Objects.requireNonNull(cellPerception.getRepOfType(DestinationRep.class)).getColor().getRGB()));
-        }
-
-        if (cellPerception.containsEnergyStation()) {
-            return Optional.of(new ChargingStation(targetCoordinate));
-        }
-
-        return Optional.empty();
-    }
-
 
     /**
      * Update the graph based on another one
@@ -231,50 +142,64 @@ public class GraphUtils {
         // Get the current graph
         Graph currentGraph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
-        // Check if current graph is null and create one if so
-        if(currentGraph == null) currentGraph = new Graph();
-        
-        // Loop over the whole updated graph
-        for(Node node: updatedGraph.getMap().keySet()) {
-            // Get the position of the node
-            int nodeX = node.getCoordinate().getX();
-            int nodeY = node.getCoordinate().getY();
-            Coordinate nodeCoordinate = new Coordinate(nodeX, nodeY);
+        // Check if the current graph is null
+        if(currentGraph == null) {
+            // Create a graph
+            currentGraph = new Graph();
+        }
 
-            Optional<Node> graphNode = currentGraph.getNode(nodeCoordinate);
+        // Create a list of new nodes
+        ArrayList<Node> newNodes = new ArrayList<>();
 
-            // If node exists in graph -> update target if updatedGraph has newer update time
-            // timeUpdate = false because we should only update the time when new value arrives from perception
+        // Loop over the updated graph
+        for(Node updatedNode: updatedGraph.getMap().keySet()) {
+            // Get the optional graph node
+            Optional<Node> graphNode = currentGraph.getNode(updatedNode.getCoordinate());
+
+            // Check if the graph node is present
             if(graphNode.isPresent()) {
-                if (node.getUpdateTime() > graphNode.get().getUpdateTime()) {
-                    graphNode.get().setTarget(node.getTarget());
+                // Check if the update time of the updated node is larger than the update time of the graph node
+                if(updatedNode.getUpdateTime() > graphNode.get().getUpdateTime()) {
+                    // Set the target
+                    graphNode.get().setTarget(updatedNode.getTarget());
                 }
+
                 continue;
             }
 
 
-            // Add the node to the current graph (this node is new in the current graph)
-            currentGraph.addNode(node);
+            // Add the updated node to the current graph
+            currentGraph.addNode(updatedNode);
 
-            // Loop over neighbourhood to add edges
-            for(int i = -1; i <= 1; i++) {
-                for(int j = -1; j <= 1; j++) {
-                    // Get the position of the neighbour cell
-                    int neighbourCellX = nodeX + i;
-                    int neighbourCellY = nodeY + j;
-                    Coordinate neighbourCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
+            // Add the updated node to the list of new nodes
+            newNodes.add(updatedNode);
+        }
 
-                    // Define neighbour node
-                    Optional<Node> neighbourNode = currentGraph.getNode(neighbourCoordinate);
+        // Loop over the new nodes
+        for(Node newNode: newNodes) {
+            // Loop over the neighbourhood
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    // Check if i = 0 and j = 0
+                    if(i == 0 && j == 0) {
+                        continue;
+                    }
 
-                    // Check if neighbour node is not contained in the graph and continue with next neighbour if so (only connect edges to nodes that is in the current graph)
-                    if(neighbourNode.isEmpty()) continue;
+                    // Get the coordinate of the neighbour cell
+                    int neighbourCellX = newNode.getCoordinate().getX() + i;
+                    int neighbourCellY = newNode.getCoordinate().getY() + j;
+                    Coordinate neighCoordinate = new Coordinate(neighbourCellX, neighbourCellY);
 
-                    // Check if node is equal to neighbour and continue with the next neighbour if so
-                    if(node.equals(neighbourNode.get())) continue;
+                    // Get the optional graph node
+                    Optional<Node> graphNode = currentGraph.getNode(neighCoordinate);
 
-                    // Add the edges between the cells
-                    currentGraph.addEdge(node, neighbourNode.get());
+                    // Check if the graph node is empty
+                    if(graphNode.isEmpty()) {
+                        continue;
+                    }
+
+                    // Add an edge between the new node and the current graph node (neighbour node)
+                    currentGraph.addEdge(newNode, graphNode.get());
                 }
             }
         }
@@ -287,94 +212,99 @@ public class GraphUtils {
     // SEARCH //
     ////////////
 
-
     /**
-     * A function to perform A* search, finding a such a path between the agent's current position
-     * and the target coordinate
+     * Perform A* search with the graph
      * 
      * @param agentState The current state of the agent
-     * @param target The target position that should be reached
-     * @param includePackets True if you should allow packets in path
-     * @return The coordinate (first of path) to which the agent should move
+     * @param targetCoordinate The target coordinate that should be reached
+     * @param includePackets Whether packets are allowed in the path
+     * @return The path between agent and the target
      */
-    public static ArrayList<Node> performAStarSearchSub(AgentState agentState, Graph graph, Coordinate target, boolean includePackets) {
-        // Get the position of the agent
+    public static ArrayList<Node> performAStarSearch(AgentState agentState, Coordinate targetCoordinate, boolean includePackets) {
+        // Get the coordinate of the agent
         int agentX = agentState.getX();
         int agentY = agentState.getY();
-        Coordinate agentPosition = new Coordinate(agentX, agentY);
+        Coordinate agentCoordinate = new Coordinate(agentX, agentY);
 
-        // Check if graph is null and raise exception if so
-        if(graph == null) return null;
+        // Get the graph
+        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
-        // Define the nodes
-        Node startNode = graph.getNode(agentPosition).get();
-        Node targetNode = new Node(target);
+        // Check if graph is null
+        if(graph == null) {
+            return null;
+        }
 
-        // Define priority queues
+        // Get the start node and target node
+        Node startNode = graph.getNode(agentCoordinate).get();
+        Node targetNode = graph.getNode(targetCoordinate).get();
+
+        // Set costs and parent of the start node
+        startNode.setGCost(0);
+        startNode.setHCost(GraphUtils.calculateHeuristic(startNode, targetNode));
+        startNode.setParent(null);
+
+        // Create priority queues
         PriorityQueue<Node> closeList = new PriorityQueue<>();
         PriorityQueue<Node> openList = new PriorityQueue<>();
 
-        // Set costs of start node
-        startNode.setGCost(0);
-        startNode.setHCost(calculateHeuristic(startNode, targetNode));
-        startNode.setParent(null);
-
-        // Add start node to open list
+        // Add the start node to the open list
         openList.add(startNode);
 
-        // Define a resulting node
-        Node result = null;
+        // Create a result node
+        Node resultNode = null;
 
-        // Perform A*
+        // Loop until the open list is empty
         while(!openList.isEmpty()) {
+            // Get the first node of the open list
             Node node = openList.peek();
 
+            // Check if the node equals the target node
             if(node.equals(targetNode)) {
-                result = node;
+                // Define the result node
+                resultNode = node;
+
                 break;
             }
 
-            // Guard clause to check if neighbour is acceptable node
-            if (!node.containsTarget() || (node.containsPacket() && includePackets))
-            {
-                extractNeighbours(graph, node, targetNode, openList, closeList, includePackets);
+            // Check if the node contains a packet and the path may include packets or if the node does not contain a target 
+            if((node.containsPacket() && includePackets) || (!node.containsTarget())) {
+                // Extract the neighbours of the node
+                GraphUtils.extractNeighbours(graph, node, targetNode, openList, closeList, includePackets);
             }
 
+            // Remove the node from the open list
             openList.remove(node);
+
+            // Add the node to the close list
             closeList.add(node);
         }
 
-        // Ensure that result isn't null
-        if (result == null)
+        // Check if the result node is null
+        if(resultNode == null) {
             return null;
+        }
 
-        // Calculate the path
+        // Create the path
         ArrayList<Node> path = new ArrayList<>();
-        while(result.getParent() != null) {
-            path.add(result);
-            result = result.getParent();
 
-            // Ensure that the result isn't null for the next iteration
-            if (result == null) break;
+        // Loop until the result node has no parent
+        while(resultNode.getParent() != null) {
+            // Add the result node to the path
+            path.add(resultNode);
+
+            // Redefine the result node
+            resultNode = resultNode.getParent();
+
+            // Check if the result node is null
+            if (resultNode == null) {
+                break;
+            }
         }
 
         // Reverse the path
         Collections.reverse(path);
 
-        // Return the first element of the path (which defines the next move)
         return path;
-    }
-
-    public static ArrayList<Node> performAStarSearch(AgentState agentState, Coordinate target, boolean includePackets) {
-        // Get the graph
-        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
-
-        return performAStarSearchSub(agentState, graph, target, includePackets);
-
-    }
-
-    public static ArrayList<Node> performAStarSearch(AgentState agentState, Graph graph, Coordinate target, boolean includePackets) {
-       return performAStarSearchSub(agentState, graph, target, includePackets);
     }
 
     ///////////
@@ -382,60 +312,81 @@ public class GraphUtils {
     ///////////
 
     /**
-     * Extracts the neighbours around the node and adds them to openList for further evaluation. Used in A* search.
-     * @param graph The graph object
-     * @param node The node that neighbours should be extracted around
-     * @param targetNode The destination node for the search
-     * @param openList The list of open nodes (unvisited nodes)
-     * @param closeList The list of closed nodes (visited nodes)
-     * @param includePackets
+     * Extract the neighbours around the node and adds them to openList for further evaluation
+     * 
+     * @param graph The graph
+     * @param node The node from which the neighbours should be extracted
+     * @param targetNode The target node
+     * @param openList The open list
+     * @param closeList The clost list
+     * @param includePackets Whether packets are allowed in the path
      */
     private static void extractNeighbours(Graph graph, Node node, Node targetNode, PriorityQueue<Node> openList, PriorityQueue<Node> closeList, boolean includePackets) {
+        // Get the neighbours nodes
+        List<Node> neighboursNode = graph.getMap().get(node);
 
-        for (Node neighbour : graph.getMap().get(node)) {
+        // Loop over the neighbours nodes
+        for (Node neighbourNode: neighboursNode) {
+            // Get if the neighbour node contains a packet as an integer
+            int containsPacketInt = neighbourNode.containsPacket()? 1 : 0;
 
-            Node neighbourNode = graph.getNode(neighbour.getCoordinate()).get();
-
-            // Convert boolean to int
-            int containsPacketInt = neighbourNode.containsPacket() ? 1: 0;
-
+            // Calculate the total path cost
             double totalGCost = node.getGCost() + 1 + containsPacketInt * PACKET_COST;
 
+            // Check if the open list does not contain the neighbourd node and the close list does not contain the neighbour node
             if (!openList.contains(neighbourNode) && !closeList.contains(neighbourNode)) {
-                neighbourNode.setParent(node);
+                // Set the costs and parent of the neighbour node
                 neighbourNode.setGCost(totalGCost);
-                neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+                neighbourNode.setHCost(GraphUtils.calculateHeuristic(neighbourNode, targetNode));
+                neighbourNode.setParent(node);
 
+                // Add the neighbour node to the open list
                 openList.add(neighbourNode);
             } else {
+                // Check if the total path cost is smaller than the path cost of the neighbour node
                 if (totalGCost < neighbourNode.getGCost()) {
-                    neighbourNode.setParent(node);
+                    // Set the costs and parent of the neighbour node
                     neighbourNode.setGCost(totalGCost);
                     neighbourNode.setHCost(calculateHeuristic(neighbourNode, targetNode));
+                    neighbourNode.setParent(node);
 
+                    // Check if the close list contains the neigbour node
                     if (closeList.contains(neighbourNode)) {
+                        // Remove the neighbour node from the close list
                         closeList.remove(neighbourNode);
+
+                        // Add the neighbour node to the open list
                         openList.add(neighbourNode);
                     }
                 }
             }
         }
-
-
     }
 
-
     /**
-     * A function to calculate the heuristic value of a node with a given reference
+     * Calculate the heuristic value of a node with a given reference
      * 
      * @param reference The reference by means of which the heuristic value is calculated
-     * @param node The node for which the heuristic value should be calculated
-     * @return The heuristic value of a node
+     * @param node The node for which the heuristic value is calculated
+     * @return The heuristic value of the node
      */
     private static double calculateHeuristic(Node reference, Node node) {
+        // Get the coordinate of the reference node and the coordinate of the node
         Coordinate referenceCoordinate = reference.getCoordinate();
         Coordinate nodeCoordinate = node.getCoordinate();
 
+        // Calculate the Euclidean distance
         return GeneralUtils.calculateEuclideanDistance(referenceCoordinate, nodeCoordinate);
+    }
+
+    /**
+     * Is the path blocked by some packets?
+     * 
+     * @param path The path
+     * @return True if the path is blocked by packets, otherwise false
+     */
+    public static boolean isPathBlocked(ArrayList<Node> path) {
+        // Check and return if any node in the path contains a packet
+        return path.stream().filter(n -> n.containsPacket()).findAny().isPresent();
     }
 }

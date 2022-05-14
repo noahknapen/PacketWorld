@@ -103,14 +103,12 @@ public class Graph {
     public void addEdge(Node node1, Node node2) {
         // Check if the map does not contain the first node
         if(!map.containsKey(node1)) {
-            // Add the first node to the graph
-            addNode(node1);
+            return;
         }
         
         // Check if the map does not contain the second node
         if(!map.containsKey(node2)) {
-            // Add the second node to the graph
-            addNode(node2);
+            return;
         }
 
         // Check if no edge exists between the first node and the second node
