@@ -87,9 +87,21 @@ target 7
 
 agent.behavior.assignment_2.changes.HasCarry
 nbArgs 0
-priority 0
+priority 2
 source 4
 target 5
+
+agent.behavior.assignment_2.changes.TaskDefinitionPossible
+nbArgs 0
+priority 1
+source 4
+target 3
+
+agent.behavior.assignment_2.changes.TaskDefinitionNotPossible
+nbArgs 0
+priority 0
+source 4
+target 2
 
 ### SOURCE 5: MoveToDestinationBehavior ###
 

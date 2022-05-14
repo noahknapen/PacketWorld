@@ -1,14 +1,15 @@
 package agent.behavior.assignment_2.behaviors;
 
-import java.util.Map;
-
 import agent.AgentAction;
 import agent.AgentCommunication;
 import agent.AgentState;
 import agent.behavior.Behavior;
+import environment.CellPerception;
 import environment.Coordinate;
+import environment.Perception;
 import util.assignments.general.ActionUtils;
 import util.assignments.general.GeneralUtils;
+import util.assignments.graph.Graph;
 import util.assignments.graph.GraphUtils;
 import util.assignments.memory.MemoryKeys;
 import util.assignments.memory.MemoryUtils;
@@ -59,12 +60,22 @@ public class PickUpPacketBehavior extends Behavior {
     private void handlePickUp(AgentState agentState, AgentAction agentAction) {
         // Get the task
         Task task = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.TASK, Task.class);
+        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         // Get the coordinate of the packet
         Packet packet= task.getPacket();
         Coordinate packetCoordinate = packet.getCoordinate();
+        Perception agentPerception = agentState.getPerception();
+        CellPerception packetCellPerception = agentPerception.getCellPerceptionOnAbsPos(packetCoordinate.getX(), packetCoordinate.getY());
 
         // Pick up the packet
-        ActionUtils.pickUpPacket(agentState, agentAction, packetCoordinate);
+        if (packetCellPerception.containsPacket())
+            ActionUtils.pickUpPacket(agentState, agentAction, packetCoordinate);
+        else
+            agentAction.skip();
+
+        // Remove the packet from the discovered packets
+        // graph.getNode(task.getPacket().getCoordinate()).get().setTarget(Optional.empty());
+        // MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.GRAPH, graph));
     }
 }

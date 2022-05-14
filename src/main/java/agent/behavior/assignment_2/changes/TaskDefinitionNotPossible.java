@@ -29,7 +29,10 @@ public class TaskDefinitionNotPossible extends BehaviorChange{
         AgentState agentState = this.getAgentState();
 
         // Check if the task definition is not possible
-        taskDefinitionNotPossible = checkNoTaskDefinition(agentState);
+        if (agentState.hasCarry())
+            taskDefinitionNotPossible = false;
+        else
+            taskDefinitionNotPossible = checkNoTaskDefinition(agentState);
     }
 
     @Override

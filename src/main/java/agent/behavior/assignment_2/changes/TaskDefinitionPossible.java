@@ -31,7 +31,10 @@ public class TaskDefinitionPossible extends BehaviorChange{
         AgentState agentState = this.getAgentState();
 
         // Handle the possible task definition
-        taskDefinitionPossible = checkTaskDefinition(agentState);
+        if (agentState.hasCarry())
+            taskDefinitionPossible = false;
+        else
+            taskDefinitionPossible = checkTaskDefinition(agentState);
     }
 
     @Override
