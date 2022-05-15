@@ -43,10 +43,6 @@ public abstract class Target {
         this.coordinate = coordinate;
     }
 
-    public void setPriority(boolean priority) {}
-
-    public int getRgbColor() {return 0;}
-
     ///////////////
     // OVERRIDES //
     ///////////////
