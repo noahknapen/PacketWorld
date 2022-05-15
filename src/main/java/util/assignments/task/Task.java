@@ -86,6 +86,11 @@ public class Task {
     // METHODS //
     /////////////
 
+    /**
+     * Update the task conditions
+     * 
+     * @param conditions The new conditions
+     */
     public void updateConditions(ArrayList<Packet> conditions) {
         this.conditions.clear();
         this.conditions.addAll(conditions);

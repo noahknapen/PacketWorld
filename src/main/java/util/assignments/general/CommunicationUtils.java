@@ -104,6 +104,7 @@ public class CommunicationUtils {
 
             // Loop over all the received mails
             ObjectMapper objectMapper = JacksonUtils.buildObjectMapper();
+            int messagesNotCorresponding = 0;
             for(int i = 0; i < receivedMails.size(); i++) {
                 // Get the received mail
                 Mail receivedMail = receivedMails.get(i);
@@ -114,10 +115,14 @@ public class CommunicationUtils {
                 String sender = receivedMail.getFrom();
 
                 // Check if the type of the message is not equal to the memory key and continue with the next mail if so
-                if(!message.getType().equals(memoryKey)) continue;
+                if(!message.getType().equals(memoryKey)) {
+                    messagesNotCorresponding++;
+                    continue;
+                }
+
 
                 // Remove the message from the mails
-                agentCommunication.removeMessage(i);
+                agentCommunication.removeMessage(messagesNotCorresponding);
 
                 // Get the object
                 String objectString = message.getMessage();
