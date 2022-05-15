@@ -52,6 +52,13 @@ The assignment_1_A solution implements a single behaviour. In this solution, the
 # Assignment 1 B
 The assignment_1_B solution extends the assignment_1_A solution. The SimpleBehaviour has been divided in five different behaviours and corresponding BehaviourChange classes have been implemented. An overview scheme can be found in the assignment_1_B folder. Furthermore, a graph-based approach was implemented to optimize the movements of the agent.
 
+# Assignment 2
+In assignment_2 solution takes into account the agents with a battery and accordingly the charging stations. An agent now moves towards the charging station whenever it is not able to perform one of the available tasks and its battery level is too low. Furthermore, an emergency communication approach was implemented to avoid agents from running out of battery when different agents want to charge at the same time.
+
+# Assignment 3 
+In assignment_3 coloured agents are handled. The agents are now only able to deliver packets of their own colour. Besides, priority packets were implemented in order to handle blocked paths to destinations.
+
+
 ## Final notes
 
 - To quickly get started, make sure to take a look at the example implementation provided in the configuration file `configfiles/behaviors/wander.txt` and the java source file `src/main/java/agent/behavior/wander/Wander.java`.
