@@ -44,7 +44,7 @@ public class GeneralUtils {
      */
     public static void addChargingStation(AgentState agentState, Coordinate chargingStationCoordinate) {
         // Retrieve the memory fragment
-        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
         // Create the corresponding charging station
         ChargingStation chargingStation = new ChargingStation(chargingStationCoordinate);
@@ -60,7 +60,7 @@ public class GeneralUtils {
             System.out.printf("%s: Discovered a new charging station (%s) [%s]\n", agentState.getName(), chargingStation, discoveredChargingStations.size());
 
         // Update memory
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, discoveredChargingStations, MemoryKeys.UPDATED_STATIONS, true));
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.CHARGING_STATIONS, discoveredChargingStations, MemoryKeys.UPDATED_STATIONS, true));
     }
 
     /////////////////////////
@@ -120,7 +120,7 @@ public class GeneralUtils {
      */
     private static void shareChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
         // Broadcast the list of discovered charging stations
-        CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS);
+        CommunicationUtils.broadcastMemoryFragment(agentState, agentCommunication, MemoryKeys.CHARGING_STATIONS);
     }
 
     /**
@@ -146,10 +146,10 @@ public class GeneralUtils {
      */
     private static void updateChargingStations(AgentState agentState, AgentCommunication agentCommunication) {
         // Get the current charging stations
-        ArrayList<ChargingStation> currentChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+        ArrayList<ChargingStation> currentChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
         // Get the updated charging stations
-        ArrayList<ChargingStation> updatedChargingStations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+        ArrayList<ChargingStation> updatedChargingStations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
         // Loop over updated charging stations
         for (ChargingStation updatedChargingStation : updatedChargingStations) {
@@ -181,7 +181,7 @@ public class GeneralUtils {
         }
 
         // Update the current charging stations
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, currentChargingStations));
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.CHARGING_STATIONS, currentChargingStations));
     }
 
     /**
@@ -280,7 +280,7 @@ public class GeneralUtils {
      */
     public static boolean canReachDestination(AgentState agentState, Task task) {
 
-        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getDestinations();
+        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
 
         // Loop over the discovered destinations
         for (Destination candidateDestination : discoveredDestinations) {
@@ -324,7 +324,7 @@ public class GeneralUtils {
 
         // Check if one of the priority tasks can be done
         for (Task task : priorityTasks) {
-            if (!task.isHandled() && task.conditionsSatisfied(agentState)) {
+            if (!task.isHandled() && task.areConditionsSatisfied(agentState)) {
                 task.setHandled(true);
                 MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.PRIORITY_TASKS, priorityTasks));
                 return true;
@@ -340,8 +340,8 @@ public class GeneralUtils {
 
         long startTime = System.currentTimeMillis();
 
-        ArrayList<Packet> discoveredPackets = graph.getPackets();
-        ArrayList<Destination> discoveredDestinations = graph.getDestinations();
+        ArrayList<Packet> discoveredPackets = graph.getTargets(Packet.class);
+        ArrayList<Destination> discoveredDestinations = graph.getTargets(Destination.class);
 
         System.out.println("TaskDef Get time: " + (System.currentTimeMillis() - startTime) + " ms");
 
@@ -453,13 +453,13 @@ public class GeneralUtils {
      */
     public static boolean checkNoTaskDefinition(AgentState agentState) {
         // Get the discovered packets
-        ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getPackets();
+        ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Packet.class);
 
         // Check if no packets were discovered yet and return true if so
         if(discoveredPackets.isEmpty()) return true;
 
         // Get the discovered destinations
-        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getDestinations();
+        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
 
         // Check if no destinations were discovered yet and return true if so
         if(discoveredDestinations.isEmpty()) return true;

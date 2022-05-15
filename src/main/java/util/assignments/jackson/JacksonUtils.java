@@ -9,18 +9,17 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 public class JacksonUtils {
 
     /**
-     * A function to build a parametrized object mapper
+     * Build a parametrized object mapper
      * 
      * @return The parametrized object mapper
      */
     public static ObjectMapper buildObjectMapper() {
-        // Initialize a mapper object
+        // Initialize an object mapper
         ObjectMapper objectMapper = new ObjectMapper();
 
         // Parametrize the object mapper
         objectMapper.registerModule(new Jdk8Module());
 
-        // Return the object mapper
         return objectMapper;   
     }
 }

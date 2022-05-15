@@ -68,7 +68,7 @@ public class GraphUtils {
                 // If node exists -> update target
                 if (cellNode.isPresent()) {
                     cellNode.get().setTarget(target);
-                    cellNode.get().setUpdateTime();
+                    cellNode.get().setUpdateTime(System.currentTimeMillis());
                 } else {
                     // Add the node to the graph
                     cellNode = Optional.of(new Node(cellCoordinate, target));
@@ -76,7 +76,7 @@ public class GraphUtils {
                     newNodes.add(cellNode.get());
                 }
 
-                graph.updateTargetLists(cellNode, agentState.getColor());
+                // graph.updateTargetLists(cellNode, agentState.getColor());
 
 
 
@@ -165,7 +165,7 @@ public class GraphUtils {
         for (Node packetNode : pathPackets) {
             Packet packet = (Packet) packetNode.getTarget().get();
             Task task = new Task(packet, null);
-            task.setTaskConditions(taskConditions);
+            task.updateConditions(taskConditions);
             taskConditions.add(packet);
 
             // Check if agent can not handle the task
@@ -248,7 +248,7 @@ public class GraphUtils {
             if(graphNode.isPresent()) {
                 if (node.getUpdateTime() > graphNode.get().getUpdateTime() && !node.getTarget().equals(graphNode.get().getTarget())) {
                     graphNode.get().setTarget(node.getTarget());
-                    currentGraph.updateTargetLists(graphNode, agentState.getColor());
+                    // currentGraph.updateTargetLists(graphNode, agentState.getColor());
                 }
                 continue;
             }
@@ -257,7 +257,7 @@ public class GraphUtils {
             // Add the node to the current graph (this node is new in the current graph)
             currentGraph.addNode(node);
 
-            currentGraph.updateTargetLists(Optional.of(node), agentState.getColor());
+            // currentGraph.updateTargetLists(Optional.of(node), agentState.getColor());
 
 
             // Loop over neighbourhood to add edges

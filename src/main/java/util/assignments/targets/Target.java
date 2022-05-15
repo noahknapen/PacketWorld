@@ -20,6 +20,7 @@ import environment.Coordinate;
 })
 public abstract class Target {
 
+    // A data member holding the coordinate of the target
     private Coordinate coordinate;
 
     //////////////////

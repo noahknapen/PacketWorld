@@ -7,15 +7,16 @@ import java.awt.Color;
 
 /**
  * A class representing a destination
+ * It extends the target class
  */
-@JsonIgnoreProperties(value={"color"})
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        defaultImpl = Destination.class
+    use = JsonTypeInfo.Id.NAME,
+    defaultImpl = Destination.class
 )
+@JsonIgnoreProperties(value={"color"})
 public class Destination extends Target{
     
-    // A data member holding the color of the destination
+    // A data member holding the RGB color of the destination
     private int rgbColor;
 
     //////////////////
@@ -37,7 +38,7 @@ public class Destination extends Target{
     }
 
     /**
-     * Get the color
+     * Get the color of the destination
      * 
      * @return The color of the packet
      */

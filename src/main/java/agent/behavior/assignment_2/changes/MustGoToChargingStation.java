@@ -30,7 +30,7 @@ public class MustGoToChargingStation extends BehaviorChange {
         AgentState agentState = this.getAgentState();
 
         // Retrieve the charging stations from memory
-        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+        ArrayList<ChargingStation> discoveredChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
         // Iterate through all the stations
         for (ChargingStation station : discoveredChargingStations) {

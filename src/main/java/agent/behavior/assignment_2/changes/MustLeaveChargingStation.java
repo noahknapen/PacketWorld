@@ -64,7 +64,7 @@ public class MustLeaveChargingStation extends BehaviorChange {
         Coordinate agentPosition = new Coordinate(agentState.getX(), agentState.getY() + 1);
         
         // Get the current charging stations
-        ArrayList<ChargingStation> chargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.DISCOVERED_CHARGING_STATIONS, ChargingStation.class);
+        ArrayList<ChargingStation> chargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
         // Iterate through all the stations to check them all
         for(ChargingStation chargingStation: chargingStations) {
@@ -81,7 +81,7 @@ public class MustLeaveChargingStation extends BehaviorChange {
         }
 
         // Update memory for charging stations
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.DISCOVERED_CHARGING_STATIONS, chargingStations));
+        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.CHARGING_STATIONS, chargingStations));
     }
 
     /**

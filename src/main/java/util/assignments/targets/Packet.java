@@ -7,15 +7,16 @@ import java.awt.Color;
 
 /**
  * A class representing a packet
+ * It extends the target class
  */
-@JsonIgnoreProperties(value={"color"})
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        defaultImpl = Packet.class
+    use = JsonTypeInfo.Id.NAME,
+    defaultImpl = Packet.class
 )
+@JsonIgnoreProperties(value={"color"})
 public class Packet extends Target {
 
-    // A data member holding the color of the packet
+    // A data member holding the RGB color of the packet
     private int rgbColor;
     // A data member holding if the packet has priority
     private boolean priority;
@@ -46,11 +47,10 @@ public class Packet extends Target {
     }
 
     /**
-     * Get the color
+     * Get the color of the packet
      * 
      * @return The color of the packet
      */
-
     public Color getColor() {
         return new Color(rgbColor);
     }
@@ -86,4 +86,3 @@ public class Packet extends Target {
         return super.hashCode();
     }
 }
-
