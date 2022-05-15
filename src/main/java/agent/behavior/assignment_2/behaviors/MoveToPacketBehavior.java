@@ -41,10 +41,7 @@ public class MoveToPacketBehavior extends Behavior {
         // GeneralUtils.checkPerception(agentState);
 
         // Build the graph
-        long startTime = System.currentTimeMillis();
         GraphUtils.build(agentState);
-        long endTime = System.currentTimeMillis();
-        System.out.println("build-method took: "+(endTime-startTime) + " ms");
 
         // Move the agent to the target
         handleMove(agentState, agentAction);
@@ -72,10 +69,7 @@ public class MoveToPacketBehavior extends Behavior {
         Coordinate packetCoordinate = packet.getCoordinate();
 
         // Perform move to the position of the packet
-        long startTime = System.currentTimeMillis();
         ActionUtils.moveToPosition(agentState, agentAction, packetCoordinate);
-        long endTime = System.currentTimeMillis();
-        System.out.println("Move to position took: "+(endTime-startTime) + " ms");
 
     }
 }

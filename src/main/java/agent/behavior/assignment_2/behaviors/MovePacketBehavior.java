@@ -46,6 +46,8 @@ public class MovePacketBehavior extends Behavior {
         // Check the perception of the agent
         // GeneralUtils.checkPerception(agentState);
 
+        System.out.println("MovePacket");
+
         // Build the graph
         GraphUtils.build(agentState);
 

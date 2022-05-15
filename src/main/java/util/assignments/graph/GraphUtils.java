@@ -66,9 +66,9 @@ public class GraphUtils {
                 Optional<Node> cellNode = graph.getNode(cellCoordinate);
 
                 // If node exists -> update target
-                // timeUpdate = true since target comes from perception
                 if (cellNode.isPresent()) {
-                    cellNode.get().setTarget(target, true);
+                    cellNode.get().setTarget(target);
+                    cellNode.get().setUpdateTime();
                 } else {
                     // Add the node to the graph
                     cellNode = Optional.of(new Node(cellCoordinate, target));
@@ -76,8 +76,14 @@ public class GraphUtils {
                     newNodes.add(cellNode.get());
                 }
 
+                graph.updateTargetLists(cellNode, agentState.getColor());
+
+
+
                 // Check if the cell is the one the agent is currently standing on and continue with the next cell if so
                 if (x == 0 && y == 0) continue;
+
+
 
                 // Check if the cell contains a charging station
                 if (cellPerception.containsEnergyStation())
@@ -112,10 +118,6 @@ public class GraphUtils {
 
                     // Check if node is equal to cell and continue with the next cell if so
                     if (node.equals(neighbourNode)) continue;
-
-                    // Only allow edges between free node,
-                    //if (node.containsTarget() && neighbourNode.containsTarget() && !node.containsPacket() && !neighbourNode.containsPacket())
-                    //    continue;
 
                     // Add the edges between the cells
                     graph.addEdge(node, neighbourNode);
@@ -243,10 +245,10 @@ public class GraphUtils {
             Optional<Node> graphNode = currentGraph.getNode(nodeCoordinate);
 
             // If node exists in graph -> update target if updatedGraph has newer update time
-            // timeUpdate = false because we should only update the time when new value arrives from perception
             if(graphNode.isPresent()) {
-                if (node.getUpdateTime() > graphNode.get().getUpdateTime()) {
-                    graphNode.get().setTarget(node.getTarget(), false);
+                if (node.getUpdateTime() > graphNode.get().getUpdateTime() && !node.getTarget().equals(graphNode.get().getTarget())) {
+                    graphNode.get().setTarget(node.getTarget());
+                    currentGraph.updateTargetLists(graphNode, agentState.getColor());
                 }
                 continue;
             }
@@ -254,6 +256,9 @@ public class GraphUtils {
 
             // Add the node to the current graph (this node is new in the current graph)
             currentGraph.addNode(node);
+
+            currentGraph.updateTargetLists(Optional.of(node), agentState.getColor());
+
 
             // Loop over neighbourhood to add edges
             for(int i = -1; i <= 1; i++) {
@@ -274,6 +279,7 @@ public class GraphUtils {
 
                     // Add the edges between the cells
                     currentGraph.addEdge(node, neighbourNode.get());
+
                 }
             }
         }

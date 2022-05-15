@@ -96,7 +96,7 @@ target 5
 
 agent.behavior.assignment_2.changes.HasCarryNoDestination
 nbArgs 0
-priority 2
+priority 1
 source 4
 target 9
 

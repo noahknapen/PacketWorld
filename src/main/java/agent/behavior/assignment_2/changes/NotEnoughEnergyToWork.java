@@ -44,8 +44,8 @@ public class NotEnoughEnergyToWork extends BehaviorChange {
      */
     private boolean isNotEnoughEnergyToWork(AgentState agentState) {
         // Get the discovered packets and discovered destinations
-        ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Packet.class);
-        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
+        ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getPackets();
+        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getDestinations();
 
         // Sort the discovered packets
         PacketComparator packetComparator = new PacketComparator(agentState, discoveredDestinations);

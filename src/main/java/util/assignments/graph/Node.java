@@ -5,6 +5,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.*;
 
 import environment.Coordinate;
+import util.assignments.targets.Destination;
 import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
@@ -44,7 +45,7 @@ public class Node implements Comparable<Node> {
 
     public Node(Coordinate coordinate, Optional<Target> target) {
         this(coordinate);
-        this.setTarget(target, false);
+        this.setTarget(target);
     }
 
     @JsonCreator
@@ -93,6 +94,10 @@ public class Node implements Comparable<Node> {
         return target.isPresent() && target.get().getClass() == Packet.class;
     }
 
+    public boolean containsDestination() {
+        return target.isPresent() && target.get().getClass() == Destination.class;
+    }
+
     public boolean containsTarget() {
         return getTarget().isPresent();
     }
@@ -101,9 +106,8 @@ public class Node implements Comparable<Node> {
         this.coordinate = coordinate;
     }
 
-    public void setTarget(Optional<Target> target, boolean timeUpdate) {
+    public void setTarget(Optional<Target> target) {
         this.target = target;
-        if (timeUpdate) this.setUpdateTime();
     }
 
     public void setGCost(double gCost) {

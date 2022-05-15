@@ -1,5 +1,6 @@
 package util.assignments.graph;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -15,6 +16,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import environment.Coordinate;
 import util.assignments.jackson.NodeDeserializer;
 import util.assignments.jackson.NodeSerializer;
+import util.assignments.targets.Destination;
+import util.assignments.targets.Packet;
 import util.assignments.targets.Target;
 
 /**
@@ -28,12 +31,20 @@ public class Graph {
     @JsonProperty("map")
     private Map<Node, List<Node>> map;
 
+    @JsonProperty("packetNodes")
+    private ArrayList<Node> packetNodes;
+
+    @JsonProperty("destinationNodes")
+    private ArrayList<Node> destinationNodes;
+
     //////////////////
     // CONSTRUCTORS //
     //////////////////
 
     public Graph() {
         this.setMap(new HashMap<Node, List<Node>>());
+        this.setPacketNodes(new ArrayList<>());
+        this.setDestinationNodes(new ArrayList<>());
     }
 
     ///////////////////////
@@ -61,12 +72,19 @@ public class Graph {
     /**
      * Get all the targets of a specific type found in the graph
      *
-     * @param <T> The type of the targets
-     * @param targetClass The class of the targets
      * @return An arraylist of all the targets of a specific type found in the graph
      */
-    public <T extends Target> ArrayList<T> getTargets(Class<T> targetClass) {
-        return new ArrayList<>(map.keySet().stream().filter(n -> (n.getTarget().isPresent() && n.getTarget().get().getClass().equals(targetClass))).map(n -> (T) n.getTarget().get()).collect(Collectors.toList()));
+    public ArrayList<Packet> getPackets() {
+        return new ArrayList<Packet>(getPacketNodes().stream().map(n -> (Packet) n.getTarget().get()).collect(Collectors.toList()));
+    }
+
+    /**
+     * Get all the targets of a specific type found in the graph
+     *
+     * @return An arraylist of all the targets of a specific type found in the graph
+     */
+    public ArrayList<Destination> getDestinations() {
+        return new ArrayList<Destination>(getDestinationNodes().stream().map(n -> (Destination) n.getTarget().get()).collect(Collectors.toList()));
     }
 
     /////////////
@@ -120,5 +138,49 @@ public class Graph {
         }
  
         return (builder.toString());
+    }
+
+    public ArrayList<Node> getPacketNodes() {
+        return packetNodes;
+    }
+
+    public void setPacketNodes(ArrayList<Node> packetNodes) {
+        this.packetNodes = packetNodes;
+    }
+
+    public ArrayList<Node> getDestinationNodes() {
+        return destinationNodes;
+    }
+
+    public void setDestinationNodes(ArrayList<Node> destinationNodes) {
+        this.destinationNodes = destinationNodes;
+    }
+
+
+    public void updateTargetLists(Optional<Node> node, Optional<Color> agentColor) {
+        // Remove targets from lists if free
+        if (!node.get().containsTarget() && getPacketNodes().contains(node.get())) {
+            this.packetNodes.remove(node.get());
+        }
+
+        else if (!node.get().containsTarget() && getDestinationNodes().contains(node.get())) {
+            this.packetNodes.remove(node.get());
+        }
+
+        // Add to lists if contains target
+        else if (node.get().containsPacket() && !getPacketNodes().contains(node.get())) {
+            Packet packet = (Packet) node.get().getTarget().get();
+            if (agentColor.isEmpty() || (agentColor.get().getRGB() == packet.getRgbColor())) {
+                this.packetNodes.add(node.get());
+            }
+        }
+
+        else if (node.get().containsDestination() && !getDestinationNodes().contains(node.get())) {
+            Destination destination = (Destination) node.get().getTarget().get();
+            if (agentColor.isEmpty() || (agentColor.get().getRGB() == destination.getRgbColor())) {
+                this.destinationNodes.add(node.get());
+            }
+        }
+
     }
 }

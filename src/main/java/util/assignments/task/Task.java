@@ -101,7 +101,7 @@ public class Task {
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
         for (Packet packet : taskConditions) {
-            if (graph.getNode(packet.getCoordinate()).get().containsPacket()) {
+            if (graph.getNode(packet.getCoordinate()).isPresent() && graph.getNode(packet.getCoordinate()).get().containsPacket()) {
                 return false;
             }
         }

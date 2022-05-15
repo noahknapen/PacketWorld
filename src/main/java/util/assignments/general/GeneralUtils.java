@@ -9,6 +9,7 @@ import agent.AgentCommunication;
 import agent.AgentState;
 import environment.Coordinate;
 import environment.Perception;
+import util.assignments.comparators.PacketComparator;
 import util.assignments.graph.Graph;
 import util.assignments.graph.GraphUtils;
 import util.assignments.graph.Node;
@@ -279,7 +280,7 @@ public class GeneralUtils {
      */
     public static boolean canReachDestination(AgentState agentState, Task task) {
 
-        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getTargets(Destination.class);
+        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getDestinations();
 
         // Loop over the discovered destinations
         for (Destination candidateDestination : discoveredDestinations) {
@@ -307,6 +308,210 @@ public class GeneralUtils {
 
         return false;
     }
+
+
+    /**
+     * Check if a task can be defined and do so if yes
+     *
+     * @param agentState The current state of the agent
+     * @return True if the task definition is possible and was done, otherwise false
+     *
+     */
+    public static boolean checkTaskDefinition(AgentState agentState) {
+
+        // Get priority tasks
+        ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
+
+        // Check if one of the priority tasks can be done
+        for (Task task : priorityTasks) {
+            if (!task.isHandled() && task.conditionsSatisfied(agentState)) {
+                task.setHandled(true);
+                MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.PRIORITY_TASKS, priorityTasks));
+                return true;
+            }
+        }
+
+        // Get the discovered packets and discovered destinations
+
+        // Only get packets of same color here
+        Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
+
+        if (graph == null) return false;
+
+        long startTime = System.currentTimeMillis();
+
+        ArrayList<Packet> discoveredPackets = graph.getPackets();
+        ArrayList<Destination> discoveredDestinations = graph.getDestinations();
+
+        System.out.println("TaskDef Get time: " + (System.currentTimeMillis() - startTime) + " ms");
+
+        startTime = System.currentTimeMillis();
+        // Sort the discovered packets
+        PacketComparator packetComparator = new PacketComparator(agentState, discoveredDestinations);
+        discoveredPackets.sort(packetComparator);
+
+        // Some variables used to find the closest destination
+        int packageIndex = Integer.MAX_VALUE;
+        double bestDistance = Integer.MAX_VALUE;
+        Destination closestDestination = null;
+
+        // Loop over the sorted discovered packets
+        for(int i = 0; i < discoveredPackets.size(); i++) {
+
+            // Get a candidate packet
+            Packet candidatePacket = discoveredPackets.get(i);
+
+
+            // Get the color of the candidate packet
+            Color candidatePacketColor = candidatePacket.getColor();
+
+            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != candidatePacketColor.getRGB()) continue;
+
+
+            // Check if path exists to packet
+            ArrayList<Node> packetPath = GraphUtils.performAStarSearch(agentState, candidatePacket.getCoordinate(), true);
+
+            if (packetPath == null) continue;
+
+            // Checks if path is blocked and if so continue with next
+            if (GraphUtils.checkIfBlocked(agentState, packetPath)) continue;
+
+
+
+            // Loop over the discovered destinations
+            for (Destination candidateDestination : discoveredDestinations) {
+                // Get the color of the candidate destination
+                Color candidateDestinationColor = candidateDestination.getColor();
+
+                // Check if the colors correspond
+                if (!candidatePacketColor.equals(candidateDestinationColor)) continue;
+
+                // If the agent hasn't got enough energy to work on it, it will not start the work
+                if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
+
+
+                // Check if path exists to destination
+                ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, candidateDestination.getCoordinate(), true);
+
+                if (destinationPath == null) continue;
+
+                // Checks if path is blocked and if so continue with next
+                if (GraphUtils.checkIfBlocked(agentState, destinationPath)) continue;
+
+
+                // Remove the packet from the discovered packets
+                candidatePacket = discoveredPackets.get(i);
+
+                // Calculate the distance to the destination from the packet
+                double tempDistance = Perception.distance(
+                        candidatePacket.getCoordinate().getX(),
+                        candidatePacket.getCoordinate().getY(),
+                        candidateDestination.getCoordinate().getX(),
+                        candidateDestination.getCoordinate().getY()
+                );
+
+                // Ensure that the distance for this destination is closer than the previous one
+                if (tempDistance > bestDistance) continue;
+
+                // Update the variables
+                bestDistance = tempDistance;
+                closestDestination = candidateDestination;
+                packageIndex = i;
+            }
+
+            // If no destination is found, continue with a next packet
+            if (closestDestination == null) continue;
+
+            // Define the task
+            Task task = new Task(candidatePacket, closestDestination);
+
+            // Remove the packet at packet index from the discovered packets. No idea why this error exist because line 104 changes packageIndex
+            if (packageIndex != Integer.MAX_VALUE) discoveredPackets.remove(packageIndex);
+
+            //Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
+            // graph.getNode(candidatePacket.getCoordinate()).get().setTarget(Optional.empty(), false);
+
+            // Update the memory
+            MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.GRAPH, graph));
+            System.out.println("TaskDef loop time: " + (System.currentTimeMillis() - startTime) + " ms");
+
+            return true;
+        }
+
+        System.out.println("TaskDef loop time: " + (System.currentTimeMillis() - startTime) + " ms");
+
+        return false;
+    }
+
+
+    /**
+     * Check if no task can be defined
+     *
+     * @param agentState The current state of the agent
+     *
+     * @return True if the task definition is not possible, otherwise false
+     */
+    public static boolean checkNoTaskDefinition(AgentState agentState) {
+        // Get the discovered packets
+        ArrayList<Packet> discoveredPackets = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getPackets();
+
+        // Check if no packets were discovered yet and return true if so
+        if(discoveredPackets.isEmpty()) return true;
+
+        // Get the discovered destinations
+        ArrayList<Destination> discoveredDestinations = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class).getDestinations();
+
+        // Check if no destinations were discovered yet and return true if so
+        if(discoveredDestinations.isEmpty()) return true;
+
+        // Loop over the sorted discovered packets
+        for(int i = 0; i < discoveredPackets.size(); i++) {
+
+            // Get a candidate packet
+            Packet candidatePacket = discoveredPackets.get(i);
+
+            // Get the color of the candidate packet
+            Color candidatePacketColor = candidatePacket.getColor();
+
+            if (agentState.getColor().isPresent() && agentState.getColor().get().getRGB() != candidatePacketColor.getRGB()) continue;
+
+            // Check if path exists to packet
+            ArrayList<Node> packetPath = GraphUtils.performAStarSearch(agentState, candidatePacket.getCoordinate(), false);
+
+            if (packetPath == null) continue;
+
+            // Checks if path is blocked and if so continue with next
+            if (GraphUtils.checkIfBlocked(agentState, packetPath)) continue;
+
+
+            // Loop over the discovered destinations
+            for (Destination candidateDestination : discoveredDestinations) {
+                // Get the color of the candidate destination
+                Color candidateDestinationColor = candidateDestination.getColor();
+
+                // Check if the colors correspond
+                if (!candidatePacketColor.equals(candidateDestinationColor)) continue;
+
+                // If the agent hasn't got enough energy to work on it, it will not start the work
+                if (!GeneralUtils.hasEnoughBatteryToCompleteTask(agentState, candidatePacket, candidateDestination)) continue;
+
+                // Check if path exists to destination
+                ArrayList<Node> destinationPath = GraphUtils.performAStarSearch(agentState, candidateDestination.getCoordinate(), false);
+
+                if (destinationPath == null) continue;
+
+                // Checks if path is blocked and if so continue with next
+                if (GraphUtils.checkIfBlocked(agentState, destinationPath)) continue;
+
+                // Task is possible if reached here
+                return false;
+
+            }
+        }
+
+        return true;
+    }
+
 
     /**
      * A function that determines whether the agent has enough energy left to pick up the given packet en deliver it

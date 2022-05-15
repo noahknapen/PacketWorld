@@ -48,13 +48,13 @@ public class ActionUtils {
     public static void moveRandomly(AgentState agentState, AgentAction agentAction) {
 
         // Get the current direction the agent is walking in
-        Coordinate direction = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.RAND0M_DIRECTION, Coordinate.class);
+        //Coordinate direction = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.RAND0M_DIRECTION, Coordinate.class);
 
-        boolean isDirectionPossible = isMoveInDirectionPossible(agentState, direction);
+        //boolean isDirectionPossible = isMoveInDirectionPossible(agentState, direction);
 
         // Change direction if a move is not possible in the current direction
-        if (!isDirectionPossible)
-            direction = getNewRandomDirection(agentState, direction);
+
+        Coordinate direction = getNewRandomDirection(agentState, null);
 
         if (direction.equals(new Coordinate(0,0))) {
             agentAction.skip();
