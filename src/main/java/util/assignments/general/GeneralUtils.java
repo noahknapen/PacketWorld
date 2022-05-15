@@ -149,37 +149,39 @@ public class GeneralUtils {
         ArrayList<ChargingStation> currentChargingStations = MemoryUtils.getListFromMemory(agentState, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
         // Get the updated charging stations
-        ArrayList<ChargingStation> updatedChargingStations = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
+        HashMap<String, ArrayList<ChargingStation>> messages = CommunicationUtils.getObjectListsFromMails(agentState, agentCommunication, MemoryKeys.CHARGING_STATIONS, ChargingStation.class);
 
-        // Loop over updated charging stations
-        for (ChargingStation updatedChargingStation : updatedChargingStations) {
-            // Check if the charging station is not included in the current list
-            if (!currentChargingStations.contains(updatedChargingStation)) {
-                // Add the new charging station to the charging stations
-                currentChargingStations.add(updatedChargingStation);
-
-                // Inform
-                if (GeneralUtils.PRINT)
-                    System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
-
-                continue;
-            }
-
-            // Loop over current charging stations
-            for (ChargingStation currentChargingStation : currentChargingStations) {
-                // Check if charging stations correspond
-                if (currentChargingStation.equals(updatedChargingStation)) {
-                    // Update the current charging station if needed
-                    currentChargingStation.setInUse(updatedChargingStation.isInUse());
-                    currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
+        for(String sender: messages.keySet()) {
+            // Loop over updated charging stations
+            for (ChargingStation updatedChargingStation : messages.get(sender)) {
+                // Check if the charging station is not included in the current list
+                if (!currentChargingStations.contains(updatedChargingStation)) {
+                    // Add the new charging station to the charging stations
+                    currentChargingStations.add(updatedChargingStation);
 
                     // Inform
                     if (GeneralUtils.PRINT)
-                        System.out.printf("%s: Updated a known charging station from communication (%s)\n", agentState.getName(), currentChargingStation);
+                        System.out.printf("%s: Added a new charging station from communication (%s) [%s]\n", agentState.getName(), updatedChargingStation, currentChargingStations.size());
+
+                    continue;
+                }
+
+                // Loop over current charging stations
+                for (ChargingStation currentChargingStation : currentChargingStations) {
+                    // Check if charging stations correspond
+                    if (currentChargingStation.equals(updatedChargingStation)) {
+                        // Update the current charging station if needed
+                        currentChargingStation.setInUse(updatedChargingStation.isInUse());
+                        currentChargingStation.setBatteryOfUser(updatedChargingStation.getBatteryOfUser());
+
+                        // Inform
+                        if (GeneralUtils.PRINT)
+                            System.out.printf("%s: Updated a known charging station from communication (%s)\n", agentState.getName(), currentChargingStation);
+                    }
                 }
             }
         }
-
+        
         // Update the current charging stations
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.CHARGING_STATIONS, currentChargingStations));
     }
@@ -192,7 +194,7 @@ public class GeneralUtils {
      */
     private static void updateGraph(AgentState agentState, AgentCommunication agentCommunication) {
         // Get the updated graph
-        HashMap<String, Graph> graphMessages = CommunicationUtils.getObjectFromMails(agentCommunication, MemoryKeys.GRAPH, Graph.class);
+        HashMap<String, Graph> graphMessages = CommunicationUtils.getObjectsFromMails(agentCommunication, MemoryKeys.GRAPH, Graph.class);
 
         // No messages about the graph received
         if (graphMessages == null) return;
@@ -249,7 +251,7 @@ public class GeneralUtils {
      * @param coordinate The coordinate of the position to check
      * @return True is the position is in the graph, otherwise false
      */
-    public static boolean positionInGraph(AgentState agentState, Coordinate coordinate) {
+    public static boolean isCoordinateInGraph(AgentState agentState, Coordinate coordinate) {
         // Get the graph
         Graph graph = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.GRAPH, Graph.class);
 
@@ -590,16 +592,18 @@ public class GeneralUtils {
         ArrayList<Task> priorityTasks = MemoryUtils.getListFromMemory(agentState, MemoryKeys.PRIORITY_TASKS, Task.class);
 
         // Get the updated priority tasks
-        ArrayList<Task> receivedPriorityTasks = CommunicationUtils.getListFromMails(agentState, agentCommunication, MemoryKeys.PRIORITY_TASKS_SEND, Task.class);
+        HashMap<String, ArrayList<Task>> messages = CommunicationUtils.getObjectListsFromMails(agentState, agentCommunication, MemoryKeys.PRIORITY_TASKS_SEND, Task.class);
 
-        // Loop over updated priority tasks
-        for (Task task : receivedPriorityTasks) {
+        for(String sender: messages.keySet()) {
+            // Loop over updated priority tasks
+            for (Task task : messages.get(sender)) {
 
-            // If task packet has same color as agent
-            if (!priorityTasks.contains(task) && agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == task.getPacket().getRgbColor()) {
-                priorityTasks.add(task);
+                // If task packet has same color as agent
+                if (!priorityTasks.contains(task) && agentState.getColor().isPresent() && agentState.getColor().get().getRGB() == task.getPacket().getRgbColor()) {
+                    priorityTasks.add(task);
+                }
             }
-        }
+        }        
 
         // Update memory
         MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.PRIORITY_TASKS, priorityTasks));

@@ -100,7 +100,7 @@ public class ChargingBehavior extends Behavior {
         if (agentCommunication.getNbMessages() == 0) return;
 
         // Retrieve the messages
-        HashMap<String, Boolean> receivedMessage = CommunicationUtils.getObjectFromMails(agentCommunication, "boolean", Boolean.class);
+        HashMap<String, Boolean> receivedMessage = CommunicationUtils.getObjectsFromMails(agentCommunication, "boolean", Boolean.class);
 
         // No messages received so no emergency
         if (receivedMessage == null) return;
