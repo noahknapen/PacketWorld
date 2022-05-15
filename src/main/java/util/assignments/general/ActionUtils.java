@@ -3,7 +3,6 @@ package util.assignments.general;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import agent.AgentAction;
 import agent.AgentState;
@@ -12,8 +11,6 @@ import environment.Coordinate;
 import environment.Perception;
 import util.assignments.graph.GraphUtils;
 import util.assignments.graph.Node;
-import util.assignments.memory.MemoryKeys;
-import util.assignments.memory.MemoryUtils;
 
 /**
  * A class that implements functions regarding the action of the agent
@@ -46,82 +43,23 @@ public class ActionUtils {
      * @param agentAction Used to perform an action with the agent
      */
     public static void moveRandomly(AgentState agentState, AgentAction agentAction) {
-
-        // Get the current direction the agent is walking in
-        Coordinate direction = MemoryUtils.getObjectFromMemory(agentState, MemoryKeys.RAND0M_DIRECTION, Coordinate.class);
-
-        boolean isDirectionPossible = isMoveInDirectionPossible(agentState, direction);
-
-        // Change direction if a move is not possible in the current direction
-        if (!isDirectionPossible)
-            direction = getNewRandomDirection(agentState, direction);
-
-        if (direction.equals(new Coordinate(0,0))) {
-            agentAction.skip();
-        }
-        else {
-            agentAction.step(agentState.getX()+direction.getX(), agentState.getY()+direction.getY());
-        }
-    }
-
-    /**
-     * Returns whether the next move is walkable, i.e, if the coordinate where the agent would go to is walkable.
-     * @param agentState The current state of the agent
-     * @param direction The direction the agent is moving in
-     * @return Returns true if a move in the given direction is possible. False otherwise.
-     */
-    private static boolean isMoveInDirectionPossible(AgentState agentState, Coordinate direction) {
-
-        if (direction == null)
-            return false;
-
+        // Get the position of the agent
         Perception agentPerception = agentState.getPerception();
-        Coordinate nextPos = new Coordinate(agentState.getX()+direction.getX(), agentState.getY()+direction.getY());
-        CellPerception nextPosCellPerception = agentPerception.getCellPerceptionOnAbsPos(nextPos.getX(), nextPos.getY());
 
-        if (nextPosCellPerception != null && nextPosCellPerception.isWalkable())
-            return true;
+        // Retrieves all the neighbours of the agent
+        ArrayList<CellPerception> neighbours = agentPerception.getNeighbours();
 
-        return false;
-    }
+        Collections.shuffle(neighbours);
 
-    /**
-     * Returns a direction in which the agent can move and which is not the same as the current given direction {@code currentRandomDirection}.
-     * @param agentState The current state of the agent
-     * @param currentRandomDirection The current direction the agent is going in when having to move randomly
-     * @return A coordinate representing the new direction the agent will go in
-     */
-    private static Coordinate getNewRandomDirection(AgentState agentState, Coordinate currentRandomDirection) {
-        
-        Perception agentPerception = agentState.getPerception();
-        // Keep a direction the agent should walk to
-        Coordinate newDirection = new Coordinate(0,0);
+        // Iterate through all the neighbours
+        for (CellPerception neighbour : neighbours) {
+            // If the neighbour isn't walkable or is null -> skip
+            if (neighbour == null || !neighbour.isWalkable()) continue;
 
-        // Shuffle the possible directions
-        ArrayList<Coordinate> directions = new ArrayList<>(ActionUtils.RELATIVE_POSITIONS);
-        Collections.shuffle(directions);
-
-        // Search for a move
-        for (Coordinate relPos : directions)
-        {
-            // Do not change the direction to the direction it is already going
-            if (currentRandomDirection != null && currentRandomDirection.equals(relPos))
-                continue;
-
-            Coordinate possibleNextPos = new Coordinate(agentState.getX()+relPos.getX(), agentState.getY()+relPos.getY());
-            CellPerception possibleNextPosCellPerception = agentPerception.getCellPerceptionOnAbsPos(possibleNextPos.getX(), possibleNextPos.getY());
-
-            // Change the direction if the next position the agent would go to, is walkable
-            if (possibleNextPosCellPerception != null && possibleNextPosCellPerception.isWalkable())
-            {
-                newDirection = relPos;
-                break;
-            }
+             // Perform step
+            agentAction.step(neighbour.getX(), neighbour.getY());
+            return;
         }
-
-        // Go to a direction of which the next step is already in the graph
-        MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.RAND0M_DIRECTION, newDirection));
-        return newDirection;
     }
 
         /////////////////
