@@ -36,7 +36,7 @@ nbArgs 0
 # The amount of behavior changes for the agent
 #  (only necessary when more than 1 agent behavior is specified)
 # ---------------------------------------------------------------
-nbChanges 15
+nbChanges 18
 
 ### SOURCE 1: Explorer ###
 
