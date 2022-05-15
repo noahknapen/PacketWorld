@@ -39,9 +39,6 @@ public class MoveToChargingStationBehavior extends Behavior {
 
     @Override
     public void act(AgentState agentState, AgentAction agentAction) {
-        // Check the perception of the agent
-        // GeneralUtils.checkPerception(agentState);
-
         // Build the graph
         GraphUtils.build(agentState);
 

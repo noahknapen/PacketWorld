@@ -340,14 +340,9 @@ public class GeneralUtils {
 
         if (graph == null) return false;
 
-        long startTime = System.currentTimeMillis();
-
         ArrayList<Packet> discoveredPackets = graph.getTargets(Packet.class);
         ArrayList<Destination> discoveredDestinations = graph.getTargets(Destination.class);
 
-        System.out.println("TaskDef Get time: " + (System.currentTimeMillis() - startTime) + " ms");
-
-        startTime = System.currentTimeMillis();
         // Sort the discovered packets
         PacketComparator packetComparator = new PacketComparator(agentState, discoveredDestinations);
         discoveredPackets.sort(packetComparator);
@@ -435,12 +430,9 @@ public class GeneralUtils {
 
             // Update the memory
             MemoryUtils.updateMemory(agentState, Map.of(MemoryKeys.TASK, task, MemoryKeys.GRAPH, graph));
-            System.out.println("TaskDef loop time: " + (System.currentTimeMillis() - startTime) + " ms");
-
+            
             return true;
         }
-
-        System.out.println("TaskDef loop time: " + (System.currentTimeMillis() - startTime) + " ms");
 
         return false;
     }
